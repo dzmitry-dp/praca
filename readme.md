@@ -51,9 +51,11 @@ buildozer android debug
 ```
 
 Требования в файле buildozer.spec
+
 	requirements = python3, sqlite3, kivy, kivymd, android, pyjnius
 
 android.permissions в файле buildozer.spec
+
 	android.permissions = READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, SEND_SMS
 
 ___

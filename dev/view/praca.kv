@@ -1,0 +1,257 @@
+#:import os os
+
+<InputZone@MDTextField>:
+    multiline: False
+    halign: 'center'
+    line_color_normal: "white"
+    hint_text_color_normal: "white"
+    font_size: '24sp'
+
+<Autorization>:
+    user_name: login
+    user_surname: password
+
+    MDGridLayout: 
+        cols: 1
+        padding: 50
+        size_hint_x: 1
+        
+        MDLabel:
+
+        MDLabel:
+
+        InputZone:
+            id: login
+            hint_text: 'Imie'
+            max_text_length: 15 
+
+        InputZone:
+            id: password
+            hint_text: 'Nazwisko'
+            max_text_length: 15 
+        
+        MDLabel:
+
+        MDRectangleFlatIconButton:
+            icon: 'account-hard-hat-outline'
+            text: "Logowanie"
+            font_size: '28sp'
+            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+            size_hint_x: 1
+            on_press: 
+                root.set_user()
+            on_release: 
+                root.manager.transition.direction = 'left' if root.user_authorized else 'right'
+                root.manager.transition.duration = 0.2
+                root.manager.current = "screen_one" if root.user_authorized else "screen_zero"
+            
+        MDLabel:
+
+        MDLabel:
+            text: 'Instalacje elektryczne\nROKBIT sp. Zo.o.'
+            halign: 'center'
+            font_size: '12sp'
+
+<Main>:   
+    MDBackdrop:
+        id: backdrop
+        left_action_items: [["menu", lambda x: backdrop.open()]]
+        right_action_items: [["close-box-outline", lambda x: root.btn_wyloguj()]]
+        title: root.user
+        header_text: root.today
+        back_layer_color: 'black'
+        close_icon: 'arrow-up'
+
+        MDBackdropBackLayer:
+            id: back
+            FloatLayout:
+                size_hint_x: 1
+                
+###                FitImage:
+###                    size_hint_y: 1
+###                    source: os.path.join("static/bg.jpg")
+
+                MDGridLayout: 
+                    cols: 1
+                    spacing: 30
+                    padding: 50
+                    adaptive_size: True
+                    size_hint_x: 1
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+
+                    MDRectangleFlatIconButton:
+                        icon: 'timer-plus-outline'
+                        text: "Dodać"
+                        font_size: '28sp'
+                        size_hint_x: 1
+
+                    MDRectangleFlatIconButton:
+                        icon: 'message-processing'
+                        text: "Wyślij"
+                        font_size: '28sp'
+                        size_hint_x: 1
+
+                    MDRectangleFlatIconButton:
+                        icon: 'table-arrow-up'
+                        text: "Tabela"
+                        font_size: '28sp'
+                        size_hint_x: 1
+
+                    MDRectangleFlatIconButton:
+                        icon: 'frequently-asked-questions'
+                        text: "Pytać"
+                        font_size: '28sp'
+                        size_hint_x: 1
+
+                    MDRectangleFlatIconButton:
+                        icon: 'format-list-checks'
+                        text: "Zadania"
+                        font_size: '28sp'
+                        size_hint_x: 1
+
+
+        MDBackdropFrontLayer:
+            id: front
+            MDGridLayout: 
+                cols: 1
+                padding: 50
+                size_hint_x: 1
+
+                MDGridLayout: 
+                    cols: 3
+
+                    InputZone:
+                        font_size: '18sp'
+                        hint_text: 'Data'
+                        mode: "rectangle"
+
+                    InputZone:
+                        font_size: '18sp'
+                        hint_text: 'Godziny'
+                        mode: "rectangle"
+
+                    InputZone:
+                        font_size: '18sp'
+                        hint_text: 'Obiekt'
+                        mode: "rectangle"
+
+                    MDLabel:
+                        halign: 'left'
+                        font_size: '18sp'
+
+                    MDLabel:
+                        halign: 'left'
+                        font_size: '18sp'
+
+                    MDLabel:
+                        halign: 'left'
+                        font_size: '18sp'
+
+                    MDLabel:
+                        text: '25.03.2023'
+                        halign: 'left'
+                        font_size: '16sp'
+
+                    MDLabel:
+                        text: '8'
+                        halign: 'center'
+                        font_size: '18sp'
+
+                    MDLabel:
+                        text: 'Renoma'
+                        halign: 'left'
+                        font_size: '18sp'
+
+                    MDLabel:
+                        text: '24.03.2023'
+                        halign: 'left'
+                        font_size: '16sp'
+
+                    MDLabel:
+                        text: '12'
+                        halign: 'center'
+                        font_size: '18sp'
+
+                    MDLabel:
+                        text: 'Żarów'
+                        halign: 'left'
+                        font_size: '18sp'
+
+                    MDLabel:
+                        text: '23.03.2023'
+                        halign: 'left'
+                        font_size: '16sp'
+
+                    MDLabel:
+                        text: '10'
+                        halign: 'center'
+                        font_size: '18sp'
+
+                    MDLabel:
+                        text: 'Rędzin'
+                        halign: 'left'
+                        font_size: '18sp'
+                    
+                    MDLabel:
+                        text: '22.03.2023'
+                        halign: 'left'
+                        font_size: '16sp'
+
+                    MDLabel:
+                        text: '10'
+                        halign: 'center'
+                        font_size: '18sp'
+
+                    MDLabel:
+                        text: 'Renoma'
+                        halign: 'left'
+                        font_size: '18sp'
+
+                    MDLabel:
+                        text: '21.03.2023'
+                        halign: 'left'
+                        font_size: '16sp'
+
+                    MDLabel:
+                        text: '8'
+                        halign: 'center'
+                        font_size: '18sp'
+
+                    MDLabel:
+                        text: 'Rędzin'
+                        halign: 'left'
+                        font_size: '18sp'
+
+                    MDLabel:
+                        halign: 'left'
+                        font_size: '18sp'
+
+                    MDLabel:
+                        halign: 'left'
+                        font_size: '18sp'
+
+                    MDLabel:
+                        halign: 'left'
+                        font_size: '18sp'
+
+                    MDLabel:
+                        text: 'Suma:'
+                        halign: 'left'
+                        font_size: '24sp'
+
+                    MDLabel:
+                        text: '148'
+                        halign: 'center'
+                        font_size: '24sp'
+
+                    MDLabel:
+                        halign: 'left'
+                        font_size: '18sp'
+
+                MDRectangleFlatIconButton:
+                    text: "Dodać"
+                    font_size: '28sp'
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                    size_hint_x: 1
+
+            

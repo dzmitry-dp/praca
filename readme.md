@@ -1,10 +1,9 @@
 Created: 04-02-2023 19:57
 Tags: #kivy #sqlite3
 ___
-# Логирование
-Мой код рассказывает историю
-История - это последовательность вызова функций
-Создаём логгер уровня приложения
+```bash
+git push -u origin master
+```
 
 # Code2flow
 Визуализация логики проекта
@@ -52,10 +51,10 @@ buildozer android debug
 ```
 
 Требования в файле buildozer.spec
-![[Pasted image 20230326091546.png]]
+	requirements = python3, sqlite3, kivy, kivymd, android, pyjnius
 
 android.permissions в файле buildozer.spec
-![[Pasted image 20230326091616.png]]
+	android.permissions = READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, SEND_SMS
 
 ___
 

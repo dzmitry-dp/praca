@@ -22,6 +22,12 @@ branch dev - ветка текущей разработки
 
 ### Клонировать рабочую версию приложения
 
+```bash
+git clone https://github.com/dzmitry-dp/praca
+```
+	Username for 'https://github.com': dzmitry-dp
+	Password for 'https://dzmitry-dp@github.com': TOKEN
+
 ### Отправить ветку master на сервер
 
 ```bash

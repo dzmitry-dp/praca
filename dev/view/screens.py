@@ -11,7 +11,6 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.bottomsheet import MDGridBottomSheet
 
 import dev
-from dev import send_sms
 from dev import config
 from dev.view.logic import AutorizationLogic, MainScreenLogic
 
@@ -49,8 +48,8 @@ class Autorization(MDScreen):
 
 
     def set_user(self) -> None:
-        """Вызов функции из интерфейса пользователя. 
-        Исходя из того, что написано в полях ввода, 
+        """Вызов функции из интерфейса пользователя.
+        Исходя из того, что написано в полях ввода,
         составляю представление о пользователе"""
         dev.logger.info('class Autorization(MDScreen): set_user()')
 
@@ -94,12 +93,15 @@ class Main(MDScreen):
             screen_manager=self.screen_manager,
             screen_constructor=self.screen_constructor,
         )
-        
 
     def btn_wyloguj(self):
         "Возвращает на экран логирования"
         dev.logger.info('< Wyloguj: button')
         self.screen_constructor.remove_screen_one()
+
+    def send_sms(phone_number, message):
+        sms = dev.SmsManager.getDefault()
+        sms.sendTextMessage(phone_number, None, message, None, None)
 
     # def btn_tak_call(self, obj):
     #     "Пользователь нажал Да"
@@ -114,9 +116,6 @@ class Main(MDScreen):
     #     self.screen_constructor.dilog_screen.dismiss()
     #     self.children[0].open() # MDBackdrop.open()
     #     dev.logger.info('Nie: button')
-
-    def show_menu_btn_sheet(self):
-        pass
 
 
 class AddHours(MDScreen):

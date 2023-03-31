@@ -3,7 +3,18 @@ from dev.view.screens import Autorization, Main
 
 
 class ScreensConstructor:
-    """Сборщик рабочих экранов для пользователей"""
+    """
+    # Сборщик рабочих экранов для пользователей
+
+    - self.screen_manager
+    - self.authorization_screen
+    - self.main_screen
+    - self.popup_screen
+
+    def add_authorization_screen_obj()
+    def add_main_screen_obj()
+    def remove_screen_one()
+    """
     def __init__(self, screen_manager) -> None:
         dev.logger.info('class ScreensConstructor: __init__()')
         # Управление
@@ -17,6 +28,9 @@ class ScreensConstructor:
         # self.dilog_screen = None # всплывающее окно в вопросом к пользователю
 
 
+    def start_building(self):
+        self.add_authorization_screen_obj()
+
     def add_authorization_screen_obj(self):
         dev.logger.info('class ScreensConstructor: add_authorization_screen_obj()')
         "Создаю и добавляю экран авторизации"
@@ -26,7 +40,7 @@ class ScreensConstructor:
                 screen_manager=self.screen_manager
             )
         self.screen_manager.add_widget(self.authorization_screen)
-    
+
     def add_main_screen_obj( # screen_one
             self,
             user_name,

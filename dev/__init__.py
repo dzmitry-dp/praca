@@ -1,3 +1,8 @@
+import os
+
+from kivy.logger import Logger as logger
+from kivy.config import Config
+
 from kivy.utils import platform
 
 if platform == 'android':
@@ -11,14 +16,7 @@ if platform == 'android':
         ])
 
     # Отправляю СМС
-
-    # PythonActivity = autoclass('org.kivy.android.PythonActivity')
     SmsManager = autoclass('android.telephony.SmsManager')
-
-import os
-
-from kivy.logger import Logger as logger
-from kivy.config import Config
 
 Config.set('kivy', 'log_dir', os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.abspath('static/logs')))
 
@@ -31,6 +29,4 @@ Config.set('kivy', 'log_dir', os.path.join(os.path.dirname(os.path.abspath(__fil
 #     logger.exception('!!!!!!!!!!!!!!!!!!')
 
 
-def send_sms(phone_number, message):
-    sms = SmsManager.getDefault()
-    sms.sendTextMessage(phone_number, None, message, None, None)
+

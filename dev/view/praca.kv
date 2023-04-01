@@ -51,6 +51,17 @@
             halign: 'center'
             font_size: '12sp'
 
+<Text@MDLabel>:
+    font_size: '18sp'
+    halign: 'left'
+
+<MyItemList>:
+    LeftLabel:
+        id: left_label
+
+    RightButton:
+        id: right_button
+
 <Main>:   
     MDBackdrop:
         id: backdrop
@@ -63,12 +74,9 @@
 
         MDBackdropBackLayer:
             id: back
+
             FloatLayout:
                 size_hint_x: 1
-                
-###                FitImage:
-###                    size_hint_y: 1
-###                    source: os.path.join("static/bg.jpg")
 
                 MDGridLayout: 
                     cols: 1
@@ -108,149 +116,55 @@
                         font_size: '28sp'
                         size_hint_x: 1
 
-
         MDBackdropFrontLayer:
             id: front
+ 
             MDGridLayout: 
                 cols: 1
-                padding: 50
+                padding: 20
                 size_hint_x: 1
 
                 MDGridLayout: 
                     cols: 3
+                    size_hint_x: 1
 
                     InputZone:
                         font_size: '18sp'
                         hint_text: 'Data'
-                        mode: "rectangle"
-
-                    InputZone:
-                        font_size: '18sp'
-                        hint_text: 'Godziny'
-                        mode: "rectangle"
+                        mode: "fill"
 
                     InputZone:
                         font_size: '18sp'
                         hint_text: 'Obiekt'
-                        mode: "rectangle"
+                        mode: "fill"
 
-                    MDLabel:
-                        halign: 'left'
+                    InputZone:
                         font_size: '18sp'
+                        hint_text: 'Godziny'
+                        mode: "fill"
 
-                    MDLabel:
-                        halign: 'left'
-                        font_size: '18sp'
+                MDScrollView:
+                    size_hint_y: 1
+                    MDList: 
+                        id: scroll
+                
+                MDGridLayout: 
+                    cols: 3
+                    size_hint_x: 1
 
-                    MDLabel:
-                        halign: 'left'
-                        font_size: '18sp'
-
-                    MDLabel:
-                        text: '25.03.2023'
-                        halign: 'left'
-                        font_size: '16sp'
-
-                    MDLabel:
-                        text: '8'
-                        halign: 'center'
-                        font_size: '18sp'
-
-                    MDLabel:
-                        text: 'Renoma'
-                        halign: 'left'
-                        font_size: '18sp'
-
-                    MDLabel:
-                        text: '24.03.2023'
-                        halign: 'left'
-                        font_size: '16sp'
-
-                    MDLabel:
-                        text: '12'
-                        halign: 'center'
-                        font_size: '18sp'
-
-                    MDLabel:
-                        text: 'Żarów'
-                        halign: 'left'
-                        font_size: '18sp'
-
-                    MDLabel:
-                        text: '23.03.2023'
-                        halign: 'left'
-                        font_size: '16sp'
-
-                    MDLabel:
-                        text: '10'
-                        halign: 'center'
-                        font_size: '18sp'
-
-                    MDLabel:
-                        text: 'Rędzin'
-                        halign: 'left'
-                        font_size: '18sp'
-                    
-                    MDLabel:
-                        text: '22.03.2023'
-                        halign: 'left'
-                        font_size: '16sp'
-
-                    MDLabel:
-                        text: '10'
-                        halign: 'center'
-                        font_size: '18sp'
-
-                    MDLabel:
-                        text: 'Renoma'
-                        halign: 'left'
-                        font_size: '18sp'
-
-                    MDLabel:
-                        text: '21.03.2023'
-                        halign: 'left'
-                        font_size: '16sp'
-
-                    MDLabel:
-                        text: '8'
-                        halign: 'center'
-                        font_size: '18sp'
-
-                    MDLabel:
-                        text: 'Rędzin'
-                        halign: 'left'
-                        font_size: '18sp'
-
-                    MDLabel:
-                        halign: 'left'
-                        font_size: '18sp'
-
-                    MDLabel:
-                        halign: 'left'
-                        font_size: '18sp'
-
-                    MDLabel:
-                        halign: 'left'
-                        font_size: '18sp'
-
-                    MDLabel:
+                    Text:
                         text: 'Suma:'
-                        halign: 'left'
                         font_size: '24sp'
 
-                    MDLabel:
+                    Text:
                         text: '148'
                         halign: 'center'
                         font_size: '24sp'
 
-                    MDLabel:
-                        halign: 'left'
-                        font_size: '18sp'
+                    Text:
 
                 MDRectangleFlatIconButton:
                     text: "Dodać"
                     font_size: '28sp'
                     pos_hint: {"center_x": 0.5, "center_y": 0.5}
                     size_hint_x: 1
-
-            

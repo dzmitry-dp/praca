@@ -5,6 +5,9 @@ from kivy.uix.screenmanager import ScreenManager
 
 from kivymd.toast.kivytoast import kivytoast
 from kivymd.uix.screen import MDScreen
+from kivymd.uix.list import OneLineAvatarIconListItem, ILeftBody, IRightBodyTouch
+from kivymd.uix.label import MDLabel
+from kivymd.uix.button import MDTextButton
 
 import dev
 from dev import config
@@ -62,6 +65,14 @@ class Autorization(MDScreen):
             dev.logger.warning(f"DEBUG: Have NOT Login and Password: '{_login}' '{_password}'")
             pass
 
+class MyItemList(OneLineAvatarIconListItem):
+    '''Custom list item.'''
+
+class LeftLabel(ILeftBody, MDLabel):
+    '''Custom left container.'''
+
+class RightButton(IRightBodyTouch, MDTextButton):
+    '''Custom right container.'''
 
 class Main(MDScreen):
     '''Главный экран данных на котором расположен интерфейс пользователя.
@@ -91,14 +102,32 @@ class Main(MDScreen):
             screen_constructor=self.screen_constructor,
         )
 
+        self.on_start()
+
     def btn_wyloguj(self):
         "Возвращает на экран логирования"
         dev.logger.info('< Wyloguj: button')
         self.logic.remove_main_screen()
 
-    def send_sms(phone_number, message):
-        sms = dev.SmsManager.getDefault()
-        sms.sendTextMessage(phone_number, None, message, None, None)
+
+    def on_start(self):
+        for i in range(30):
+            item = MyItemList(text=f'Item {i}', on_release=self.on_click_item)
+                        
+            #print(item.ids)
+            item.ids.left_label.text = str(i)
+            item.ids.right_button.text = f'More {i}'
+            item.ids.right_button.on_release = lambda widget=item.ids.right_button:self.on_click_right_button(widget)  # it needs `widget=...` because created in `for`-loop
+            
+            self.ids.scroll.add_widget(item)
+
+    def on_click_item(self, widget):
+        print('--- on_click_item ---')
+        print('wdiget.text:', widget.text, 'left_label.text:',  widget.ids.left_label.text, 'right_button.text:',  widget.ids.right_button.text)
+
+    # def send_sms(phone_number, message):
+    #     sms = dev.SmsManager.getDefault()
+    #     sms.sendTextMessage(phone_number, None, message, None, None)
 
     # def btn_tak_call(self, obj):
     #     "Пользователь нажал Да"
@@ -113,7 +142,3 @@ class Main(MDScreen):
     #     self.screen_constructor.dilog_screen.dismiss()
     #     self.children[0].open() # MDBackdrop.open()
     #     dev.logger.info('Nie: button')
-
-
-class AddHours(MDScreen):
-    pass

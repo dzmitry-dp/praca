@@ -15,17 +15,15 @@ ___
 - Запросить документы
 - Получить задачу
 
-# Запустить dev проект
+# Запустить проект
 
 ```bash
 python ./main.py
 ```
 
-# Сборка
+# Сборка apk
 
 	https://github.com/kivy/buildozer
-
-Собрать Python проект можно только на Linux
 
 ```bash
 buildozer android debug
@@ -44,7 +42,7 @@ android.permissions в файле buildozer.spec
 branch **master** - рабочая версия приложения
 branch **dev** - ветка текущей разработки
 
-### Клонировать ветку разработки
+### Клонировать ветку разработки dev
 
 ```bash
 git clone https://github.com/dzmitry-dp/praca -b dev
@@ -52,14 +50,18 @@ git clone https://github.com/dzmitry-dp/praca -b dev
 	Username for 'https://github.com': dzmitry-dp
 	Password for 'https://dzmitry-dp@github.com': TOKEN
 
-### Отправить ветку master на сервер
+### Слияние dev ветки проекта в dev ветку
+```bash
+git pull dev:dev
+```
+### Отправить ветку dev на сервер
 
 ```bash
-git push -u origin master
+git push -u origin dev
 ```
 
 # Code2flow
-Визуализация логики проекта
+Визуализация логики проекта ./static/logic.png
 
 ```bash
 code2flow . --language py --output ./static/logic.png 

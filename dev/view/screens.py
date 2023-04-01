@@ -4,11 +4,7 @@ from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.screenmanager import ScreenManager
 
 from kivymd.toast.kivytoast import kivytoast
-from kivymd.uix.button import MDRectangleFlatButton
-from kivymd.uix.dialog import MDDialog
 from kivymd.uix.screen import MDScreen
-from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.bottomsheet import MDGridBottomSheet
 
 import dev
 from dev import config
@@ -17,15 +13,17 @@ from dev.view.logic import AutorizationLogic, MainScreenLogic
 
 class Autorization(MDScreen):
     """
-    Виджет на котором просят ввести Имя и Фимилию.
+    Виджет авторизации на котором просят ввести Имя и Фимилию.
     Если пользователь не зарегистрирован,
     то заводим пользователя с новыми данными
 
+    self.name = 'authorization_screen'
     self.user_name.text - текст который был введен пользователем в строку Imie
     self.user_surname.text - Nazwisko
+    self.user_authorized: bool - пользователь авторизирован (True/False)
 
-    logic = AutorizationLogic()
-    logic.seach_user_in_base() - логика принятия решений при нажатии кнопки 'Logowanie do Pracy'
+    self.logic = AutorizationLogic()
+    self.logic.seach_user_in_base() - логика принятия решений при нажатии кнопки 'Logowanie'
 
     """
 
@@ -35,7 +33,7 @@ class Autorization(MDScreen):
 
     def __init__(self, screen_constructor, screen_manager, **kw):
         super().__init__(**kw)
-        dev.logger.info("class Autorization(MDScreen): __init__() name = 'screen_zero'")
+        dev.logger.info("screens.py: class Autorization(MDScreen) __init__() name = 'authorization_screen'")
 
         self.screen_constructor = screen_constructor # class ScreensConstructor
         self.screen_manager = screen_manager # class ScreenManager
@@ -46,23 +44,22 @@ class Autorization(MDScreen):
                 authorization_obj = self,
                 )
 
-
     def set_user(self) -> None:
-        """Вызов функции из интерфейса пользователя.
+        """Вызов этой функции из интерфейса пользователя.
         Исходя из того, что написано в полях ввода,
         составляю представление о пользователе"""
-        dev.logger.info('class Autorization(MDScreen): set_user()')
+        dev.logger.info('screens.py: class Autorization(MDScreen) set_user()')
 
         _login = self.user_name.text.replace(' ', '')
         _password = self.user_surname.text.replace(' ', '')
 
         if _login != '' and _password != '':
-            dev.logger.info(f'Have Login and Password: {_login} {_password}')
+            dev.logger.info(f"DEBUG: Have Login and Password: '{_login}' '{_password}'")
             self.logic.login = _login
             self.logic.password = _password
             self.logic.seach_user_in_base()
         else:
-            dev.logger.info(f"Login and Password: '{_login}' '{_password}'")
+            dev.logger.warning(f"DEBUG: Have NOT Login and Password: '{_login}' '{_password}'")
             pass
 
 
@@ -80,7 +77,7 @@ class Main(MDScreen):
             screen_constructor, # class ScreensConstructor
             screen_manager: ScreenManager,
             **kw):
-        dev.logger.info("class Main(MDScreen): __init__() name = 'screen_one'")
+        dev.logger.info("class Main(MDScreen): __init__() name = 'main_screen'")
         super().__init__(**kw)
 
         self.user = f'{user_name} {user_surname}'
@@ -97,7 +94,7 @@ class Main(MDScreen):
     def btn_wyloguj(self):
         "Возвращает на экран логирования"
         dev.logger.info('< Wyloguj: button')
-        self.screen_constructor.remove_screen_one()
+        self.logic.remove_main_screen()
 
     def send_sms(phone_number, message):
         sms = dev.SmsManager.getDefault()

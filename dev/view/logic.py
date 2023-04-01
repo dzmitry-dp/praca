@@ -12,15 +12,17 @@ from dev.exceptions import DBConnectionErr
 
 
 class VerificationData:
+    def __init__(self) -> None:
+        dev.logger.info('logic.py: class VerificationData __init__()')
 
     def get_permission(self, login, password) -> bool:
+        dev.logger.info('logic.py: class VerificationData get_permission()')
         query_obj = memory.Query(
             db_path=config.PATH_TO_USER_DB,
             )
 
         try:
             # Проверка на то, что пользователь в базе данных
-            dev.logger.info('DB request: SELECT * FROM table_name WHERE name = login AND surname = surname;')
             
             all_data_from_db = query_obj.query_select_user(
                 table_name=queries.USER_BASE,
@@ -28,12 +30,11 @@ class VerificationData:
                 surname=password,
                 )
 
-            dev.logger.info(f'DB answer:{all_data_from_db}')
+            dev.logger.info(f'DEBUG: DB answer {all_data_from_db}')
 
             if len(all_data_from_db) == 0:
                 # если ответ из базы -> []
                 query_obj.write_values(data=queries.generate_first_data(self._login, self._password))
-                dev.logger.info('class VerificationData: update user data')
                 all_data_from_db = query_obj.query_select_user(
                     table_name=queries.USER_BASE,
                     name=self._login,
@@ -43,8 +44,7 @@ class VerificationData:
 
         except DBConnectionErr:
             # Если таблица еще не создана
-
-            dev.logger.info('Create new table:')
+            dev.logger.error('logic.py: class VerificationData get_permission() "DB have NOT table"')
             query_obj.create_table(data=queries.user_table)
             query_obj.write_values(data=queries.generate_first_data(self._login, self._password))
             all_data_from_db = query_obj.query_select_user(
@@ -60,6 +60,7 @@ class VerificationData:
             return True
         else:
             # если собщение из базы -> []
+            dev.logger.info('logic.py: class VerificationData get_permission() "New user"')
             return False
 
 
@@ -68,6 +69,8 @@ class AutorizationLogic(VerificationData):
     """
     def __init__(self, screen_constructor, screen_manager, authorization_obj: MDScreen) -> None:
         super().__init__()
+        dev.logger.info('logic.py: class AutorizationLogic __init__()')
+
         self._login = None
         self._password = None
 
@@ -75,8 +78,6 @@ class AutorizationLogic(VerificationData):
         self.screen_manager = screen_manager # ScreenManager()
         self.authorization_obj = authorization_obj # Autorization(MDScreen)
         
-        dev.logger.info('class AutorizationLogic: __init__()')
-
     @property
     def login(self):
         if self._login is None:
@@ -99,41 +100,41 @@ class AutorizationLogic(VerificationData):
 
     def _no_password_reaction(login: str, password: str):
         """Реакция на то, что логин и пароль не находится в базе данных"""
-        dev.logger.info('class AutorizationLogic(VerificationData): _no_password_reaction()')
+        dev.logger.info('logic.py: class AutorizationLogic _no_password_reaction()')
 
     def _create_main_screen(self):
         """Создаю главный экран после авторизации пользователя, если экран не создан
         self.screen_constructor.popup_screen - подвижная вкладка
         """
-        dev.logger.info('class AutorizationLogic(VerificationData): _create_main_screen()')
+        dev.logger.info('logic.py: class AutorizationLogic _create_main_screen()')
 
-        if self.screen_manager.has_screen(name='screen_one'):
-            self.screen_constructor.popup_screen = self.screen_manager.get_screen('screen_one').children[0].ids['_front_layer'].children[0].children[0].children[0]
+        if self.screen_manager.has_screen(name='main_screen'):
+            self.screen_constructor.popup_screen = self.screen_manager.get_screen('main_screen').children[0].ids['_front_layer'].children[0].children[0].children[0]
         else:
             self.screen_constructor.add_main_screen_obj(
                 user_name = self.authorization_obj.user_name.text,
                 user_surname = self.authorization_obj.user_surname.text,
                 screen_constructor = self.screen_constructor,
             )
-            self.screen_constructor.popup_screen = self.screen_manager.get_screen('screen_one').children[0].ids['_front_layer'].children[0].children[0].children[0]
+            self.screen_constructor.popup_screen = self.screen_manager.get_screen('main_screen').children[0].ids['_front_layer'].children[0].children[0].children[0]
 
     def seach_user_in_base(self):
         """# Проверка пользователя в базе данных
         - Если пользователь в базе данных, то вывести его данные
         - Если нельзя найти совпадений по login и password, то заводим нового пользователя
         """
-        dev.logger.info('class AutorizationLogic(VerificationData): seach_user_in_base()')
+        dev.logger.info('logic.py: class AutorizationLogic seach_user_in_base()')
 
         if self.get_permission(self.login, self.password): # проверяю пароль
             # прошли авторизацию
-            dev.logger.info(f'class Autorization(Screen): user_authorized = True')
             self.authorization_obj.user_authorized = True
             self._create_main_screen()
         else:
             # не зарегистрированный пользователь
-            dev.logger.info(f'class Autorization(Sceen): user_authorized = False')
             self.authorization_obj.user_authorized = False
             pass # ничего не делаю если пользователь не авторизирован
+        
+        dev.logger.debug(f'-: user_authorized = {self.authorization_obj.user_authorized}')
  
 
 class MainScreenLogic:
@@ -150,6 +151,11 @@ class MainScreenLogic:
 
         # self.table: MDDataTable = None # таблица часов
         # self.add_hour_ui = None # интерфейс для добавления часов в базу данных
+
+    def remove_main_screen(self) -> None:
+        dev.logger.info('build.py: class ScreensConstructor remove_main_screen()')
+        self.screen_manager.remove_widget(self.screen_constructor.main_screen)
+        self.screen_constructor.main_screen = None
 
     # def process_of_view_table(self):
     #     "Добавление таблицы во вкладку главного экрана"

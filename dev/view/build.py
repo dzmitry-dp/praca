@@ -9,59 +9,51 @@ class ScreensConstructor:
     - self.screen_manager
     - self.authorization_screen
     - self.main_screen
-    - self.popup_screen
 
     def add_authorization_screen_obj()
     def add_main_screen_obj()
-    def remove_screen_one()
+    def remove_main_screen()
     """
     def __init__(self, screen_manager) -> None:
-        dev.logger.info('class ScreensConstructor: __init__()')
+        dev.logger.info('build.py: class ScreensConstructor __init__()')
         # Управление
         self.screen_manager = screen_manager # ScreenManager()
         # Мои экраны
-        self.authorization_screen = None # screen_zero
-        self.main_screen = None # screen_one
-        # Дополнительные элементы
-        self.popup_screen = None # попап MDBackdropFrontLayer
-        # self.btn_sheet_menu = None # виджет на экране 'screen_one'
-        # self.dilog_screen = None # всплывающее окно в вопросом к пользователю
-
+        self.authorization_screen = None # authorization_screen
+        self.main_screen = None # main_screen
+        self.popup_screen = None # подвижная вкладка MDBackdropFrontLayer
 
     def start_building(self):
+        "Первый запуск системы"
+        dev.logger.info('build.py: class ScreensConstructor start_building()')
         self.add_authorization_screen_obj()
 
     def add_authorization_screen_obj(self):
-        dev.logger.info('class ScreensConstructor: add_authorization_screen_obj()')
         "Создаю и добавляю экран авторизации"
+        dev.logger.info('build.py: class ScreensConstructor add_authorization_screen_obj()')
         self.authorization_screen = Autorization(
-                name='screen_zero',
+                name='authorization_screen',
                 screen_constructor = self,
                 screen_manager=self.screen_manager
             )
         self.screen_manager.add_widget(self.authorization_screen)
 
-    def add_main_screen_obj( # screen_one
+    def add_main_screen_obj( # main_screen
             self,
             user_name,
             user_surname,
             screen_constructor,
             ):
         "Создаю и добавляю главный экран приложения"
-        dev.logger.info('class ScreensConstructor: add_main_screen_obj()')
+        dev.logger.info('build.py: class ScreensConstructor add_main_screen_obj()')
         self.main_screen = Main(
-                name = 'screen_one',
+                name = 'main_screen',
                 user_name = user_name,
                 user_surname = user_surname,
                 screen_constructor = screen_constructor,
                 screen_manager = self.screen_manager
             )
         self.screen_manager.add_widget(self.main_screen)
-
-    def remove_screen_one(self) -> None:
-        dev.logger.info('class ScreensConstructor: remove_screen_one()')
-        self.screen_manager.remove_widget(self.main_screen)
-        self.main_screen = None
 
 
     # def build_some_question_obj(self, obj) -> MDDialog:
@@ -90,7 +82,7 @@ class ScreensConstructor:
     #     # self.btn_sheet_menu = MDGridBottomSheet()
     #     # self.btn_sheet_menu = self.ids.grid_botton # MDGridBottomSheet id: grid_botton
     #     if self.btn_sheet_menu is None:
-    #         self.btn_sheet_menu = MyButtonSheet( # widget on screen_one
+    #         self.btn_sheet_menu = MyButtonSheet( # widget on main_screen
     #             screen_constructor = self,
     #             screen_manager = self.screen_manager,
     #         )

@@ -42,7 +42,7 @@
                 root.set_user()
                 root.manager.transition.direction = 'left' if root.user_authorized else 'right'
                 root.manager.transition.duration = 0.2
-                root.manager.current = "screen_one" if root.user_authorized else "screen_zero"
+                root.manager.current = "main_screen" if root.user_authorized else "authorization_screen"
             
         MDLabel:
 

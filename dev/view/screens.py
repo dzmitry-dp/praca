@@ -8,6 +8,7 @@ from kivymd.uix.screen import MDScreen
 from kivymd.uix.list import OneLineAvatarIconListItem, ILeftBody, IRightBodyTouch
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDTextButton
+from kivymd.uix.pickers import MDDatePicker
 
 import dev
 from dev import config
@@ -95,7 +96,12 @@ class Main(MDScreen):
         super().__init__(**kw)
 
         self.user = f'{user_name} {user_surname}'
+
         self.today = date.today().strftime("%d.%m.%Y")
+        self.year = date.today().year # int
+        self.month = date.today().month # int
+        self.day = date.today().day # int
+
         self.screen_constructor = screen_constructor
         self.screen_manager = screen_manager
 
@@ -132,12 +138,45 @@ class Main(MDScreen):
         print('--- on_click_item ---')
         print('wdiget.text:', widget.text, 'left_label.text:',  widget.ids.left_label.text, 'right_button.text:',  widget.ids.right_button.text)
 
-    def on_click_right_button(self, widget):
+    def on_click_table_right_button(self, widget):
         print('--- on_click_right_button ---')
         print('wdiget.text:',  widget.text)
         print('widget.parent.parent:', widget.parent.parent)
         print('widget.parent.parent.text:', widget.parent.parent.text)
     
+    def show_date_picker(self):
+        if self.ids.date_input.focus:
+            date_dialog = MDDatePicker(year=self.year, month=self.month, day=self.day)
+            date_dialog.bind(on_save=self.on_save_calendar, on_cancel=self.on_cancel_calendar)
+            date_dialog.open()
+
+    def on_save_calendar(self, instance, value, date_range):
+        '''
+        Events called when the "OK" dialog box button is clicked.
+
+        :type instance: <kivymd.uix.picker.MDDatePicker object>;
+
+        :param value: selected date;
+        :type value: <class 'datetime.date'>;
+
+        :param date_range: list of 'datetime.date' objects in the selected range;
+        :type date_range: <class 'list'>;
+        '''
+        if value.day <= 9:
+            day = f'0{value.day}'
+        else:
+            day = value.day
+
+        if value.month <= 9:
+            month = f'0{value.month}'
+        else:
+            month = value.month
+
+        self.ids.date_input.text = f"{day}.{month}"
+
+    def on_cancel_calendar(self, instance, value):
+        '''Events called when the "CANCEL" dialog box button is clicked.'''
+        print(instance, value)
     # def send_sms(phone_number, message):
     #     sms = dev.SmsManager.getDefault()
     #     sms.sendTextMessage(phone_number, None, message, None, None)

@@ -143,12 +143,14 @@
                         size_hint_x: 0.4
 
                     InputZone:
+                        id: date_input
                         font_size: '18sp'
                         hint_text: 'Data'
                         text: root.today[:-5]
                         helper_text: "Wprowadź datę"
                         mode: "fill"
                         size_hint_x: 0.3
+                        on_focus: root.show_date_picker()
 
                 MDScrollView:
                     size_hint_x: 0.85
@@ -163,14 +165,22 @@
                     size_hint_y: 0.2
 
                     Text:
+                        text: 'Godzin: 148'
+                        halign: 'left'
+                        font_size: '24sp'
+                        font_style: 'H6'
                         
                     Text:
-                        text: 'Masz 148 godzin'
+                        text: 'Etat: 22 zl'
                         halign: 'center'
                         font_size: '24sp'
                         font_style: 'H6'
 
                     Text:
+                        text: 'Płatność: 4321'
+                        halign: 'right'
+                        font_size: '24sp'
+                        font_style: 'H6'
 
                 MDRectangleFlatIconButton:
                     text: "Dodać"

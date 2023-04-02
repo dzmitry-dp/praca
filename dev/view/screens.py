@@ -67,12 +67,15 @@ class Autorization(MDScreen):
 
 class MyItemList(OneLineAvatarIconListItem):
     '''Custom list item.'''
+    pass
 
 class LeftLabel(ILeftBody, MDLabel):
     '''Custom left container.'''
+    pass
 
 class RightButton(IRightBodyTouch, MDTextButton):
     '''Custom right container.'''
+    pass
 
 class Main(MDScreen):
     '''Главный экран данных на котором расположен интерфейс пользователя.
@@ -88,7 +91,7 @@ class Main(MDScreen):
             screen_constructor, # class ScreensConstructor
             screen_manager: ScreenManager,
             **kw):
-        dev.logger.info("class Main(MDScreen): __init__() name = 'main_screen'")
+        dev.logger.info("screens.py: class Main(MDScreen) __init__() name = 'main_screen'")
         super().__init__(**kw)
 
         self.user = f'{user_name} {user_surname}'
@@ -102,29 +105,39 @@ class Main(MDScreen):
             screen_constructor=self.screen_constructor,
         )
 
-        self.on_start()
-
     def btn_wyloguj(self):
         "Возвращает на экран логирования"
-        dev.logger.info('< Wyloguj: button')
+        dev.logger.info('screens.py: class Main(MDScreen) btn_wyloguj()')
         self.logic.remove_main_screen()
 
+    def make_data_table(self):
+        dev.logger.info('screens.py: class Main(MDScreen) make_data_table()')
 
-    def on_start(self):
-        for i in range(30):
-            item = MyItemList(text=f'Item {i}', on_release=self.on_click_item)
-                        
-            #print(item.ids)
-            item.ids.left_label.text = str(i)
-            item.ids.right_button.text = f'More {i}'
-            item.ids.right_button.on_release = lambda widget=item.ids.right_button:self.on_click_right_button(widget)  # it needs `widget=...` because created in `for`-loop
+        import random
+        for i, obj in enumerate(['Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
+                  'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
+                    'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
+                        'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
+                            'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',]):
+            item = MyItemList(text=obj, on_release=self.on_click_table_row)
+            
+            h = ['8', '10', '12']
+            item.ids.left_label.text = random.choice(h)
+            item.ids.right_button.text = str(i + 1) + '.04'
+            item.ids.right_button.on_release = lambda widget=item.ids.right_button:self.on_click_right_button(widget)
             
             self.ids.scroll.add_widget(item)
 
-    def on_click_item(self, widget):
+    def on_click_table_row(self, widget):
         print('--- on_click_item ---')
         print('wdiget.text:', widget.text, 'left_label.text:',  widget.ids.left_label.text, 'right_button.text:',  widget.ids.right_button.text)
 
+    def on_click_right_button(self, widget):
+        print('--- on_click_right_button ---')
+        print('wdiget.text:',  widget.text)
+        print('widget.parent.parent:', widget.parent.parent)
+        print('widget.parent.parent.text:', widget.parent.parent.text)
+    
     # def send_sms(phone_number, message):
     #     sms = dev.SmsManager.getDefault()
     #     sms.sendTextMessage(phone_number, None, message, None, None)

@@ -68,7 +68,7 @@
         left_action_items: [["menu", lambda x: backdrop.open()]]
         right_action_items: [["close-box-outline", lambda x: root.btn_wyloguj()]]
         title: root.user
-        header_text: root.today
+        header_text: 'Dzisiaj ' + root.today
         back_layer_color: 'black'
         close_icon: 'arrow-up'
 
@@ -119,45 +119,49 @@
         MDBackdropFrontLayer:
             id: front
  
-            MDGridLayout: 
-                cols: 1
-                padding: 20
-                size_hint_x: 1
+            BoxLayout: 
+                orientation: 'vertical'
+                padding: 30
 
                 MDGridLayout: 
                     cols: 3
                     size_hint_x: 1
+                    size_hint_y: 0.2
 
                     InputZone:
                         font_size: '18sp'
-                        hint_text: 'Data'
+                        hint_text: 'Godziny'
+                        helper_text: "Wprowadź godziny"
                         mode: "fill"
 
                     InputZone:
                         font_size: '18sp'
                         hint_text: 'Obiekt'
+                        helper_text: "Wprowadź obiekt"
                         mode: "fill"
 
                     InputZone:
                         font_size: '18sp'
-                        hint_text: 'Godziny'
+                        hint_text: 'Data'
+                        text: root.today[:-5]
+                        helper_text: "Wprowadź datę"
                         mode: "fill"
 
                 MDScrollView:
-                    size_hint_y: 1
+                    size_hint_x: 1
+                    size_hint_y: 0.6
                     MDList: 
                         id: scroll
                 
                 MDGridLayout: 
                     cols: 3
                     size_hint_x: 1
+                    size_hint_y: 0.2
 
                     Text:
-                        text: 'Suma:'
-                        font_size: '24sp'
-
+                        
                     Text:
-                        text: '148'
+                        text: 'Masz 148 godzin'
                         halign: 'center'
                         font_size: '24sp'
 

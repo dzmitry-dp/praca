@@ -123,7 +123,7 @@ class Main(MDScreen):
             
             h = ['8', '10', '12']
             item.ids.left_label.text = random.choice(h)
-            item.ids.right_button.text = str(i + 1) + '.04'
+            item.ids.right_button.text = str(31 - i) + '.04'
             item.ids.right_button.on_release = lambda widget=item.ids.right_button:self.on_click_right_button(widget)
             
             self.ids.scroll.add_widget(item)

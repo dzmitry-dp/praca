@@ -68,7 +68,7 @@
         left_action_items: [["menu", lambda x: backdrop.open()]]
         right_action_items: [["close-box-outline", lambda x: root.btn_wyloguj()]]
         title: root.user
-        header_text: 'Dzisiaj ' + root.today
+        header_text: 'Dzisiaj: ' + root.today
         back_layer_color: 'black'
         close_icon: 'arrow-up'
 
@@ -119,26 +119,28 @@
         MDBackdropFrontLayer:
             id: front
  
-            BoxLayout: 
+            MDBoxLayout: 
                 orientation: 'vertical'
                 padding: 30
 
-                MDGridLayout: 
-                    cols: 3
+                MDBoxLayout: 
+                    orientation: 'horizontal'
                     size_hint_x: 1
-                    size_hint_y: 0.2
+                    size_hint_y: 0.15
 
                     InputZone:
                         font_size: '18sp'
                         hint_text: 'Godziny'
                         helper_text: "Wprowadź godziny"
                         mode: "fill"
+                        size_hint_x: 0.3
 
                     InputZone:
                         font_size: '18sp'
                         hint_text: 'Obiekt'
                         helper_text: "Wprowadź obiekt"
                         mode: "fill"
+                        size_hint_x: 0.4
 
                     InputZone:
                         font_size: '18sp'
@@ -146,10 +148,12 @@
                         text: root.today[:-5]
                         helper_text: "Wprowadź datę"
                         mode: "fill"
+                        size_hint_x: 0.3
 
                 MDScrollView:
-                    size_hint_x: 1
-                    size_hint_y: 0.6
+                    size_hint_x: 0.85
+                    size_hint_y: 0.65
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
                     MDList: 
                         id: scroll
                 
@@ -164,6 +168,7 @@
                         text: 'Masz 148 godzin'
                         halign: 'center'
                         font_size: '24sp'
+                        font_style: 'H6'
 
                     Text:
 

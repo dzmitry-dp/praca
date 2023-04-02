@@ -1,6 +1,6 @@
 from datetime import date
 
-from kivy.properties import ObjectProperty, StringProperty
+from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.uix.screenmanager import ScreenManager
 
 from kivymd.toast.kivytoast import kivytoast
@@ -78,6 +78,11 @@ class RightButton(IRightBodyTouch, MDTextButton):
     '''Custom right container.'''
     pass
 
+class Calendar(MDScreen, MDDatePicker):
+    y = NumericProperty()
+    m = NumericProperty()
+    d = NumericProperty()
+
 class Main(MDScreen):
     '''Главный экран данных на котором расположен интерфейс пользователя.
     Через этот интерфейс можно управлять приложением
@@ -146,8 +151,10 @@ class Main(MDScreen):
     
     def show_date_picker(self):
         if self.ids.date_input.focus:
-            date_dialog = MDDatePicker(year=self.year, month=self.month, day=self.day)
+            date_dialog = Calendar(year=self.year, month=self.month, day=self.day)
             date_dialog.bind(on_save=self.on_save_calendar, on_cancel=self.on_cancel_calendar)
+
+            self.screen_manager.add_widget(date_dialog)
             date_dialog.open()
 
     def on_save_calendar(self, instance, value, date_range):
@@ -177,6 +184,7 @@ class Main(MDScreen):
     def on_cancel_calendar(self, instance, value):
         '''Events called when the "CANCEL" dialog box button is clicked.'''
         print(instance, value)
+
     # def send_sms(phone_number, message):
     #     sms = dev.SmsManager.getDefault()
     #     sms.sendTextMessage(phone_number, None, message, None, None)

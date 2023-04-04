@@ -1,5 +1,5 @@
 import dev
-from dev.view.screens import Autorization, Main
+from dev.view.screens import Autorization, Main, Calendar
 
 
 class ScreensConstructor:
@@ -22,6 +22,7 @@ class ScreensConstructor:
         self.authorization_screen = None # authorization_screen
         self.main_screen = None # main_screen
         self.popup_screen = None # подвижная вкладка MDBackdropFrontLayer
+        self.calendar = None # calendar_screen
 
     def start_building(self):
         "Первый запуск системы"
@@ -55,3 +56,10 @@ class ScreensConstructor:
             )
         self.main_screen.make_data_table()
         self.screen_manager.add_widget(self.main_screen)
+
+    def show_calendar(self): # calendar_screen
+        self.calendar = Calendar(
+            name = 'calendar_screen',
+            screen_manager = self.screen_manager,
+        )
+        self.screen_manager.add_widget(self.calendar)

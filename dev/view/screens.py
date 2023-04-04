@@ -2,17 +2,19 @@ from datetime import date
 
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.uix.screenmanager import ScreenManager
+from kivy.uix.boxlayout import BoxLayout
+from kivy.metrics import dp
 
 from kivymd.toast.kivytoast import kivytoast
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.list import OneLineAvatarIconListItem, ILeftBody, IRightBodyTouch
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDTextButton
-from kivymd.uix.pickers import MDDatePicker
 
 import dev
 from dev import config
 from dev.view.logic import AutorizationLogic, MainScreenLogic
+from dev.view.calendar import DatePicker
 
 
 class Autorization(MDScreen):
@@ -78,11 +80,6 @@ class RightButton(IRightBodyTouch, MDTextButton):
     '''Custom right container.'''
     pass
 
-class Calendar(MDScreen, MDDatePicker):
-    y = NumericProperty()
-    m = NumericProperty()
-    d = NumericProperty()
-
 class Main(MDScreen):
     '''Главный экран данных на котором расположен интерфейс пользователя.
     Через этот интерфейс можно управлять приложением
@@ -140,22 +137,20 @@ class Main(MDScreen):
             self.ids.scroll.add_widget(item)
 
     def on_click_table_row(self, widget):
+        "Функция отрабатывает по клику на строку таблицы"
         print('--- on_click_item ---')
         print('wdiget.text:', widget.text, 'left_label.text:',  widget.ids.left_label.text, 'right_button.text:',  widget.ids.right_button.text)
 
     def on_click_table_right_button(self, widget):
+        "Функция отрабатывает по клику на дату"
         print('--- on_click_right_button ---')
         print('wdiget.text:',  widget.text)
         print('widget.parent.parent:', widget.parent.parent)
         print('widget.parent.parent.text:', widget.parent.parent.text)
     
     def show_date_picker(self):
-        if self.ids.date_input.focus:
-            date_dialog = Calendar(year=self.year, month=self.month, day=self.day)
-            date_dialog.bind(on_save=self.on_save_calendar, on_cancel=self.on_cancel_calendar)
-
-            self.screen_manager.add_widget(date_dialog)
-            date_dialog.open()
+        self.screen_constructor.show_calendar()
+        self.screen_manager.current = 'calendar_screen'
 
     def on_save_calendar(self, instance, value, date_range):
         '''
@@ -202,3 +197,9 @@ class Main(MDScreen):
     #     self.screen_constructor.dilog_screen.dismiss()
     #     self.children[0].open() # MDBackdrop.open()
     #     dev.logger.info('Nie: button')
+
+class Calendar(MDScreen):
+    def __init__(self, name, screen_manager, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.name = name
+        self.screen_manager = screen_manager

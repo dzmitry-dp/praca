@@ -75,7 +75,7 @@
         MDBackdropBackLayer:
             id: back
 
-            FloatLayout:
+            MDFloatLayout:
                 size_hint_x: 1
 
                 MDGridLayout: 
@@ -150,7 +150,8 @@
                         helper_text: "Wprowadź datę"
                         mode: "fill"
                         size_hint_x: 0.3
-                        on_focus: root.show_date_picker()
+                        on_focus:
+                            root.show_date_picker()
 
                 MDScrollView:
                     size_hint_x: 0.85
@@ -189,7 +190,19 @@
                     size_hint_x: 1
 
 <Calendar>:
-    id: calendar
-    year: root.y
-    month: root.m
-    day: root.d
+    BoxLayout:
+        padding: 20
+
+        DatePicker:
+            on_select: 
+                root.screen_manager.current = 'main_screen'
+        
+<DateButton>:
+    id: date_btn
+    elevation: .1
+    radius: dp(10)
+    ripple_behavior: True
+    Label:
+        text: date_btn.text
+        color: date_btn.text_color
+

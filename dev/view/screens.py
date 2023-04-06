@@ -2,7 +2,6 @@ from datetime import date
 
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.uix.screenmanager import ScreenManager
-from kivy.uix.boxlayout import BoxLayout
 from kivy.metrics import dp
 
 from kivymd.toast.kivytoast import kivytoast
@@ -10,6 +9,10 @@ from kivymd.uix.screen import MDScreen
 from kivymd.uix.list import OneLineAvatarIconListItem, ILeftBody, IRightBodyTouch
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDTextButton
+from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.list import OneLineIconListItem
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.boxlayout import MDBoxLayout
 
 import dev
 from dev import config
@@ -86,6 +89,7 @@ class Main(MDScreen):
     '''
     user = StringProperty()
     today = StringProperty()
+    dialog = None
 
     def __init__(
             self,
@@ -112,6 +116,8 @@ class Main(MDScreen):
             screen_manager=self.screen_manager,
             screen_constructor=self.screen_constructor,
         )
+
+        self.obiekt_menu = None
 
     def btn_wyloguj(self):
         "Возвращает на экран логирования"
@@ -180,6 +186,65 @@ class Main(MDScreen):
         '''Events called when the "CANCEL" dialog box button is clicked.'''
         print(instance, value)
 
+    def open_obiekt_menu(self):
+        def reaction_on_renoma():
+            print('Renoma')
+            self.obiekt_menu.dismiss()
+
+        def reaction_on_zarow():
+            print('Żarów')
+            self.obiekt_menu.dismiss()
+
+        def reaction_on_redzin():
+            print('Rędzin')
+            self.obiekt_menu.dismiss()
+
+        menu_items = [
+            {
+                "viewclass": "OneLineListItem",
+                "icon": "git",
+                "text": f"Renoma",
+                "height": dp(56),
+                "on_release": lambda x=f"Renoma": reaction_on_renoma(),
+            },
+            {
+                "viewclass": "OneLineListItem",
+                "icon": "git",
+                "text": f"Żarów",
+                "height": dp(56),
+                "on_release": lambda x=f"Żarów": reaction_on_zarow(),
+            },
+            {
+                "viewclass": "OneLineListItem",
+                "icon": "git",
+                "text": f"Rędzin",
+                "height": dp(56),
+                "on_release": lambda x=f"Rędzin": reaction_on_redzin(),
+            },
+        ]
+
+        self.obiekt_menu = MDDropdownMenu(
+            caller=self.ids.obiekt,
+            items=menu_items,
+            position="bottom",
+            width_mult=4,
+        )
+        self.obiekt_menu.bind()
+        self.obiekt_menu.open()
+
+    def select_godziny(self):
+        if not self.dialog:
+            self.widgets = Widgets(self)
+            self.dialog = MDDialog(
+                type = "custom",
+                content_cls = self.widgets
+            )
+        self.dialog.open()
+
+class IconListItem(OneLineIconListItem):
+    icon = StringProperty()
+
+
     # def send_sms(phone_number, message):
     #     sms = dev.SmsManager.getDefault()
     #     sms.sendTextMessage(phone_number, None, message, None, None)
@@ -203,3 +268,10 @@ class Calendar(MDScreen):
         super().__init__(*args, **kwargs)
         self.name = name
         self.screen_manager = screen_manager
+
+class Widgets(MDBoxLayout):
+    progress = NumericProperty()
+
+    def __init__(self, main_screen, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.main_screen = main_screen

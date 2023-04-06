@@ -127,30 +127,36 @@
                     orientation: 'horizontal'
                     size_hint_x: 1
                     size_hint_y: 0.15
+                    spacing: 10
 
-                    InputZone:
+                    MDRectangleFlatIconButton:
+                        id: godziny
+                        icon: 'hours-24'
+                        pos_hint: {'center_x': .5, 'center_y': .5}
+                        text: 'Godziny'
+                        size_hint_x: 0.33
                         font_size: '18sp'
-                        hint_text: 'Godziny'
-                        helper_text: "Wprowadź godziny"
-                        mode: "fill"
-                        size_hint_x: 0.3
+                        on_release:
+                            root.select_godziny()
+                    
+                    MDRectangleFlatIconButton:
+                        id: obiekt
+                        icon: 'home-lightning-bolt'
+                        pos_hint: {'center_x': .5, 'center_y': .5}
+                        text: 'Obiekt'
+                        size_hint_x: 0.33
+                        font_size: '18sp'
+                        on_release: 
+                            root.open_obiekt_menu()
 
-                    InputZone:
+                    MDRectangleFlatIconButton:
+                        id: date
+                        icon: 'calendar-range'
+                        text: 'Data'
                         font_size: '18sp'
-                        hint_text: 'Obiekt'
-                        helper_text: "Wprowadź obiekt"
-                        mode: "fill"
-                        size_hint_x: 0.4
-
-                    InputZone:
-                        id: date_input
-                        font_size: '18sp'
-                        hint_text: 'Data'
-                        text: root.today[:-5]
-                        helper_text: "Wprowadź datę"
-                        mode: "fill"
-                        size_hint_x: 0.3
-                        on_focus:
+                        pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                        size_hint_x: 0.33
+                        on_release: 
                             root.show_date_picker()
 
                 MDScrollView:
@@ -205,4 +211,62 @@
     Label:
         text: date_btn.text
         color: date_btn.text_color
+
+
+<Widgets>
+    pos_hint: {'center_x': .5, 'center_y': .5}
+    size_hint:(None, None)
+    height: 600
+    width: 300
+    size_hint_x: 1
+    
+    MDBoxLayout:
+        size_hint_y: 1
+        height: 300
+        orientation: "vertical"
+        pos_hint: {'center_x': .5, 'center_y': .5}
+
+        MDBoxLayout:
+            pos_hint: {'center_x': .5, 'center_y': .5}
+            orientation: "horizontal"
+
+            MDRectangleFlatIconButton:
+                text: "8"
+                size_hint_x: 1
+                on_release:
+                    root.main_screen.dialog.dismiss()
+
+            MDRectangleFlatIconButton:
+                text: "10"
+                size_hint_x: 1
+                on_release:
+                    root.main_screen.dialog.dismiss()
+
+            MDRectangleFlatIconButton:
+                text: "12"
+                size_hint_x: 1
+                on_release:
+                    root.main_screen.dialog.dismiss()
+        
+        MDLabel:
+
+        MDBoxLayout:
+            pos_hint: {'center_x': .5, 'center_y': .5}
+            orientation: "vertical"
+
+            MDSlider:
+                value: root.progress
+                hint: True
+                min: 0
+                max: 24
+
+            MDLabel:
+                pos_hint: {'center_x': .5, 'center_y': .5}
+
+            MDRectangleFlatIconButton:
+                pos_hint: {'center_x': .5, 'center_y': .5}
+                text: "Ok"
+                size_hint_x: 0.5
+                on_release:
+                    root.main_screen.dialog.dismiss()
 

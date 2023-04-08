@@ -226,10 +226,6 @@ class MainScreenLogic:
             
             self.main_screen.ids.scroll.add_widget(item)
 
-    def show_date_picker(self):
-        self.screen_constructor.show_calendar()
-        self.screen_manager.current = 'calendar_screen'
-
     def _on_click_table_row(self, widget):
         "Функция отрабатывает по клику на строку таблицы"
         print('--- on_click_item ---')
@@ -271,35 +267,14 @@ class MainScreenLogic:
         print(instance, value)
 
     def open_objects_menu_list(self):
+        #         "text": f"Renoma",
+        #         "text": f"Żarów",
+        #         "text": f"Rędzin",
         if not self.dialog_screen_to_set_object:
             self.widgets = WorkObjects(
                 main_screen = self.main_screen,
                 main_screen_logic = self,
                 )
-            # menu_items = [
-            #     {
-            #         "viewclass": "OneLineListItem",
-            #         "icon": "git",
-            #         "text": f"Renoma",
-            #         "height": dp(56),
-            #         "on_release": lambda x=f"Renoma": reaction_on_renoma(),
-            #     },
-            #     {
-            #         "viewclass": "OneLineListItem",
-            #         "icon": "git",
-            #         "text": f"Żarów",
-            #         "height": dp(56),
-            #         "on_release": lambda x=f"Żarów": reaction_on_zarow(),
-            #     },
-            #     {
-            #         "viewclass": "OneLineListItem",
-            #         "icon": "git",
-            #         "text": f"Rędzin",
-            #         "height": dp(56),
-            #         "on_release": lambda x=f"Rędzin": reaction_on_redzin(),
-            #     },
-            # ]
-
             self.dialog_screen_to_set_object = MDDialog(
                 type = "custom",
                 content_cls = self.widgets

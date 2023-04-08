@@ -238,7 +238,9 @@
 
         DatePicker:
             on_select: 
-                root.screen_manager.remove_calendar_screen()
+                root.manager.transition.direction = 'right'
+                root.manager.current = "main_screen"
+                root.screen_constructor.remove_calendar_screen()
 
 ### День в календаре        
 <DateButton>:
@@ -250,15 +252,15 @@
         text: date_btn.text
         color: date_btn.text_color
 
-### Всплывающее окно добавления часов
+### Всплывающее окно добавления godzin
 <AddHoursWidget>
     progress_hours_line: hours_line_data.value
 
-    pos_hint: {'center_x': .5, 'center_y': .5}
     orientation: "vertical"
     size_hint:(None, None)
     height: self.widget_height
     width: self.widget_width
+    pos_hint: {'center_x': .5, 'center_y': .5}
     size_hint_x: 1
 
     MDBoxLayout:
@@ -290,8 +292,6 @@
         min: 0
         max: 24
 
-    MDLabel:
-
     MDRectangleFlatIconButton:
         pos_hint: {'center_x': .5, 'center_y': .5}
         text: "Ok"
@@ -299,10 +299,48 @@
         on_release:
             root.add_hour.press_ok()
             root.main_screen_logic.dialog_screen_to_set_godziny.dismiss()
+    
+    MDLabel:
 
+### Всплывающее окно выбора объекта на котором работаешь
 <WorkObjects>:
-    pos_hint: {'center_x': .5, 'center_y': .5}
+    orientation: "vertical"
     size_hint:(None, None)
-    height: 600
-    width: 300
+    height: self.widget_height
+    width: self.widget_width
+    pos_hint: {'center_x': .5, 'center_y': .5}
     size_hint_x: 1
+    padding: 20
+
+    MDLabel:
+
+    MDRectangleFlatIconButton:
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        text: "Renoma"
+        size_hint_x: 0.5
+        on_release:
+            root.objects.reaction_on_renoma()
+            root.main_screen_logic.dialog_screen_to_set_object.dismiss()
+    
+    MDLabel:
+
+    MDRectangleFlatIconButton:
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        text: "Żarów"
+        size_hint_x: 0.5
+        on_release:
+            root.objects.reaction_on_zarow()
+            root.main_screen_logic.dialog_screen_to_set_object.dismiss()
+
+    MDLabel:
+
+    MDRectangleFlatIconButton:
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        text: "Rędzin"
+        size_hint_x: 0.5
+        on_release:
+            root.objects.reaction_on_redzin()
+            root.main_screen_logic.dialog_screen_to_set_object.dismiss()
+
+    MDLabel:
+

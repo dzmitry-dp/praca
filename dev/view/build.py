@@ -1,5 +1,6 @@
 import dev
 from dev.view.screens import Autorization, Main, Calendar
+from dev.view.calendar import DatePicker
 
 
 class ScreensConstructor:
@@ -59,12 +60,20 @@ class ScreensConstructor:
 
     def remove_main_screen(self) -> None:
         dev.logger.info('build.py: class ScreensConstructor remove_main_screen()')
-        self.screen_manager.remove_widget(self.screen_constructor.main_screen)
-        self.screen_constructor.main_screen = None
+        self.screen_manager.remove_widget(self.main_screen)
+        self.main_screen = None
 
     def show_calendar(self): # calendar_screen
         self.calendar = Calendar(
             name = 'calendar_screen',
             screen_manager = self.screen_manager,
+            screen_constructor = self,
         )
         self.screen_manager.add_widget(self.calendar)
+        self.screen_manager.transition.direction = 'left'
+        self.screen_manager.current = 'calendar_screen'
+
+    def remove_calendar_screen(self):
+        dev.logger.info('build.py: class ScreensConstructor remove_calendar_screen()')
+        self.screen_manager.remove_widget(self.calendar)
+        self.calendar = None

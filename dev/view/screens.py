@@ -117,14 +117,15 @@ class Main(MDScreen):
 
     def btn_show_calendar(self):
         dev.logger.info('screens.py: class Main(MDScreen) btn_show_calendar()')
-        self.logic.show_date_picker()
+        self.screen_constructor.show_calendar()
 
 
 class Calendar(MDScreen):
-    def __init__(self, name, screen_manager, *args, **kwargs):
+    def __init__(self, name, screen_manager, screen_constructor, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = name
         self.screen_manager = screen_manager
+        self.screen_constructor = screen_constructor
 
 
 # def send_sms(phone_number, message):

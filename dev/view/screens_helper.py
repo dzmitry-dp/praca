@@ -1,5 +1,6 @@
 from kivy.properties import NumericProperty, StringProperty, ListProperty
 from kivy.uix.behaviors import ToggleButtonBehavior
+from kivy.core.window import Window
 
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.list import OneLineAvatarIconListItem, ILeftBody, IRightBodyTouch
@@ -36,14 +37,38 @@ class DodacGodziny:
         self.main_screen.ids.godziny.text = str(int(self.hours_progress))
 
 
-class Widgets(MDBoxLayout):
+class WorkObjects(MDBoxLayout):
+    def __init__(self, main_screen, main_screen_logic, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.main_screen = main_screen
+        self.main_screen_logic = main_screen_logic
+
+    def reaction_on_renoma(self):
+        print('Renoma')
+        self.obiekt_menu.dismiss()
+
+    def reaction_on_zarow(self):
+        print('Żarów')
+        self.obiekt_menu.dismiss()
+
+    def reaction_on_redzin(self):
+        print('Rędzin')
+        self.obiekt_menu.dismiss()
+
+
+class AddHoursWidget(MDBoxLayout):
     progress_hours_line = NumericProperty() # количество часов от 0 до 24
+    widget_height = NumericProperty()
+    widget_width = NumericProperty()
 
     def __init__(self, main_screen, main_screen_logic, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.main_screen = main_screen
         self.main_screen_logic = main_screen_logic
         self._add_hour = None
+        
+        self.widget_height = Window.size[0]*0.5
+        self.widget_width = Window.size[1]*0.5
 
     @property
     def add_hour(self):
@@ -54,7 +79,6 @@ class Widgets(MDBoxLayout):
         )
 
         return self._add_hour
-
 
 # главная таблица
 class Tabel(OneLineAvatarIconListItem):

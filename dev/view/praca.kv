@@ -182,7 +182,6 @@
                         font_size: '18sp'
                         on_release: 
                             root.btn_obiekt()
-                            root.open_obiekt_menu()
 
                     MDRectangleFlatIconButton:
                         id: date
@@ -252,61 +251,58 @@
         color: date_btn.text_color
 
 ### Всплывающее окно добавления часов
-<Widgets>
+<AddHoursWidget>
+    progress_hours_line: hours_line_data.value
+
+    pos_hint: {'center_x': .5, 'center_y': .5}
+    orientation: "vertical"
+    size_hint:(None, None)
+    height: self.widget_height
+    width: self.widget_width
+    size_hint_x: 1
+
+    MDBoxLayout:
+        orientation: "horizontal"
+        pos_hint: {'center_x': .5, 'center_y': .5}
+
+        MDRectangleFlatIconButton:
+            text: "8"
+            size_hint_x: 1
+            on_release:
+                root.add_hour.add_8_godzin()
+
+        MDRectangleFlatIconButton:
+            text: "10"
+            size_hint_x: 1
+            on_release:
+                root.add_hour.add_10_godzin()
+
+        MDRectangleFlatIconButton:
+            text: "12"
+            size_hint_x: 1
+            on_release:
+                root.add_hour.add_12_godzin()
+    
+    MDLabel:
+
+    MDSlider:
+        id: hours_line_data
+        min: 0
+        max: 24
+
+    MDLabel:
+
+    MDRectangleFlatIconButton:
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        text: "Ok"
+        size_hint_x: 0.5
+        on_release:
+            root.add_hour.press_ok()
+            root.main_screen_logic.dialog_screen_to_set_godziny.dismiss()
+
+<WorkObjects>:
     pos_hint: {'center_x': .5, 'center_y': .5}
     size_hint:(None, None)
     height: 600
     width: 300
     size_hint_x: 1
-    
-    progress_hours_line: hours_line_data.value
-    
-    MDBoxLayout:
-        size_hint_y: 1
-        height: 300
-        orientation: "vertical"
-        pos_hint: {'center_x': .5, 'center_y': .5}
-
-        MDBoxLayout:
-            pos_hint: {'center_x': .5, 'center_y': .5}
-            orientation: "horizontal"
-
-            MDRectangleFlatIconButton:
-                text: "8"
-                size_hint_x: 1
-                on_release:
-                    root.add_hour.add_8_godzin()
-
-            MDRectangleFlatIconButton:
-                text: "10"
-                size_hint_x: 1
-                on_release:
-                    root.add_hour.add_10_godzin()
-
-            MDRectangleFlatIconButton:
-                text: "12"
-                size_hint_x: 1
-                on_release:
-                    root.add_hour.add_12_godzin()
-        
-        MDLabel:
-
-        MDBoxLayout:
-            pos_hint: {'center_x': .5, 'center_y': .5}
-            orientation: "vertical"
-
-            MDSlider:
-                id: hours_line_data
-                min: 0
-                max: 24
-
-            MDLabel:
-                pos_hint: {'center_x': .5, 'center_y': .5}
-
-            MDRectangleFlatIconButton:
-                pos_hint: {'center_x': .5, 'center_y': .5}
-                text: "Ok"
-                size_hint_x: 0.5
-                on_release:
-                    root.add_hour.press_ok()
-                    root.main_screen_logic.dialog_screen_to_set_godziny.dismiss()

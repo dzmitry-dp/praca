@@ -11,7 +11,7 @@ import dev.db.memory as memory
 import dev.config as config
 import dev.db.queries_struct as queries
 from dev.exceptions import DBConnectionErr
-from dev.view.screens_helper import Widgets, Tabel
+from dev.view.screens_helper import AddHoursWidget, Tabel, WorkObjects
 
 
 class VerificationData:
@@ -168,6 +168,7 @@ class MainScreenLogic:
     """Логика главного экрана"""
 
     dialog_screen_to_set_godziny = None
+    dialog_screen_to_set_object = None
 
     def __init__(self,
                  screen_constructor,
@@ -179,7 +180,7 @@ class MainScreenLogic:
         
         self.main_screen = main_screen # class Main(MDScreen)
 
-        self.widgets: Widgets = None
+        self.widgets: AddHoursWidget = None
 
     # def process_of_view_table(self):
     #     "Добавление таблицы во вкладку главного экрана"
@@ -197,7 +198,7 @@ class MainScreenLogic:
 
     def select_godziny(self):
         if not self.dialog_screen_to_set_godziny:
-            self.widgets = Widgets(
+            self.widgets = AddHoursWidget(
                 main_screen = self.main_screen,
                 main_screen_logic = self,
                 )
@@ -216,12 +217,12 @@ class MainScreenLogic:
                     'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
                         'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
                             'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',]):
-            item = Tabel(text=obj, on_release=self.on_click_table_row)
+            item = Tabel(text=obj, on_release=self._on_click_table_row)
             
             h = ['8', '10', '12']
             item.ids.left_label.text = random.choice(h)
             item.ids.right_button.text = str(31 - i) + '.04'
-            item.ids.right_button.on_release = lambda widget=item.ids.right_button:self.on_click_table_right_button(widget)
+            item.ids.right_button.on_release = lambda widget=item.ids.right_button:self._on_click_table_right_button(widget)
             
             self.main_screen.ids.scroll.add_widget(item)
 
@@ -229,19 +230,19 @@ class MainScreenLogic:
         self.screen_constructor.show_calendar()
         self.screen_manager.current = 'calendar_screen'
 
-    def on_click_table_row(self, widget):
+    def _on_click_table_row(self, widget):
         "Функция отрабатывает по клику на строку таблицы"
         print('--- on_click_item ---')
         print('wdiget.text:', widget.text, 'left_label.text:',  widget.ids.left_label.text, 'right_button.text:',  widget.ids.right_button.text)
 
-    def on_click_table_right_button(self, widget):
+    def _on_click_table_right_button(self, widget):
         "Функция отрабатывает по клику на дату"
         print('--- on_click_right_button ---')
         print('wdiget.text:',  widget.text)
         print('widget.parent.parent:', widget.parent.parent)
         print('widget.parent.parent.text:', widget.parent.parent.text)
 
-    def on_save_calendar(self, instance, value, date_range):
+    def _on_save_calendar(self, instance, value, date_range):
         '''
         Events called when the "OK" dialog box button is clicked.
 
@@ -265,52 +266,43 @@ class MainScreenLogic:
 
         self.ids.date_input.text = f"{day}.{month}"
 
-    def on_cancel_calendar(self, instance, value):
+    def _on_cancel_calendar(self, instance, value):
         '''Events called when the "CANCEL" dialog box button is clicked.'''
         print(instance, value)
 
-    def open_obiekt_menu(self):
-        def reaction_on_renoma():
-            print('Renoma')
-            self.obiekt_menu.dismiss()
+    def open_objects_menu_list(self):
+        if not self.dialog_screen_to_set_object:
+            self.widgets = WorkObjects(
+                main_screen = self.main_screen,
+                main_screen_logic = self,
+                )
+            # menu_items = [
+            #     {
+            #         "viewclass": "OneLineListItem",
+            #         "icon": "git",
+            #         "text": f"Renoma",
+            #         "height": dp(56),
+            #         "on_release": lambda x=f"Renoma": reaction_on_renoma(),
+            #     },
+            #     {
+            #         "viewclass": "OneLineListItem",
+            #         "icon": "git",
+            #         "text": f"Żarów",
+            #         "height": dp(56),
+            #         "on_release": lambda x=f"Żarów": reaction_on_zarow(),
+            #     },
+            #     {
+            #         "viewclass": "OneLineListItem",
+            #         "icon": "git",
+            #         "text": f"Rędzin",
+            #         "height": dp(56),
+            #         "on_release": lambda x=f"Rędzin": reaction_on_redzin(),
+            #     },
+            # ]
 
-        def reaction_on_zarow():
-            print('Żarów')
-            self.obiekt_menu.dismiss()
+            self.dialog_screen_to_set_object = MDDialog(
+                type = "custom",
+                content_cls = self.widgets
+            )
+        self.dialog_screen_to_set_object.open()
 
-        def reaction_on_redzin():
-            print('Rędzin')
-            self.obiekt_menu.dismiss()
-
-        menu_items = [
-            {
-                "viewclass": "OneLineListItem",
-                "icon": "git",
-                "text": f"Renoma",
-                "height": dp(56),
-                "on_release": lambda x=f"Renoma": reaction_on_renoma(),
-            },
-            {
-                "viewclass": "OneLineListItem",
-                "icon": "git",
-                "text": f"Żarów",
-                "height": dp(56),
-                "on_release": lambda x=f"Żarów": reaction_on_zarow(),
-            },
-            {
-                "viewclass": "OneLineListItem",
-                "icon": "git",
-                "text": f"Rędzin",
-                "height": dp(56),
-                "on_release": lambda x=f"Rędzin": reaction_on_redzin(),
-            },
-        ]
-
-        self.obiekt_menu = MDDropdownMenu(
-            caller=self.main_screen.ids.obiekt,
-            items=menu_items,
-            position="bottom",
-            width_mult=4,
-        )
-        self.obiekt_menu.bind()
-        self.obiekt_menu.open()

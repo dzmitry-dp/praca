@@ -113,7 +113,7 @@ class Main(MDScreen):
 
     def btn_obiekt(self):
         dev.logger.info('screens.py: class Main(MDScreen) btn_obiekt()')
-        self.logic.open_obiekt_menu()
+        self.logic.open_objects_menu_list()
 
     def btn_show_calendar(self):
         dev.logger.info('screens.py: class Main(MDScreen) btn_show_calendar()')

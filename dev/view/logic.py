@@ -11,7 +11,7 @@ import dev.db.memory as memory
 import dev.config as config
 import dev.db.queries_struct as queries
 from dev.exceptions import DBConnectionErr
-from dev.view.screens_helper import Widgets, MyItemList
+from dev.view.screens_helper import Widgets, Tabel
 
 
 class VerificationData:
@@ -167,7 +167,7 @@ class AutorizationLogic(VerificationData):
 class MainScreenLogic:
     """Логика главного экрана"""
 
-    dialog = None
+    dialog_screen_to_set_godziny = None
 
     def __init__(self,
                  screen_constructor,
@@ -178,6 +178,8 @@ class MainScreenLogic:
         self.screen_constructor = screen_constructor # ScreensConstructor()
         
         self.main_screen = main_screen # class Main(MDScreen)
+
+        self.widgets: Widgets = None
 
     # def process_of_view_table(self):
     #     "Добавление таблицы во вкладку главного экрана"
@@ -194,17 +196,16 @@ class MainScreenLogic:
     #     Clock.schedule_once(create_table, 1.6)
 
     def select_godziny(self):
-        if not self.dialog:
-            self.widgets = Widgets(self)
-            self.dialog = MDDialog(
+        if not self.dialog_screen_to_set_godziny:
+            self.widgets = Widgets(
+                main_screen = self.main_screen,
+                main_screen_logic = self,
+                )
+            self.dialog_screen_to_set_godziny = MDDialog(
                 type = "custom",
                 content_cls = self.widgets
             )
-            self.dialog.open()
-
-    def show_date_picker(self):
-        self.screen_constructor.show_calendar()
-        self.screen_manager.current = 'calendar_screen'
+        self.dialog_screen_to_set_godziny.open()
 
     def make_data_table(self):
         dev.logger.info('screens.py: class Main(MDScreen) make_data_table()')
@@ -215,14 +216,18 @@ class MainScreenLogic:
                     'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
                         'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
                             'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',]):
-            item = MyItemList(text=obj, on_release=self.on_click_table_row)
+            item = Tabel(text=obj, on_release=self.on_click_table_row)
             
             h = ['8', '10', '12']
             item.ids.left_label.text = random.choice(h)
             item.ids.right_button.text = str(31 - i) + '.04'
             item.ids.right_button.on_release = lambda widget=item.ids.right_button:self.on_click_table_right_button(widget)
             
-            self.ids.scroll.add_widget(item)
+            self.main_screen.ids.scroll.add_widget(item)
+
+    def show_date_picker(self):
+        self.screen_constructor.show_calendar()
+        self.screen_manager.current = 'calendar_screen'
 
     def on_click_table_row(self, widget):
         "Функция отрабатывает по клику на строку таблицы"
@@ -302,7 +307,7 @@ class MainScreenLogic:
         ]
 
         self.obiekt_menu = MDDropdownMenu(
-            caller=self.ids.obiekt,
+            caller=self.main_screen.ids.obiekt,
             items=menu_items,
             position="bottom",
             width_mult=4,

@@ -54,7 +54,7 @@ class ScreensConstructor:
                 screen_constructor = screen_constructor,
                 screen_manager = self.screen_manager
             )
-        self.main_screen.make_data_table()
+        self.main_screen.logic.make_data_table()
         self.screen_manager.add_widget(self.main_screen)
 
     def remove_main_screen(self) -> None:

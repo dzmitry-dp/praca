@@ -83,6 +83,42 @@ class Main(MDScreen):
         dev.logger.info('screens.py: class Main(MDScreen) btn_wyloguj()')
         self.screen_constructor.remove_main_screen()
 
+    def btn_menu_dodac(self):
+        dev.logger.info('screens.py: class Main(MDScreen) btn_menu_dodac()')
+        pass
+
+    def btn_menu_wyslij(self):
+        dev.logger.info('screens.py: class Main(MDScreen) btn_menu_wyslij()')
+        pass
+
+    def btn_memu_tabela(self):
+        dev.logger.info('screens.py: class Main(MDScreen) btn_memu_tabela()')
+        pass
+
+    def btn_menu_pytac(self):
+        dev.logger.info('screens.py: class Main(MDScreen) btn_menu_pytac()')
+        pass
+
+    def btn_menu_zadania(self):
+        dev.logger.info('screens.py: class Main(MDScreen) btn_menu_zadania()')
+        pass
+
+    def btn_dodac(self):
+        dev.logger.info('screens.py: class Main(MDScreen) btn_dodac()')
+        pass
+
+    def btn_godziny(self):
+        dev.logger.info('screens.py: class Main(MDScreen) btn_godziny()')
+        self.logic.select_godziny()
+
+    def btn_obiekt(self):
+        dev.logger.info('screens.py: class Main(MDScreen) btn_obiekt()')
+        self.logic.open_obiekt_menu()
+
+    def btn_show_calendar(self):
+        dev.logger.info('screens.py: class Main(MDScreen) btn_show_calendar()')
+        self.logic.show_date_picker()
+
 
 class Calendar(MDScreen):
     def __init__(self, name, screen_manager, *args, **kwargs):

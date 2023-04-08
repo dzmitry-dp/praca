@@ -78,7 +78,7 @@
     halign: 'left'
 
 ### Виджет таблицы
-<MyItemList>:
+<Tabel>:
     LeftLabel:
         id: left_label
 
@@ -172,7 +172,6 @@
                         font_size: '18sp'
                         on_release:
                             root.btn_godziny()
-                            root.logic.select_godziny()
                     
                     MDRectangleFlatIconButton:
                         id: obiekt
@@ -194,7 +193,6 @@
                         size_hint_x: 0.33
                         on_release: 
                             root.btn_show_calendar()
-                            root.show_date_picker()
 
                 MDScrollView:
                     size_hint_x: 0.85
@@ -234,6 +232,7 @@
                     on_release:
                         root.btn_dodac()
 
+### Экран календаря
 <Calendar>:
     BoxLayout:
         padding: 20
@@ -241,7 +240,8 @@
         DatePicker:
             on_select: 
                 root.screen_manager.remove_calendar_screen()
-        
+
+### День в календаре        
 <DateButton>:
     id: date_btn
     elevation: .1
@@ -251,12 +251,15 @@
         text: date_btn.text
         color: date_btn.text_color
 
+### Всплывающее окно добавления часов
 <Widgets>
     pos_hint: {'center_x': .5, 'center_y': .5}
     size_hint:(None, None)
     height: 600
     width: 300
     size_hint_x: 1
+    
+    progress_hours_line: hours_line_data.value
     
     MDBoxLayout:
         size_hint_y: 1
@@ -272,22 +275,19 @@
                 text: "8"
                 size_hint_x: 1
                 on_release:
-                    root.add_8_godzin()
-                    root.main_screen_logic.dialog.dismiss()
+                    root.add_hour.add_8_godzin()
 
             MDRectangleFlatIconButton:
                 text: "10"
                 size_hint_x: 1
                 on_release:
-                    root.add_10_godzin()
-                    root.main_screen_logic.dialog.dismiss()
+                    root.add_hour.add_10_godzin()
 
             MDRectangleFlatIconButton:
                 text: "12"
                 size_hint_x: 1
                 on_release:
-                    root.add_12_godzin()
-                    root.main_screen_logic.dialog.dismiss()
+                    root.add_hour.add_12_godzin()
         
         MDLabel:
 
@@ -296,8 +296,7 @@
             orientation: "vertical"
 
             MDSlider:
-                value: root.progress
-                hint: True
+                id: hours_line_data
                 min: 0
                 max: 24
 
@@ -309,5 +308,5 @@
                 text: "Ok"
                 size_hint_x: 0.5
                 on_release:
-                    root.press_ok()
-                    root.main_screen_logic.dialog.dismiss()
+                    root.add_hour.press_ok()
+                    root.main_screen_logic.dialog_screen_to_set_godziny.dismiss()

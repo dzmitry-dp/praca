@@ -4,7 +4,7 @@ from dev.view.screens import Autorization, Main, Calendar
 
 class ScreensConstructor:
     """
-    # Сборщик рабочих экранов для пользователей
+    # Сборщик/Утилизатор рабочих экранов для пользователей
 
     - self.screen_manager
     - self.authorization_screen
@@ -56,6 +56,11 @@ class ScreensConstructor:
             )
         self.main_screen.make_data_table()
         self.screen_manager.add_widget(self.main_screen)
+
+    def remove_main_screen(self) -> None:
+        dev.logger.info('build.py: class ScreensConstructor remove_main_screen()')
+        self.screen_manager.remove_widget(self.screen_constructor.main_screen)
+        self.screen_constructor.main_screen = None
 
     def show_calendar(self): # calendar_screen
         self.calendar = Calendar(

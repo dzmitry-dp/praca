@@ -1,14 +1,17 @@
 from kivy.clock import Clock
+from kivy.metrics import dp
 
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.spinner import MDSpinner
-from kivymd.uix.datatables import MDDataTable
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.menu import MDDropdownMenu
 
 import dev
 import dev.db.memory as memory
 import dev.config as config
 import dev.db.queries_struct as queries
 from dev.exceptions import DBConnectionErr
+from dev.view.screens_helper import Widgets, MyItemList
 
 
 class VerificationData:
@@ -136,26 +139,45 @@ class AutorizationLogic(VerificationData):
         
         dev.logger.debug(f'-: user_authorized = {self.authorization_obj.user_authorized}')
  
+    def set_user(self) -> None:
+        """Вызов этой функции из интерфейса пользователя.
+        Исходя из того, что написано в полях ввода,
+        составляю представление о пользователе"""
+        dev.logger.info('screens.py: class Autorization(MDScreen) set_user()')
+
+        _login = self.authorization_obj.user_name.text.replace(' ', '')
+        _password = self.authorization_obj.user_surname.text.replace(' ', '')
+
+        if _login != '' and _password != '':
+            dev.logger.info(f"DEBUG: Have Login and Password: '{_login}' '{_password}'")
+            self.login = _login
+            self.password = _password
+            self.seach_user_in_base()
+        else:
+            dev.logger.warning(f"DEBUG: Have NOT Login and Password: '{_login}' '{_password}'")
+            pass
+
+    def on_checkbox_active(self, checkbox, value):
+        if value:
+            print('The checkbox', checkbox, 'is active', 'and', checkbox.state, 'state')
+        else:
+            print('The checkbox', checkbox, 'is inactive', 'and', checkbox.state, 'state')
+
 
 class MainScreenLogic:
     """Логика главного экрана"""
+
+    dialog = None
+
     def __init__(self,
-                 main_screen: MDScreen,
-                 screen_manager,
                  screen_constructor,
+                 screen_manager,
+                 main_screen: MDScreen,
                  ) -> None:
         self.screen_manager = screen_manager
         self.screen_constructor = screen_constructor # ScreensConstructor()
         
         self.main_screen = main_screen # class Main(MDScreen)
-
-        # self.table: MDDataTable = None # таблица часов
-        # self.add_hour_ui = None # интерфейс для добавления часов в базу данных
-
-    def remove_main_screen(self) -> None:
-        dev.logger.info('build.py: class ScreensConstructor remove_main_screen()')
-        self.screen_manager.remove_widget(self.screen_constructor.main_screen)
-        self.screen_constructor.main_screen = None
 
     # def process_of_view_table(self):
     #     "Добавление таблицы во вкладку главного экрана"
@@ -167,97 +189,123 @@ class MainScreenLogic:
     #             active = True,
     #         )
 
-    #     def create_table(dt):
-    #         if self.table != None:
-    #             self.popup_screen.remove_widget(self.table)
-    #         self.popup_screen.remove_widget(spiner)
-
-    #         self.table = MDDataTable(
-    #             column_data=[
-    #                 ("No.", 28),
-    #                 ("Data", 76),
-    #                 ("Godziny", 46),
-    #                 ("Budowa", 46),
-    #                 ("Godziny jazdy", 132),
-    #                 ("Samochód służbowy", 132),
-    #                 ("Start, km", 60),
-    #                 ("Stop, km", 60),
-    #                 ("Cała droga, km", 132),
-    #             ],
-    #             row_data=[
-    #                 (
-    #                     "1",
-    #                     "1.01.2023",
-    #                     "8",
-    #                     "Renoma",
-    #                     "0",
-    #                     "Nie",
-    #                     "",
-    #                     "",
-    #                     "",
-    #                 ),
-    #                 (
-    #                     "2",
-    #                     "2.01.2023",
-    #                     "10",
-    #                     "Żarów",
-    #                     "2",
-    #                     "Tak",
-    #                     "283415",
-    #                     "283515",
-    #                     "100",
-    #                 ),
-    #                 (
-    #                     "3",
-    #                     "3.01.2023",
-    #                     "12",
-    #                     "Renoma",
-    #                     "0",
-    #                     "Nie",
-    #                     "",
-    #                     "",
-    #                     "",
-    #                 ),
-    #                 (
-    #                     "4",
-    #                     "4.01.2023",
-    #                     "8",
-    #                     "Jaz Rędzin",
-    #                     "2",
-    #                     "Tak",
-    #                     "283415",
-    #                     "283515",
-    #                     "100",
-    #                 ),
-    #                 (
-    #                     "5",
-    #                     "5.01.2023",
-    #                     "12",
-    #                     "Jaz Rędzin",
-    #                     "2",
-    #                     "Tak",
-    #                     "283415",
-    #                     "283515",
-    #                     "100",
-    #                 ),
-    #             ],
-    #         )
-    #         self.popup_screen.add_widget(self.table) # add to FloatLayout
-        
     #     spiner = spiner_screen()
     #     self.popup_screen.add_widget(spiner) # add to FloatLayout
     #     Clock.schedule_once(create_table, 1.6)
 
-    # def process_of_add_hour(self, add_hours_ui_obj):
-    #     "Вкладка с интерфейсом которыйдобавляет часы в базу данных"
-        
-    #     self.add_hour_ui = add_hours_ui_obj() # сборка AddHours()
-    #     self.popup_screen.add_widget(self.add_hour_ui)
+    def select_godziny(self):
+        if not self.dialog:
+            self.widgets = Widgets(self)
+            self.dialog = MDDialog(
+                type = "custom",
+                content_cls = self.widgets
+            )
+            self.dialog.open()
 
-    def process_of_view_btn_menu(self):
-        # self.screen_constructor.btn_sheet_menu = MyButtonSheet(
-        #     screen_constructor=self.screen_constructor,
-        #     screen_manager=self.screen_manager,
-        # )
-        # self.screen_constructor.btn_sheet_menu.open()
-        dev.logger.info('class MainScreenLogic: process_of_vuew_btn_menu() -> None')
+    def show_date_picker(self):
+        self.screen_constructor.show_calendar()
+        self.screen_manager.current = 'calendar_screen'
+
+    def make_data_table(self):
+        dev.logger.info('screens.py: class Main(MDScreen) make_data_table()')
+
+        import random
+        for i, obj in enumerate(['Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
+                  'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
+                    'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
+                        'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
+                            'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',]):
+            item = MyItemList(text=obj, on_release=self.on_click_table_row)
+            
+            h = ['8', '10', '12']
+            item.ids.left_label.text = random.choice(h)
+            item.ids.right_button.text = str(31 - i) + '.04'
+            item.ids.right_button.on_release = lambda widget=item.ids.right_button:self.on_click_table_right_button(widget)
+            
+            self.ids.scroll.add_widget(item)
+
+    def on_click_table_row(self, widget):
+        "Функция отрабатывает по клику на строку таблицы"
+        print('--- on_click_item ---')
+        print('wdiget.text:', widget.text, 'left_label.text:',  widget.ids.left_label.text, 'right_button.text:',  widget.ids.right_button.text)
+
+    def on_click_table_right_button(self, widget):
+        "Функция отрабатывает по клику на дату"
+        print('--- on_click_right_button ---')
+        print('wdiget.text:',  widget.text)
+        print('widget.parent.parent:', widget.parent.parent)
+        print('widget.parent.parent.text:', widget.parent.parent.text)
+
+    def on_save_calendar(self, instance, value, date_range):
+        '''
+        Events called when the "OK" dialog box button is clicked.
+
+        :type instance: <kivymd.uix.picker.MDDatePicker object>;
+
+        :param value: selected date;
+        :type value: <class 'datetime.date'>;
+
+        :param date_range: list of 'datetime.date' objects in the selected range;
+        :type date_range: <class 'list'>;
+        '''
+        if value.day <= 9:
+            day = f'0{value.day}'
+        else:
+            day = value.day
+
+        if value.month <= 9:
+            month = f'0{value.month}'
+        else:
+            month = value.month
+
+        self.ids.date_input.text = f"{day}.{month}"
+
+    def on_cancel_calendar(self, instance, value):
+        '''Events called when the "CANCEL" dialog box button is clicked.'''
+        print(instance, value)
+
+    def open_obiekt_menu(self):
+        def reaction_on_renoma():
+            print('Renoma')
+            self.obiekt_menu.dismiss()
+
+        def reaction_on_zarow():
+            print('Żarów')
+            self.obiekt_menu.dismiss()
+
+        def reaction_on_redzin():
+            print('Rędzin')
+            self.obiekt_menu.dismiss()
+
+        menu_items = [
+            {
+                "viewclass": "OneLineListItem",
+                "icon": "git",
+                "text": f"Renoma",
+                "height": dp(56),
+                "on_release": lambda x=f"Renoma": reaction_on_renoma(),
+            },
+            {
+                "viewclass": "OneLineListItem",
+                "icon": "git",
+                "text": f"Żarów",
+                "height": dp(56),
+                "on_release": lambda x=f"Żarów": reaction_on_zarow(),
+            },
+            {
+                "viewclass": "OneLineListItem",
+                "icon": "git",
+                "text": f"Rędzin",
+                "height": dp(56),
+                "on_release": lambda x=f"Rędzin": reaction_on_redzin(),
+            },
+        ]
+
+        self.obiekt_menu = MDDropdownMenu(
+            caller=self.ids.obiekt,
+            items=menu_items,
+            position="bottom",
+            width_mult=4,
+        )
+        self.obiekt_menu.bind()
+        self.obiekt_menu.open()

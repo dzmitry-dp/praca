@@ -1,5 +1,6 @@
 #:import os os
 
+### Экран незарегистрированного пользователя
 <InputZone@MDTextField>:
     multiline: False
     halign: 'center'
@@ -30,6 +31,26 @@
             hint_text: 'Nazwisko'
             max_text_length: 15 
         
+        MDGridLayout: 
+            cols: 3
+            size_hint_x: 1
+
+            MDCheckbox:
+                id: 'remember_me'
+                halign: 'center'
+                size_hint_x: .33
+                on_active:
+                    root.logic.on_checkbox_active(*args)
+
+            MDLabel:
+                text: 'Zapamiętaj mnie'
+                font_size: '16sp'
+                halign: 'center'
+                size_hint_x: .33
+
+            MDLabel:
+                size_hint_x: .33
+
         MDLabel:
 
         MDRectangleFlatIconButton:
@@ -39,7 +60,7 @@
             pos_hint: {"center_x": 0.5, "center_y": 0.5}
             size_hint_x: 1
             on_release: 
-                root.set_user()
+                root.logic.set_user()
                 root.manager.transition.direction = 'left' if root.user_authorized else 'right'
                 root.manager.transition.duration = 0.2
                 root.manager.current = "main_screen" if root.user_authorized else "authorization_screen"
@@ -51,10 +72,12 @@
             halign: 'center'
             font_size: '12sp'
 
+### После авторизации
 <Text@MDLabel>:
     font_size: '18sp'
     halign: 'left'
 
+### Виджет таблицы
 <MyItemList>:
     LeftLabel:
         id: left_label
@@ -62,6 +85,7 @@
     RightButton:
         id: right_button
 
+### Главный экран
 <Main>:   
     MDBackdrop:
         id: backdrop
@@ -91,30 +115,40 @@
                         text: "Dodać"
                         font_size: '28sp'
                         size_hint_x: 1
+                        on_release:
+                            root.btn_menu_dodac()
 
                     MDRectangleFlatIconButton:
                         icon: 'message-processing'
                         text: "Wyślij"
                         font_size: '28sp'
                         size_hint_x: 1
+                        on_release:
+                            root.btn_menu_wyslij()
 
                     MDRectangleFlatIconButton:
                         icon: 'table-arrow-up'
                         text: "Tabela"
                         font_size: '28sp'
                         size_hint_x: 1
+                        on_release:
+                            root.btn_memu_tabela()
 
                     MDRectangleFlatIconButton:
                         icon: 'frequently-asked-questions'
                         text: "Pytać"
                         font_size: '28sp'
                         size_hint_x: 1
+                        on_release:
+                            root.btn_menu_pytac()
 
                     MDRectangleFlatIconButton:
                         icon: 'format-list-checks'
                         text: "Zadania"
                         font_size: '28sp'
                         size_hint_x: 1
+                        on_release:
+                            root.btn_menu_zadania()
 
         MDBackdropFrontLayer:
             id: front
@@ -137,7 +171,8 @@
                         size_hint_x: 0.33
                         font_size: '18sp'
                         on_release:
-                            root.select_godziny()
+                            root.btn_godziny()
+                            root.logic.select_godziny()
                     
                     MDRectangleFlatIconButton:
                         id: obiekt
@@ -147,6 +182,7 @@
                         size_hint_x: 0.33
                         font_size: '18sp'
                         on_release: 
+                            root.btn_obiekt()
                             root.open_obiekt_menu()
 
                     MDRectangleFlatIconButton:
@@ -157,6 +193,7 @@
                         pos_hint: {"center_x": 0.5, "center_y": 0.5}
                         size_hint_x: 0.33
                         on_release: 
+                            root.btn_show_calendar()
                             root.show_date_picker()
 
                 MDScrollView:
@@ -194,6 +231,8 @@
                     font_size: '28sp'
                     pos_hint: {"center_x": 0.5, "center_y": 0.5}
                     size_hint_x: 1
+                    on_release:
+                        root.btn_dodac()
 
 <Calendar>:
     BoxLayout:
@@ -201,7 +240,7 @@
 
         DatePicker:
             on_select: 
-                root.screen_manager.current = 'main_screen'
+                root.screen_manager.remove_calendar_screen()
         
 <DateButton>:
     id: date_btn
@@ -211,7 +250,6 @@
     Label:
         text: date_btn.text
         color: date_btn.text_color
-
 
 <Widgets>
     pos_hint: {'center_x': .5, 'center_y': .5}
@@ -234,19 +272,22 @@
                 text: "8"
                 size_hint_x: 1
                 on_release:
-                    root.main_screen.dialog.dismiss()
+                    root.add_8_godzin()
+                    root.main_screen_logic.dialog.dismiss()
 
             MDRectangleFlatIconButton:
                 text: "10"
                 size_hint_x: 1
                 on_release:
-                    root.main_screen.dialog.dismiss()
+                    root.add_10_godzin()
+                    root.main_screen_logic.dialog.dismiss()
 
             MDRectangleFlatIconButton:
                 text: "12"
                 size_hint_x: 1
                 on_release:
-                    root.main_screen.dialog.dismiss()
+                    root.add_12_godzin()
+                    root.main_screen_logic.dialog.dismiss()
         
         MDLabel:
 
@@ -268,5 +309,5 @@
                 text: "Ok"
                 size_hint_x: 0.5
                 on_release:
-                    root.main_screen.dialog.dismiss()
-
+                    root.press_ok()
+                    root.main_screen_logic.dialog.dismiss()

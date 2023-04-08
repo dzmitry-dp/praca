@@ -32,28 +32,28 @@ class DatePicker(BoxLayout, EventDispatcher):
         self.register_event_type("on_select")
         self.date = date.today()
         self.days = (
-            "Mon",
-            "Tue",
-            "Wed",
-            "Thur",
-            "Fri",
-            "Sat",
-            "Sun"
+            "Pon",
+            "Wto",
+            "Śro",
+            "Сzw",
+            "Pią",
+            "Sob",
+            "Nie"
         )
         self.orientation = "vertical"
         self.month_names = (
-            'January',
-            'February',
-            'March',
-            'April',
-            'May',
-            'June',
-            'July',
-            'August',
-            'September',
-            'October',
-            'November',
-            'December'
+            'Styczeń',
+            'Luty',
+            'Marzec',
+            'Kwiecień',
+            'Maj',
+            'Czerwiec',
+            'Lipiec',
+            'Sierpień',
+            'Wrzesień',
+            'Październik',
+            'Listopad',
+            'Grudzień'
         )
         if "month_names" in kwargs:
             self.month_names = kwargs['month_names']

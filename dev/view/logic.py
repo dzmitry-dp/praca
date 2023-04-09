@@ -4,14 +4,13 @@ from kivy.metrics import dp
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.spinner import MDSpinner
 from kivymd.uix.dialog import MDDialog
-from kivymd.uix.menu import MDDropdownMenu
 
 import dev
 import dev.db.memory as memory
 import dev.config as config
 import dev.db.queries_struct as queries
 from dev.exceptions import DBConnectionErr
-from dev.view.screens_helper import AddHoursWidget, Tabel, WorkObjects
+from dev.view.screens_helper import AddHoursWidget, WorkObjects
 
 
 class VerificationData:
@@ -211,45 +210,25 @@ class MainScreenLogic:
     def make_data_table(self):
         dev.logger.info('screens.py: class Main(MDScreen) make_data_table()')
 
-        import random
-        for i, obj in enumerate(['Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
-                  'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
-                    'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
-                        'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',\
-                            'Renoma', 'Żarów', 'Rędzin', 'Renoma', 'Żarów', 'Rędzin',]):
-            item = Tabel(text=obj, on_release=self._on_click_table_row)
-            
-            h = ['8', '10', '12']
-            item.ids.left_label.text = random.choice(h)
-            item.ids.right_button.text = str(31 - i) + '.04'
-            item.ids.right_button.on_release = lambda widget=item.ids.right_button:self._on_click_table_right_button(widget)
-            
-            self.main_screen.ids.scroll.add_widget(item)
+        user_data = None
+        if user_data:
+            print('Есть данные')
+        else:
+            print('Нет данных о пользователе')
 
-    def _on_click_table_row(self, widget):
+    def on_click_table_row(self, widget):
         "Функция отрабатывает по клику на строку таблицы"
         print('--- on_click_item ---')
         print('wdiget.text:', widget.text, 'left_label.text:',  widget.ids.left_label.text, 'right_button.text:',  widget.ids.right_button.text)
 
-    def _on_click_table_right_button(self, widget):
+    def on_click_table_right_button(self, widget):
         "Функция отрабатывает по клику на дату"
         print('--- on_click_right_button ---')
         print('wdiget.text:',  widget.text)
         print('widget.parent.parent:', widget.parent.parent)
         print('widget.parent.parent.text:', widget.parent.parent.text)
 
-    def _on_save_calendar(self, instance, value, date_range):
-        '''
-        Events called when the "OK" dialog box button is clicked.
-
-        :type instance: <kivymd.uix.picker.MDDatePicker object>;
-
-        :param value: selected date;
-        :type value: <class 'datetime.date'>;
-
-        :param date_range: list of 'datetime.date' objects in the selected range;
-        :type date_range: <class 'list'>;
-        '''
+    def on_save_calendar(self, value):
         if value.day <= 9:
             day = f'0{value.day}'
         else:
@@ -260,11 +239,7 @@ class MainScreenLogic:
         else:
             month = value.month
 
-        self.ids.date_input.text = f"{day}.{month}"
-
-    def _on_cancel_calendar(self, instance, value):
-        '''Events called when the "CANCEL" dialog box button is clicked.'''
-        print(instance, value)
+        self.main_screen.ids.date.text = f"{day}.{month}"
 
     def open_objects_menu_list(self):
         #         "text": f"Renoma",

@@ -78,7 +78,7 @@
     halign: 'left'
 
 ### Виджет таблицы
-<Tabel>:
+<TabelItem>:
     LeftLabel:
         id: left_label
 
@@ -235,12 +235,21 @@
 <Calendar>:
     BoxLayout:
         padding: 20
+        orientation: "vertical"
+
+        MDLabel:
+            size_hint_y: 0.1
 
         DatePicker:
-            on_select: 
+            size_hint_y: 0.8
+            on_select:
+                root.screen_constructor.main_screen.logic.on_save_calendar(self.date)
                 root.manager.transition.direction = 'right'
                 root.manager.current = "main_screen"
                 root.screen_constructor.remove_calendar_screen()
+
+        MDLabel:
+            size_hint_y: 0.1
 
 ### День в календаре        
 <DateButton>:
@@ -262,6 +271,12 @@
     width: self.widget_width
     pos_hint: {'center_x': .5, 'center_y': .5}
     size_hint_x: 1
+
+    MDLabel:
+        halign: 'center'
+        font_size: '24sp'
+        font_style: 'H6'
+        text: 'Ustaw godzinę'
 
     MDBoxLayout:
         orientation: "horizontal"
@@ -311,6 +326,12 @@
     pos_hint: {'center_x': .5, 'center_y': .5}
     size_hint_x: 1
     padding: 20
+
+    MDLabel:
+        halign: 'center'
+        font_size: '24sp'
+        font_style: 'H6'
+        text: 'Zaznaczanie obiektu'
 
     MDLabel:
 

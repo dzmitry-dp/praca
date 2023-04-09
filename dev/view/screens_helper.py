@@ -70,7 +70,7 @@ class WorkObjects(MDBoxLayout):
         self.main_screen_logic = main_screen_logic
         self._objects_reaction = None
 
-        self.widget_height = Window.size[0]*0.5
+        self.widget_height = Window.size[0]*0.7
         self.widget_width = Window.size[1]*0.5
 
     @property
@@ -92,7 +92,7 @@ class AddHoursWidget(MDBoxLayout):
         self.main_screen_logic = main_screen_logic
         self._add_hour_reaction = None
         
-        self.widget_height = Window.size[0]*0.5
+        self.widget_height = Window.size[0]*0.7
         self.widget_width = Window.size[1]*0.5
 
     @property
@@ -106,7 +106,7 @@ class AddHoursWidget(MDBoxLayout):
         return self._add_hour_reaction
 
 # главная таблица
-class Tabel(OneLineAvatarIconListItem):
+class TabelItem(OneLineAvatarIconListItem):
     '''Custom list item.'''
     pass
 

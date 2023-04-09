@@ -63,7 +63,7 @@ class ScreensConstructor:
         self.screen_manager.remove_widget(self.main_screen)
         self.main_screen = None
 
-    def show_calendar(self): # calendar_screen
+    def add_calendar_screen_obj(self): # calendar_screen
         self.calendar = Calendar(
             name = 'calendar_screen',
             screen_manager = self.screen_manager,

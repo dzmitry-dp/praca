@@ -9,6 +9,7 @@ from kivymd.uix.screen import MDScreen
 
 import dev
 from dev.view.logic import AutorizationLogic, MainScreenLogic
+from dev.view.screens_helper import TabelItem
 
 
 class Autorization(MDScreen):
@@ -105,7 +106,27 @@ class Main(MDScreen):
 
     def btn_dodac(self):
         dev.logger.info('screens.py: class Main(MDScreen) btn_dodac()')
-        pass
+        print(self.ids.godziny.text)
+        print(self.ids.obiekt.text)
+        print(self.ids.date.text)
+
+        if self.ids.godziny.text != 'Godziny' and \
+            self.ids.obiekt.text != 'Obiekt' and \
+                self.ids.date.text != 'Data':
+
+            item = TabelItem(
+                text=self.ids.obiekt.text,
+                on_release=self.logic.on_click_table_row,
+                )
+                
+            item.ids.left_label.text = self.ids.godziny.text
+            item.ids.right_button.text = self.ids.date.text
+            item.ids.right_button.on_release = lambda widget=item.ids.right_button: self.logic.on_click_table_right_button(widget)
+                
+            self.ids.scroll.add_widget(item)
+            self._refresh_buttons()
+        else:
+            pass
 
     def btn_godziny(self):
         dev.logger.info('screens.py: class Main(MDScreen) btn_godziny()')
@@ -117,8 +138,17 @@ class Main(MDScreen):
 
     def btn_show_calendar(self):
         dev.logger.info('screens.py: class Main(MDScreen) btn_show_calendar()')
-        self.screen_constructor.show_calendar()
+        self.screen_constructor.add_calendar_screen_obj()
 
+    def _refresh_buttons(self):
+        self.ids.godziny.text = 'Godziny'
+        self.ids.godziny.icon = 'hours-24'
+
+        self.ids.obiekt.text = 'Obiekt'
+        self.ids.obiekt.icon = 'home-lightning-bolt'
+
+        self.ids.date.text = 'Data'
+        self.ids.date.icon = 'calendar-range'
 
 class Calendar(MDScreen):
     def __init__(self, name, screen_manager, screen_constructor, *args, **kwargs):
@@ -126,6 +156,7 @@ class Calendar(MDScreen):
         self.name = name
         self.screen_manager = screen_manager
         self.screen_constructor = screen_constructor
+
 
 
 # def send_sms(phone_number, message):

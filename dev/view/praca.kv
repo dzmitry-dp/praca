@@ -84,6 +84,7 @@
 
     RightButton:
         id: right_button
+        pos_hint: {"center_x": 0.5, "center_y": 0.5}
 
 ### Главный экран
 <Main>:   
@@ -168,7 +169,7 @@
                         icon: 'hours-24'
                         pos_hint: {'center_x': .5, 'center_y': .5}
                         text: 'Godziny'
-                        size_hint_x: 0.33
+                        size_hint_x: 1
                         font_size: '18sp'
                         on_release:
                             root.btn_godziny()
@@ -178,7 +179,7 @@
                         icon: 'home-lightning-bolt'
                         pos_hint: {'center_x': .5, 'center_y': .5}
                         text: 'Obiekt'
-                        size_hint_x: 0.33
+                        size_hint_x: 1
                         font_size: '18sp'
                         on_release: 
                             root.btn_obiekt()
@@ -189,7 +190,7 @@
                         text: 'Data'
                         font_size: '18sp'
                         pos_hint: {"center_x": 0.5, "center_y": 0.5}
-                        size_hint_x: 0.33
+                        size_hint_x: 1
                         on_release: 
                             root.btn_show_calendar()
 
@@ -234,8 +235,19 @@
 ### Экран календаря
 <Calendar>:
     BoxLayout:
-        padding: 20
+        padding: 30
         orientation: "vertical"
+
+        MDRectangleFlatIconButton:
+            text: "< Powrót"
+            font_size: '28sp'
+            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+            size_hint_x: 1
+            on_release:
+                root.logic.back_from_calendar_to_main_screen()
+                root.manager.transition.direction = 'right'
+                root.manager.current = "main_screen"
+                root.screen_constructor.remove_calendar_screen()
 
         MDLabel:
             size_hint_y: 0.1
@@ -271,46 +283,62 @@
     width: self.widget_width
     pos_hint: {'center_x': .5, 'center_y': .5}
     size_hint_x: 1
+    padding: 30
 
+    MDLabel:
+        id: current_hours_value
+        halign: 'center'
+        font_size: '52sp'
+        text: '0'
+    
     MDLabel:
         halign: 'center'
         font_size: '24sp'
         font_style: 'H6'
         text: 'Ustaw godzinę'
 
-    MDBoxLayout:
-        orientation: "horizontal"
-        pos_hint: {'center_x': .5, 'center_y': .5}
-
-        MDRectangleFlatIconButton:
-            text: "8"
-            size_hint_x: 1
-            on_release:
-                root.add_hour.add_8_godzin()
-
-        MDRectangleFlatIconButton:
-            text: "10"
-            size_hint_x: 1
-            on_release:
-                root.add_hour.add_10_godzin()
-
-        MDRectangleFlatIconButton:
-            text: "12"
-            size_hint_x: 1
-            on_release:
-                root.add_hour.add_12_godzin()
-    
     MDLabel:
 
     MDSlider:
         id: hours_line_data
         min: 0
         max: 24
+        on_active:
+            root.add_hour.set_current_value(hours_line_data.value)
+
+    MDBoxLayout:
+        orientation: "horizontal"
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        spacing: 10
+
+        MDRectangleFlatIconButton:
+            text: "8"
+            font_size: '28sp'
+            size_hint_x: 1
+            on_release:
+                root.add_hour.add_8_godzin()
+
+        MDRectangleFlatIconButton:
+            text: "10"
+            font_size: '28sp'
+            size_hint_x: 1
+            on_release:
+                root.add_hour.add_10_godzin()
+
+        MDRectangleFlatIconButton:
+            text: "12"
+            font_size: '28sp'
+            size_hint_x: 1
+            on_release:
+                root.add_hour.add_12_godzin()
+    
+    MDLabel:
 
     MDRectangleFlatIconButton:
         pos_hint: {'center_x': .5, 'center_y': .5}
         text: "Ok"
-        size_hint_x: 0.5
+        font_size: '28sp'
+        size_hint_x: 1
         on_release:
             root.add_hour.press_ok()
             root.main_screen_logic.dialog_screen_to_set_godziny.dismiss()
@@ -325,7 +353,13 @@
     width: self.widget_width
     pos_hint: {'center_x': .5, 'center_y': .5}
     size_hint_x: 1
-    padding: 20
+    padding: 30
+
+    MDLabel:
+        id: current_object_value
+        halign: 'center'
+        font_size: '52sp'
+        text: '-'
 
     MDLabel:
         halign: 'center'
@@ -335,33 +369,40 @@
 
     MDLabel:
 
-    MDRectangleFlatIconButton:
-        pos_hint: {'center_x': .5, 'center_y': .5}
-        text: "Renoma"
-        size_hint_x: 0.5
-        on_release:
-            root.objects.reaction_on_renoma()
-            root.main_screen_logic.dialog_screen_to_set_object.dismiss()
-    
-    MDLabel:
+    MDBoxLayout:
+        orientation: "horizontal"
+        spacing: 10
 
-    MDRectangleFlatIconButton:
-        pos_hint: {'center_x': .5, 'center_y': .5}
-        text: "Żarów"
-        size_hint_x: 0.5
-        on_release:
-            root.objects.reaction_on_zarow()
-            root.main_screen_logic.dialog_screen_to_set_object.dismiss()
+        MDRectangleFlatIconButton:
+            text: "Renoma"
+            font_size: '28sp'
+            size_hint_x: 1
+            on_release:
+                root.objects.reaction_on_renoma()
+        
+        MDRectangleFlatIconButton:
+            text: "Żarów"
+            font_size: '28sp'
+            size_hint_x: 1
+            on_release:
+                root.objects.reaction_on_zarow()
 
-    MDLabel:
-
-    MDRectangleFlatIconButton:
-        pos_hint: {'center_x': .5, 'center_y': .5}
-        text: "Rędzin"
-        size_hint_x: 0.5
-        on_release:
-            root.objects.reaction_on_redzin()
-            root.main_screen_logic.dialog_screen_to_set_object.dismiss()
+        MDRectangleFlatIconButton:
+            text: "Rędzin"
+            font_size: '28sp'
+            size_hint_x: 1
+            on_release:
+                root.objects.reaction_on_redzin()
 
     MDLabel:
 
+    MDRectangleFlatIconButton:
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        text: "Ok"
+        font_size: '28sp'
+        size_hint_x: 1
+        on_release:
+            root.objects.press_ok()
+            root.main_screen_logic.dialog_screen_to_set_object.dismiss()
+
+    MDLabel:

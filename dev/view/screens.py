@@ -10,6 +10,7 @@ from kivymd.uix.screen import MDScreen
 import dev
 from dev.view.logic import AutorizationLogic, MainScreenLogic
 from dev.view.screens_helper import TabelItem
+from dev.view.screens_calendar import CalendarLogic
 
 
 class Autorization(MDScreen):
@@ -106,9 +107,6 @@ class Main(MDScreen):
 
     def btn_dodac(self):
         dev.logger.info('screens.py: class Main(MDScreen) btn_dodac()')
-        print(self.ids.godziny.text)
-        print(self.ids.obiekt.text)
-        print(self.ids.date.text)
 
         if self.ids.godziny.text != 'Godziny' and \
             self.ids.obiekt.text != 'Obiekt' and \
@@ -157,6 +155,10 @@ class Calendar(MDScreen):
         self.screen_manager = screen_manager
         self.screen_constructor = screen_constructor
 
+        self.logic = CalendarLogic(
+            screen_manager = screen_manager,
+            screen_constructor = screen_constructor
+        )
 
 
 # def send_sms(phone_number, message):

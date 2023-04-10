@@ -255,4 +255,3 @@ class MainScreenLogic:
                 content_cls = self.widgets
             )
         self.dialog_screen_to_set_object.open()
-

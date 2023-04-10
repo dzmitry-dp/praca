@@ -18,47 +18,56 @@ class AddHoursActions:
         self.hours_progress = hours_progress
         self.main_screen = main_screen
 
-    def add_8_godzin(self):
+    def add_8_godzin(self, value = 8):
         dev.logger.info('screens_helper.py: class AddHoursActions() add_8_godzin()')
         self.widget.ids.hours_line_data.value = 8
+        self.widget.ids.current_hours_value.text = str(int(value))
 
-    def add_10_godzin(self):
+    def add_10_godzin(self, value = 10):
         dev.logger.info('screens_helper.py: class AddHoursActions() add_10_godzin()')
         self.widget.ids.hours_line_data.value = 10
+        self.widget.ids.current_hours_value.text = str(int(value))
 
-    def add_12_godzin(self):
+    def add_12_godzin(self, value = 12):
         dev.logger.info('screens_helper.py: class AddHoursActions() add_12_godzin()')
         self.widget.ids.hours_line_data.value = 12
+        self.widget.ids.current_hours_value.text = str(int(value))
 
     def press_ok(self):
         dev.logger.info('screens_helper.py: class AddHoursActions() press_ok()')
         self.main_screen.ids.godziny.icon = ''
         self.main_screen.ids.godziny.text = str(int(self.hours_progress))
 
+    def set_current_value(self, value):
+        dev.logger.info('screens_helper.py: class AddHoursActions() set_current_value()')
+        self.widget.ids.current_hours_value.text = str(int(value))
 
 class ObjectsActions:
-    def __init__(self, main_screen) -> None:
+    def __init__(self, widget, main_screen) -> None:
+        self.widget = widget
         self.main_screen = main_screen
 
     def _change_obj_btn(self, value):
         dev.logger.info('screens_helper.py: class ObjectsActions() _change_obj_btn()')
-        self.main_screen.ids.obiekt.icon = ''
-        self.main_screen.ids.obiekt.text = value       
+        if value != '':
+            self.main_screen.ids.obiekt.icon = ''
+            self.main_screen.ids.obiekt.text = value       
     
     def reaction_on_renoma(self):
         dev.logger.info('screens_helper.py: class ObjectsActions() reaction_on_renoma()')
-        self._change_obj_btn('Renoma')
+        self.widget.ids.current_object_value.text = 'Renoma'
 
     def reaction_on_zarow(self):
         dev.logger.info('screens_helper.py: class ObjectsActions() reaction_on_zarow()')
-        self._change_obj_btn('Żarów')
-        print('Żarów')
+        self.widget.ids.current_object_value.text = 'Żarów'
 
     def reaction_on_redzin(self):
         dev.logger.info('screens_helper.py: class ObjectsActions() reaction_on_redzin()')
-        self._change_obj_btn('Rędzin')
-        print('Rędzin')
-
+        self.widget.ids.current_object_value.text = 'Rędzin'
+    
+    def press_ok(self):
+        print(self.widget.ids.current_object_value.text)
+        self._change_obj_btn(self.widget.ids.current_object_value.text)
 
 class WorkObjects(MDBoxLayout):
     widget_height = NumericProperty()
@@ -68,17 +77,18 @@ class WorkObjects(MDBoxLayout):
         super().__init__(*args, **kwargs)
         self.main_screen = main_screen
         self.main_screen_logic = main_screen_logic
-        self._objects_reaction = None
+        self._objects = None
 
         self.widget_height = Window.size[0]*0.7
         self.widget_width = Window.size[1]*0.5
 
     @property
     def objects(self):
-        self._objects_reaction = ObjectsActions(
+        self._objects = ObjectsActions(
+            widget = self,
             main_screen = self.main_screen,
         )
-        return self._objects_reaction
+        return self._objects
 
 
 class AddHoursWidget(MDBoxLayout):

@@ -155,15 +155,12 @@ class Calendar(MDScreen):
         self.screen_manager = screen_manager
         self.screen_constructor = screen_constructor
 
-<<<<<<< HEAD
-=======
         self.logic = CalendarLogic(
             screen_manager = screen_manager,
             screen_constructor = screen_constructor
         )
 
 
->>>>>>> dev
 # def send_sms(phone_number, message):
 #     sms = dev.SmsManager.getDefault()
 #     sms.sendTextMessage(phone_number, None, message, None, None)

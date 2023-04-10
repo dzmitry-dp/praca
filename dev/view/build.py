@@ -1,6 +1,5 @@
 import dev
 from dev.view.screens import Autorization, Main, Calendar
-from dev.view.calendar import DatePicker
 
 
 class ScreensConstructor:

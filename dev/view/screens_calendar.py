@@ -8,6 +8,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivymd.uix.button import MDRaisedButton
 
+import dev
 from dev.view.screens_helper import DateButton
 
 
@@ -104,3 +105,13 @@ class DatePicker(BoxLayout, EventDispatcher):
             self.date = date(self.date.year, self.date.month - 1, self.date.day)
         self.populate_header()
         self.populate_body()
+
+
+class CalendarLogic:
+    def __init__(self, screen_manager, screen_constructor) -> None:
+        dev.logger.info('screens_calendar.py: class CalendarLogic __init__()')
+        self.screen_manager = screen_manager
+        self.screen_constructor = screen_constructor
+
+    def back_from_calendar_to_main_screen(self):
+        dev.logger.info('screens_calendar.py: class CalendarLogic back_from_calendar_to_main_screen()')

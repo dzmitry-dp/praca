@@ -212,9 +212,9 @@ class MainScreenLogic:
 
         user_data = None
         if user_data:
-            print('Есть данные')
+            dev.logger.info(f'DEBUG: Have user_data = {user_data}')
         else:
-            print('Нет данных о пользователе')
+            dev.logger.info(f'DEBUG: Have NOT user_data = {user_data}')
 
     def on_click_table_row(self, widget):
         "Функция отрабатывает по клику на строку таблицы"
@@ -255,4 +255,3 @@ class MainScreenLogic:
                 content_cls = self.widgets
             )
         self.dialog_screen_to_set_object.open()
-

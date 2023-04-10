@@ -288,8 +288,11 @@
     MDLabel:
         id: current_hours_value
         halign: 'center'
+        pos_hint: {'center_x': .5, 'center_y': .5}
         font_size: '52sp'
         text: '0'
+
+    MDLabel:
     
     MDLabel:
         halign: 'center'
@@ -305,32 +308,50 @@
         max: 24
         on_active:
             root.add_hour.set_current_value(hours_line_data.value)
+    
+    MDLabel:
 
-    MDBoxLayout:
-        orientation: "horizontal"
+    MDGridLayout:
+        cols: 5    
+        width: root.widget_width
+        size_hint_x: 1
         pos_hint: {'center_x': .5, 'center_y': .5}
-        spacing: 10
 
-        MDRectangleFlatIconButton:
+        MDTextButton:
+            text: '0'
+            size_hint_x: 1
+            on_release:
+                root.add_hour.add_0_godzin()
+
+        MDTextButton:
             text: "8"
+            halign: "center"
             font_size: '28sp'
             size_hint_x: 1
             on_release:
                 root.add_hour.add_8_godzin()
 
-        MDRectangleFlatIconButton:
+        MDTextButton:
             text: "10"
+            halign: "center"
             font_size: '28sp'
             size_hint_x: 1
             on_release:
                 root.add_hour.add_10_godzin()
 
-        MDRectangleFlatIconButton:
+        MDTextButton:
             text: "12"
+            halign: "center"
             font_size: '28sp'
             size_hint_x: 1
             on_release:
                 root.add_hour.add_12_godzin()
+
+        MDTextButton:
+            text: '24'
+            size_hint_x: 1
+            on_release:
+                root.add_hour.add_24_godziny()
     
     MDLabel:
 
@@ -358,8 +379,9 @@
     MDLabel:
         id: current_object_value
         halign: 'center'
+        pos_hint: {'center_x': .5, 'center_y': .5}
         font_size: '52sp'
-        text: '-'
+        text: ''
 
     MDLabel:
         halign: 'center'
@@ -369,30 +391,38 @@
 
     MDLabel:
 
-    MDBoxLayout:
-        orientation: "horizontal"
-        spacing: 10
+    MDScrollView:
+        size_hint_y: 1.7
+        MDList:
+            OneLineAvatarIconListItem:
+                MDRectangleFlatButton:
+                    text: "Renoma"
+                    halign: "center" 
+                    font_size: '28sp'
+                    pos_hint: {'center_x': .5, 'center_y': .5}
+                    size_hint_x: 1
+                    on_release:
+                        root.objects.reaction_on_renoma()
 
-        MDRectangleFlatIconButton:
-            text: "Renoma"
-            font_size: '28sp'
-            size_hint_x: 1
-            on_release:
-                root.objects.reaction_on_renoma()
-        
-        MDRectangleFlatIconButton:
-            text: "Żarów"
-            font_size: '28sp'
-            size_hint_x: 1
-            on_release:
-                root.objects.reaction_on_zarow()
+            OneLineAvatarIconListItem:    
+                MDRectangleFlatButton:
+                    text: "Żarów"
+                    halign: "center" 
+                    font_size: '28sp'
+                    pos_hint: {'center_x': .5, 'center_y': .5}
+                    size_hint_x: 1
+                    on_release:
+                        root.objects.reaction_on_zarow()
 
-        MDRectangleFlatIconButton:
-            text: "Rędzin"
-            font_size: '28sp'
-            size_hint_x: 1
-            on_release:
-                root.objects.reaction_on_redzin()
+            OneLineAvatarIconListItem:
+                MDRectangleFlatButton:
+                    text: "Rędzin"
+                    halign: "center" 
+                    font_size: '28sp'
+                    pos_hint: {'center_x': .5, 'center_y': .5}
+                    size_hint_x: 1
+                    on_release:
+                        root.objects.reaction_on_redzin()
 
     MDLabel:
 

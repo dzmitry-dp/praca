@@ -33,6 +33,16 @@ class AddHoursActions:
         self.widget.ids.hours_line_data.value = 12
         self.widget.ids.current_hours_value.text = str(int(value))
 
+    def add_0_godzin(self, value = 0):
+        dev.logger.info('screens_helper.py: class AddHoursActions() add_0_godzin()')
+        self.widget.ids.hours_line_data.value = 0
+        self.widget.ids.current_hours_value.text = str(int(value))
+
+    def add_24_godziny(self, value = 24):
+        dev.logger.info('screens_helper.py: class AddHoursActions() add_24_godziny()')
+        self.widget.ids.hours_line_data.value = 24
+        self.widget.ids.current_hours_value.text = str(int(value))
+
     def press_ok(self):
         dev.logger.info('screens_helper.py: class AddHoursActions() press_ok()')
         self.main_screen.ids.godziny.icon = ''
@@ -69,6 +79,7 @@ class ObjectsActions:
         print(self.widget.ids.current_object_value.text)
         self._change_obj_btn(self.widget.ids.current_object_value.text)
 
+
 class WorkObjects(MDBoxLayout):
     widget_height = NumericProperty()
     widget_width = NumericProperty()
@@ -79,8 +90,8 @@ class WorkObjects(MDBoxLayout):
         self.main_screen_logic = main_screen_logic
         self._objects = None
 
-        self.widget_height = Window.size[0]*0.7
-        self.widget_width = Window.size[1]*0.5
+        self.widget_height = Window.size[0]
+        self.widget_width = Window.size[1]
 
     @property
     def objects(self):
@@ -102,8 +113,8 @@ class AddHoursWidget(MDBoxLayout):
         self.main_screen_logic = main_screen_logic
         self._add_hour_reaction = None
         
-        self.widget_height = Window.size[0]*0.7
-        self.widget_width = Window.size[1]*0.5
+        self.widget_height = Window.size[0]
+        self.widget_width = Window.size[1]
 
     @property
     def add_hour(self):

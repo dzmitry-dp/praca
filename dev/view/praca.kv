@@ -235,6 +235,7 @@
 ### Экран календаря
 <Calendar>:
     BoxLayout:
+<<<<<<< HEAD
         padding: 30
         orientation: "vertical"
 
@@ -245,6 +246,18 @@
             size_hint_x: 1
             on_release:
                 root.logic.back_from_calendar_to_main_screen()
+=======
+        padding: 20
+        orientation: "vertical"
+
+        MDLabel:
+            size_hint_y: 0.1
+
+        DatePicker:
+            size_hint_y: 0.8
+            on_select:
+                root.screen_constructor.main_screen.logic.on_save_calendar(self.date)
+>>>>>>> 0c367c3cc68b4d07d41796b16769ddca0f50eaeb
                 root.manager.transition.direction = 'right'
                 root.manager.current = "main_screen"
                 root.screen_constructor.remove_calendar_screen()
@@ -423,6 +436,12 @@
                     size_hint_x: 1
                     on_release:
                         root.objects.reaction_on_redzin()
+
+    MDLabel:
+        halign: 'center'
+        font_size: '24sp'
+        font_style: 'H6'
+        text: 'Zaznaczanie obiektu'
 
     MDLabel:
 

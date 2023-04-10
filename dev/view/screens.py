@@ -161,6 +161,7 @@ class Calendar(MDScreen):
         )
 
 
+
 # def send_sms(phone_number, message):
 #     sms = dev.SmsManager.getDefault()
 #     sms.sendTextMessage(phone_number, None, message, None, None)

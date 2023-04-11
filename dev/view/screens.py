@@ -139,14 +139,15 @@ class Main(MDScreen):
         self.screen_constructor.add_calendar_screen_obj()
 
     def _refresh_buttons(self):
-        self.ids.godziny.text = 'Godziny'
-        self.ids.godziny.icon = 'hours-24'
+        # self.ids.godziny.text = 'Godziny'
+        # self.ids.godziny.icon = 'hours-24'
 
-        self.ids.obiekt.text = 'Obiekt'
-        self.ids.obiekt.icon = 'home-lightning-bolt'
+        # self.ids.obiekt.text = 'Obiekt'
+        # self.ids.obiekt.icon = 'home-lightning-bolt'
 
         self.ids.date.text = 'Data'
         self.ids.date.icon = 'calendar-range'
+
 
 class Calendar(MDScreen):
     def __init__(self, name, screen_manager, screen_constructor, *args, **kwargs):
@@ -159,6 +160,7 @@ class Calendar(MDScreen):
             screen_manager = screen_manager,
             screen_constructor = screen_constructor
         )
+
 
 
 # def send_sms(phone_number, message):

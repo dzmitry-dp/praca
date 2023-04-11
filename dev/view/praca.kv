@@ -376,12 +376,15 @@
     size_hint_x: 1
     padding: 30
 
-    MDLabel:
+    MDTextFieldRect:
         id: current_object_value
+
+        hint_text: 'Renoma'
+        mode: "fill"
+        max_text_length: 15 
         halign: 'center'
         pos_hint: {'center_x': .5, 'center_y': .5}
-        font_size: '52sp'
-        text: ''
+        font_size: '32sp'
 
     MDLabel:
         halign: 'center'

@@ -65,14 +65,23 @@ class ObjectsActions:
     
     def reaction_on_renoma(self):
         dev.logger.info('screens_helper.py: class ObjectsActions() reaction_on_renoma()')
+        if self.widget.ids.current_object_value.text != '':
+            self.widget.ids.current_object_value.text = ''
+
         self.widget.ids.current_object_value.hint_text = 'Renoma'
 
     def reaction_on_zarow(self):
         dev.logger.info('screens_helper.py: class ObjectsActions() reaction_on_zarow()')
+        if self.widget.ids.current_object_value.text != '':
+            self.widget.ids.current_object_value.text = ''
+
         self.widget.ids.current_object_value.hint_text = 'Żarów'
 
     def reaction_on_redzin(self):
         dev.logger.info('screens_helper.py: class ObjectsActions() reaction_on_redzin()')
+        if self.widget.ids.current_object_value.text != '':
+            self.widget.ids.current_object_value.text = ''
+
         self.widget.ids.current_object_value.hint_text = 'Rędzin'
     
     def press_ok(self):

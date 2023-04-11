@@ -65,19 +65,25 @@ class ObjectsActions:
     
     def reaction_on_renoma(self):
         dev.logger.info('screens_helper.py: class ObjectsActions() reaction_on_renoma()')
-        self.widget.ids.current_object_value.text = 'Renoma'
+        self.widget.ids.current_object_value.hint_text = 'Renoma'
 
     def reaction_on_zarow(self):
         dev.logger.info('screens_helper.py: class ObjectsActions() reaction_on_zarow()')
-        self.widget.ids.current_object_value.text = 'Żarów'
+        self.widget.ids.current_object_value.hint_text = 'Żarów'
 
     def reaction_on_redzin(self):
         dev.logger.info('screens_helper.py: class ObjectsActions() reaction_on_redzin()')
-        self.widget.ids.current_object_value.text = 'Rędzin'
+        self.widget.ids.current_object_value.hint_text = 'Rędzin'
     
     def press_ok(self):
-        print(self.widget.ids.current_object_value.text)
-        self._change_obj_btn(self.widget.ids.current_object_value.text)
+        if self.widget.ids.current_object_value.text == '':
+            obj_name = self.widget.ids.current_object_value.hint_text
+        else:
+            obj_name = self.widget.ids.current_object_value.text
+            self.widget.ids.current_object_value.hint_text = obj_name
+            self.widget.ids.current_object_value.text = ''
+        
+        self._change_obj_btn(obj_name)
 
 
 class WorkObjects(MDBoxLayout):

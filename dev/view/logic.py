@@ -1,5 +1,6 @@
-from kivy.clock import Clock
-from kivy.metrics import dp
+import threading
+
+from kivy.clock import mainthread
 
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.spinner import MDSpinner
@@ -105,7 +106,8 @@ class AutorizationLogic(VerificationData):
         dev.logger.info('logic.py: class AutorizationLogic _no_password_reaction()')
 
     def _create_main_screen(self):
-        """Создаю главный экран после авторизации пользователя, если экран не создан
+        """Создаю главный экран после авторизации пользователя, если экран еще не создан
+        
         self.screen_constructor.popup_screen - подвижная вкладка
         """
         dev.logger.info('logic.py: class AutorizationLogic _create_main_screen()')
@@ -120,7 +122,7 @@ class AutorizationLogic(VerificationData):
             )
             self.screen_constructor.popup_screen = self.screen_manager.get_screen('main_screen').children[0].ids['_front_layer'].children[0].children[0].children[0]
 
-    def seach_user_in_base(self):
+    def _seach_user_in_base(self):
         """# Проверка пользователя в базе данных
         - Если пользователь в базе данных, то вывести его данные
         - Если нельзя найти совпадений по login и password, то заводим нового пользователя
@@ -130,14 +132,13 @@ class AutorizationLogic(VerificationData):
         if self.get_permission(self.login, self.password): # проверяю пароль
             # прошли авторизацию
             self.authorization_obj.user_authorized = True
-            self._create_main_screen()
         else:
             # не зарегистрированный пользователь
             self.authorization_obj.user_authorized = False
             pass # ничего не делаю если пользователь не авторизирован
         
         dev.logger.debug(f'-: user_authorized = {self.authorization_obj.user_authorized}')
- 
+    
     def set_user(self) -> None:
         """Вызов этой функции из интерфейса пользователя.
         Исходя из того, что написано в полях ввода,
@@ -151,7 +152,15 @@ class AutorizationLogic(VerificationData):
             dev.logger.info(f"DEBUG: Have Login and Password: '{_login}' '{_password}'")
             self.login = _login
             self.password = _password
-            self.seach_user_in_base()
+
+            ### Отдельным потоком
+            search_user_thread = threading.Thread(
+                target=self._seach_user_in_base, 
+                daemon=True,
+                name='search_user_thread')
+            search_user_thread.start()
+            ###
+            self._create_main_screen()
         else:
             dev.logger.warning(f"DEBUG: Have NOT Login and Password: '{_login}' '{_password}'")
             pass

@@ -1,3 +1,5 @@
+import threading
+
 import dev
 from dev.view.screens import Autorization, Main, Calendar
 
@@ -54,7 +56,15 @@ class ScreensConstructor:
                 screen_constructor = screen_constructor,
                 screen_manager = self.screen_manager
             )
-        self.main_screen.logic.make_data_table()
+        
+        ### Отдельным потоком
+        make_table_thread = threading.Thread(
+            target=self.main_screen.logic.make_data_table,
+            daemon=True,
+            name='make_table_thread'
+        )
+        make_table_thread.start()
+        ###
         self.screen_manager.add_widget(self.main_screen)
 
     def remove_main_screen(self) -> None:

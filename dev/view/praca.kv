@@ -61,7 +61,7 @@
             size_hint_x: 1
             on_release: 
                 root.logic.set_user()
-                root.manager.transition.direction = 'left' if root.user_authorized else 'right'
+                root.manager.transition.direction = 'left'
                 root.manager.transition.duration = 0.2
                 root.manager.current = "main_screen" if root.user_authorized else "authorization_screen"
             

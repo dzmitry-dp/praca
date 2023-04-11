@@ -83,6 +83,7 @@ class Main(MDScreen):
     def btn_wyloguj(self):
         "Возвращает на экран логирования"
         dev.logger.info('screens.py: class Main(MDScreen) btn_wyloguj()')
+        self.screen_manager.transition.direction = 'right'
         self.screen_constructor.remove_main_screen()
 
     def btn_menu_dodac(self):

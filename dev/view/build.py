@@ -30,6 +30,7 @@ class ScreensConstructor:
         "Первый запуск системы"
         dev.logger.info('build.py: class ScreensConstructor start_building()')
         self.add_authorization_screen_obj()
+        self.add_calendar_screen_obj()
 
     def add_authorization_screen_obj(self):
         "Создаю и добавляю экран авторизации"
@@ -79,8 +80,8 @@ class ScreensConstructor:
             screen_constructor = self,
         )
         self.screen_manager.add_widget(self.calendar)
-        self.screen_manager.transition.direction = 'left'
-        self.screen_manager.current = 'calendar_screen'
+        # self.screen_manager.transition.direction = 'left'
+        # self.screen_manager.current = 'calendar_screen'
 
     def remove_calendar_screen(self):
         dev.logger.info('build.py: class ScreensConstructor remove_calendar_screen()')

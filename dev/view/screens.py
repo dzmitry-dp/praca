@@ -137,7 +137,9 @@ class Main(MDScreen):
 
     def btn_show_calendar(self):
         dev.logger.info('screens.py: class Main(MDScreen) btn_show_calendar()')
-        self.screen_constructor.add_calendar_screen_obj()
+        # self.screen_constructor.add_calendar_screen_obj()
+        self.screen_manager.transition.direction = 'left'
+        self.screen_manager.current = 'calendar_screen'
 
     def _refresh_buttons(self):
         # self.ids.godziny.text = 'Godziny'

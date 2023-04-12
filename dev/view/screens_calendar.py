@@ -1,3 +1,4 @@
+import threading
 from datetime import date, timedelta
 
 from kivy.event import EventDispatcher
@@ -15,6 +16,7 @@ from dev.view.screens_helper import DateButton
 class DatePicker(BoxLayout, EventDispatcher):
     def __init__(self, *args, **kwargs):
         super(DatePicker, self).__init__(**kwargs)
+        dev.logger.info('screens_calendar.py: class DatePicker __init__()')
         self.register_event_type("on_select")
         self.date = date.today()
         self.days = (
@@ -53,6 +55,7 @@ class DatePicker(BoxLayout, EventDispatcher):
         self.populate_header()
 
     def populate_header(self, *args, **kwargs):
+        dev.logger.info('screens_calendar.py: class DatePicker populate_header()')
         self.header.clear_widgets()
         previous_month = MDRaisedButton(text="<", pos_hint={"center_y": .5}, on_release=self.move_previous_month)
         previous_month.bind()
@@ -65,12 +68,16 @@ class DatePicker(BoxLayout, EventDispatcher):
         self.header.add_widget(next_month)
 
     def populate_body(self, *args, **kwargs):
+        dev.logger.info('screens_calendar.py: class DatePicker populate_body()')
         self.body.clear_widgets()
         date_cursor = date(self.date.year, self.date.month, 1)
+
         for day in self.days:
             self.body.add_widget(Label(text=day, color=[1, 1, 1, 1]))
+
         for filler in range(date_cursor.isoweekday() - 1):
             self.body.add_widget(Label(text=""))
+
         while date_cursor.month == self.date.month:
             date_label = DateButton(text=str(date_cursor.day), group="date")
             date_label.bind(
@@ -84,13 +91,15 @@ class DatePicker(BoxLayout, EventDispatcher):
             date_cursor += timedelta(days=1)
 
     def set_date(self, day):
+        dev.logger.info('screens_calendar.py: class DatePicker set_date()')
         self.date = day
         self.dispatch("on_select", day)
 
     def on_select(self, day):
-        pass
+        dev.logger.info('screens_calendar.py: class DatePicker on_select()')
 
     def move_next_month(self, *args, **kwargs):
+        dev.logger.info('screens_calendar.py: class DatePicker move_next_month()')
         if self.date.month == 12:
             self.date = date(self.date.year + 1, 1, self.date.day)
         else:
@@ -99,6 +108,7 @@ class DatePicker(BoxLayout, EventDispatcher):
         self.populate_body()
 
     def move_previous_month(self, *args, **kwargs):
+        dev.logger.info('screens_calendar.py: class DatePicker move_previous_month()')
         if self.date.month == 1:
             self.date = date(self.date.year - 1, 12, self.date.day)
         else:

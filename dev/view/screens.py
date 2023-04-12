@@ -155,6 +155,7 @@ class Main(MDScreen):
 class Calendar(MDScreen):
     def __init__(self, name, screen_manager, screen_constructor, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        dev.logger.info("screens.py: class Calendar(MDScreen) __init__() name = 'calendar_screen'")
         self.name = name
         self.screen_manager = screen_manager
         self.screen_constructor = screen_constructor

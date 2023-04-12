@@ -72,7 +72,7 @@ class AutorizationLogic(VerificationData):
     """
     def __init__(self, screen_constructor, screen_manager, authorization_obj: MDScreen) -> None:
         super().__init__()
-        dev.logger.info('logic.py: class AutorizationLogic __init__()')
+        dev.logger.info('logic.py: class AutorizationLogic(VerificationData) __init__()')
 
         self._login = None
         self._password = None
@@ -103,14 +103,14 @@ class AutorizationLogic(VerificationData):
 
     def _no_password_reaction(login: str, password: str):
         """Реакция на то, что логин и пароль не находится в базе данных"""
-        dev.logger.info('logic.py: class AutorizationLogic _no_password_reaction()')
+        dev.logger.info('logic.py: class AutorizationLogic(VerificationData) _no_password_reaction()')
 
     def _create_main_screen(self):
         """Создаю главный экран после авторизации пользователя, если экран еще не создан
         
         self.screen_constructor.popup_screen - подвижная вкладка
         """
-        dev.logger.info('logic.py: class AutorizationLogic _create_main_screen()')
+        dev.logger.info('logic.py: class AutorizationLogic(VerificationData) _create_main_screen()')
 
         if self.screen_manager.has_screen(name='main_screen'):
             self.screen_constructor.popup_screen = self.screen_manager.get_screen('main_screen').children[0].ids['_front_layer'].children[0].children[0].children[0]
@@ -127,7 +127,7 @@ class AutorizationLogic(VerificationData):
         - Если пользователь в базе данных, то вывести его данные
         - Если нельзя найти совпадений по login и password, то заводим нового пользователя
         """
-        dev.logger.info('logic.py: class AutorizationLogic seach_user_in_base()')
+        dev.logger.info('logic.py: class AutorizationLogic(VerificationData) seach_user_in_base()')
 
         if self.get_permission(self.login, self.password): # проверяю пароль
             # прошли авторизацию
@@ -143,7 +143,7 @@ class AutorizationLogic(VerificationData):
         """Вызов этой функции из интерфейса пользователя.
         Исходя из того, что написано в полях ввода,
         составляю представление о пользователе"""
-        dev.logger.info('screens.py: class Autorization(MDScreen) set_user()')
+        dev.logger.info('logic.py: class AutorizationLogic(VerificationData) set_user()')
 
         _login = self.authorization_obj.user_name.text.replace(' ', '')
         _password = self.authorization_obj.user_surname.text.replace(' ', '')
@@ -166,6 +166,7 @@ class AutorizationLogic(VerificationData):
             pass
 
     def on_checkbox_active(self, checkbox, value):
+        dev.logger.info('logic.py: class AutorizationLogic(VerificationData) on_checkbox_active()')
         if value:
             print('The checkbox', checkbox, 'is active', 'and', checkbox.state, 'state')
         else:
@@ -183,6 +184,7 @@ class MainScreenLogic:
                  screen_manager,
                  main_screen: MDScreen,
                  ) -> None:
+        dev.logger.info('logic.py: class MainScreenLogic __init__()')
         self.screen_manager = screen_manager
         self.screen_constructor = screen_constructor # ScreensConstructor()
         
@@ -205,6 +207,7 @@ class MainScreenLogic:
     #     Clock.schedule_once(create_table, 1.6)
 
     def select_godziny(self):
+        dev.logger.info('logic.py: class MainScreenLogic select_godziny()')
         if not self.dialog_screen_to_set_godziny:
             self.widgets = AddHoursWidget(
                 main_screen = self.main_screen,
@@ -217,7 +220,7 @@ class MainScreenLogic:
         self.dialog_screen_to_set_godziny.open()
 
     def make_data_table(self):
-        dev.logger.info('screens.py: class Main(MDScreen) make_data_table()')
+        dev.logger.info('logic.py: class MainScreenLogic make_data_table()')
 
         user_data = None
         if user_data:
@@ -227,17 +230,16 @@ class MainScreenLogic:
 
     def on_click_table_row(self, widget):
         "Функция отрабатывает по клику на строку таблицы"
-        print('--- on_click_item ---')
-        print('wdiget.text:', widget.text, 'left_label.text:',  widget.ids.left_label.text, 'right_button.text:',  widget.ids.right_button.text)
+        dev.logger.info('logic.py: class MainScreenLogic on_click_table_row()')
+        dev.logger.info(f'DEBUG: wdiget.text: {widget.text} left_label.text: {widget.ids.left_label.text} right_button.text: {widget.ids.right_button.text}')
 
     def on_click_table_right_button(self, widget):
         "Функция отрабатывает по клику на дату"
-        print('--- on_click_right_button ---')
-        print('wdiget.text:',  widget.text)
-        print('widget.parent.parent:', widget.parent.parent)
-        print('widget.parent.parent.text:', widget.parent.parent.text)
+        dev.logger.info('logic.py: class MainScreenLogic on_click_table_right_button()')
+        dev.logger.info(f'DEBUG: wdiget.text: {widget.text} widget.parent.parent: {widget.parent.parent} widget.parent.parent.text: {widget.parent.parent.text}')
 
     def on_save_calendar(self, value):
+        dev.logger.info('logic.py: class MainScreenLogic on_save_calendar()')
         if value.day <= 9:
             day = f'0{value.day}'
         else:
@@ -251,9 +253,8 @@ class MainScreenLogic:
         self.main_screen.ids.date.text = f"{day}.{month}"
 
     def open_objects_menu_list(self):
-        #         "text": f"Renoma",
-        #         "text": f"Żarów",
-        #         "text": f"Rędzin",
+        dev.logger.info('logic.py: class MainScreenLogic open_objects_menu_list()')
+
         if not self.dialog_screen_to_set_object:
             self.widgets = WorkObjects(
                 main_screen = self.main_screen,

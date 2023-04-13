@@ -11,7 +11,7 @@ import dev.db.memory as memory
 import dev.config as config
 import dev.db.queries_struct as queries
 from dev.exceptions import DBConnectionErr
-from dev.view.screens_helper import AddHoursWidget, WorkObjects
+from dev.view.helpers import AddHoursWidget, WorkObjects
 
 
 class VerificationData:
@@ -105,7 +105,7 @@ class AutorizationLogic(VerificationData):
         """Реакция на то, что логин и пароль не находится в базе данных"""
         dev.logger.info('logic.py: class AutorizationLogic(VerificationData) _no_password_reaction()')
 
-    def _create_main_screen(self):
+    def _create_main_screen(self, search_user_thread):
         """Создаю главный экран после авторизации пользователя, если экран еще не создан
         
         self.screen_constructor.popup_screen - подвижная вкладка
@@ -119,6 +119,7 @@ class AutorizationLogic(VerificationData):
                 user_name = self.authorization_obj.user_name.text,
                 user_surname = self.authorization_obj.user_surname.text,
                 screen_constructor = self.screen_constructor,
+                search_user_thread = search_user_thread,
             )
             self.screen_constructor.popup_screen = self.screen_manager.get_screen('main_screen').children[0].ids['_front_layer'].children[0].children[0].children[0]
 
@@ -140,7 +141,7 @@ class AutorizationLogic(VerificationData):
         dev.logger.debug(f'-: user_authorized = {self.authorization_obj.user_authorized}')
     
     def set_user(self) -> None:
-        """Вызов этой функции из интерфейса пользователя.
+        """Вызов этой функции происходит по нажатию кнопки авторизации.
         Исходя из того, что написано в полях ввода,
         составляю представление о пользователе"""
         dev.logger.info('logic.py: class AutorizationLogic(VerificationData) set_user()')
@@ -153,14 +154,14 @@ class AutorizationLogic(VerificationData):
             self.login = _login
             self.password = _password
 
-            ### Отдельным потоком
+            ### Отдельным потоком отправляемся искать данные о пользователе
             search_user_thread = threading.Thread(
                 target=self._seach_user_in_base, 
                 daemon=True,
                 name='search_user_thread')
             search_user_thread.start()
             ###
-            self._create_main_screen()
+            self._create_main_screen(search_user_thread)
         else:
             dev.logger.warning(f"DEBUG: Have NOT Login and Password: '{_login}' '{_password}'")
             pass
@@ -219,10 +220,12 @@ class MainScreenLogic:
             )
         self.dialog_screen_to_set_godziny.open()
 
-    def make_data_table(self):
+    def make_data_table(self, search_user_thread):
         dev.logger.info('logic.py: class MainScreenLogic make_data_table()')
 
+        search_user_thread.join() # дождался когда закончится сборка данных для конкретного пользователя
         user_data = None
+
         if user_data:
             dev.logger.info(f'DEBUG: Have user_data = {user_data}')
         else:

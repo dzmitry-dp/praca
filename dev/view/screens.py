@@ -8,9 +8,9 @@ from kivymd.uix.screen import MDScreen
 
 
 import dev
-from dev.view.logic import AutorizationLogic, MainScreenLogic
-from dev.view.screens_helper import TabelItem
-from dev.view.screens_calendar import CalendarLogic
+from dev.logic import AutorizationLogic, MainScreenLogic
+from dev.view.helpers import TabelItem
+from dev.view.calendar import CalendarLogic
 
 
 class Autorization(MDScreen):
@@ -45,6 +45,9 @@ class Autorization(MDScreen):
                 screen_manager=self.screen_manager,
                 authorization_obj = self,
                 )
+
+    def btn_logowanie(self):
+        self.logic.set_user()
 
 
 class Main(MDScreen):
@@ -110,8 +113,7 @@ class Main(MDScreen):
         dev.logger.info('screens.py: class Main(MDScreen) btn_dodac()')
 
         if self.ids.godziny.text != 'Godziny' and \
-            self.ids.obiekt.text != 'Obiekt' and \
-                self.ids.date.text != 'Data':
+            self.ids.obiekt.text != 'Obiekt':
 
             item = TabelItem(
                 text=self.ids.obiekt.text,
@@ -148,8 +150,9 @@ class Main(MDScreen):
         # self.ids.obiekt.text = 'Obiekt'
         # self.ids.obiekt.icon = 'home-lightning-bolt'
 
-        self.ids.date.text = 'Data'
-        self.ids.date.icon = 'calendar-range'
+        # self.ids.date.text = 'Data'
+        # self.ids.date.icon = 'calendar-range'
+        pass
 
 
 class Calendar(MDScreen):

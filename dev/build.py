@@ -47,6 +47,7 @@ class ScreensConstructor:
             user_name,
             user_surname,
             screen_constructor,
+            search_user_thread, # поток в котором получаем все данные о пользователе
             ):
         "Создаю и добавляю главный экран приложения"
         dev.logger.info('build.py: class ScreensConstructor add_main_screen_obj()')
@@ -58,11 +59,12 @@ class ScreensConstructor:
                 screen_manager = self.screen_manager
             )
         
-        ### Отдельным потоком
+        ### Отдельным потоком создаем таблицу данных
         make_table_thread = threading.Thread(
             target=self.main_screen.logic.make_data_table,
             daemon=True,
-            name='make_table_thread'
+            name='make_table_thread',
+            args = [search_user_thread,]
         )
         make_table_thread.start()
         ###

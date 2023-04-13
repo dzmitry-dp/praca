@@ -5,7 +5,7 @@ from kivymd.app import MDApp
 
 import dev
 from dev import config
-from dev.view.build import ScreensConstructor
+from dev.build import ScreensConstructor
 
 Builder.load_file(config.PATH_TO_KV_FILE)
 

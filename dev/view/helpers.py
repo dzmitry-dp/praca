@@ -48,10 +48,12 @@ class AddHoursActions:
         dev.logger.info('screens_helper.py: class AddHoursActions press_ok()')
         self.main_screen.ids.godziny.icon = ''
         self.main_screen.ids.godziny.text = str(int(self.hours_progress))
+        self.main_screen.logic.dialog_screen_to_set_godziny.dismiss()
 
     def set_current_value(self, value):
         dev.logger.info('screens_helper.py: class AddHoursActions set_current_value()')
         self.widget.ids.current_hours_value.text = str(int(value))
+
 
 class ObjectsActions:
     def __init__(self, widget, main_screen) -> None:

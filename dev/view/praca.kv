@@ -60,7 +60,7 @@
             pos_hint: {"center_x": 0.5, "center_y": 0.5}
             size_hint_x: 1
             on_release: 
-                root.logic.set_user()
+                root.btn_logowanie()
                 root.manager.transition.direction = 'left'
                 root.manager.transition.duration = 0.2
                 root.manager.current = "main_screen" if root.user_authorized else "authorization_screen"
@@ -186,7 +186,7 @@
                     MDRectangleFlatIconButton:
                         id: date
                         icon: 'calendar-range'
-                        text: 'Data'
+                        text: root.today[:-5]
                         font_size: '18sp'
                         pos_hint: {"center_x": 0.5, "center_y": 0.5}
                         size_hint_x: 1
@@ -359,7 +359,6 @@
         size_hint_x: 1
         on_release:
             root.add_hour.press_ok()
-            root.main_screen_logic.dialog_screen_to_set_godziny.dismiss()
     
     MDLabel:
 

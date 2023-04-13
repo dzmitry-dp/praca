@@ -1,7 +1,7 @@
 import threading
 
-import dev
-from dev.view.screens import Autorization, Main, Calendar
+import action as action
+from view.screens import Autorization, Main, Calendar
 
 
 class ScreensConstructor:
@@ -17,7 +17,7 @@ class ScreensConstructor:
     def remove_main_screen()
     """
     def __init__(self, screen_manager) -> None:
-        dev.logger.info('build.py: class ScreensConstructor __init__()')
+        action.logger.info('build.py: class ScreensConstructor __init__()')
         # Управление
         self.screen_manager = screen_manager # ScreenManager()
         # Мои экраны
@@ -28,13 +28,13 @@ class ScreensConstructor:
 
     def start_building(self):
         "Первый запуск системы"
-        dev.logger.info('build.py: class ScreensConstructor start_building()')
+        action.logger.info('build.py: class ScreensConstructor start_building()')
         self.add_authorization_screen_obj()
         self.add_calendar_screen_obj()
 
     def add_authorization_screen_obj(self):
         "Создаю и добавляю экран авторизации"
-        dev.logger.info('build.py: class ScreensConstructor add_authorization_screen_obj()')
+        action.logger.info('build.py: class ScreensConstructor add_authorization_screen_obj()')
         self.authorization_screen = Autorization(
                 name='authorization_screen',
                 screen_constructor = self,
@@ -50,7 +50,7 @@ class ScreensConstructor:
             search_user_thread, # поток в котором получаем все данные о пользователе
             ):
         "Создаю и добавляю главный экран приложения"
-        dev.logger.info('build.py: class ScreensConstructor add_main_screen_obj()')
+        action.logger.info('build.py: class ScreensConstructor add_main_screen_obj()')
         self.main_screen = Main(
                 name = 'main_screen',
                 user_name = user_name,
@@ -71,7 +71,7 @@ class ScreensConstructor:
         self.screen_manager.add_widget(self.main_screen)
 
     def remove_main_screen(self) -> None:
-        dev.logger.info('build.py: class ScreensConstructor remove_main_screen()')
+        action.logger.info('build.py: class ScreensConstructor remove_main_screen()')
         self.screen_manager.remove_widget(self.main_screen)
         self.main_screen = None
 
@@ -86,6 +86,6 @@ class ScreensConstructor:
         # self.screen_manager.current = 'calendar_screen'
 
     def remove_calendar_screen(self):
-        dev.logger.info('build.py: class ScreensConstructor remove_calendar_screen()')
+        action.logger.info('build.py: class ScreensConstructor remove_calendar_screen()')
         self.screen_manager.remove_widget(self.calendar)
         self.calendar = None

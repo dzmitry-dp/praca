@@ -1,7 +1,7 @@
 from os.path import abspath
 
-PATH_TO_KV_FILE = abspath('./dev/view/praca.kv')
-PATH_TO_USER_DB = abspath('./dev/db/user.db')
+PATH_TO_KV_FILE = abspath('./view/praca.kv')
+PATH_TO_USER_DB = abspath('./db/user.db')
 
 # PHONE_NUMBER = '48663215343' # Жека
 PHONE_NUMBER = '48577655470'

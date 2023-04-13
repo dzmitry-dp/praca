@@ -10,86 +10,86 @@ from kivymd.uix.list import OneLineIconListItem
 from kivymd.uix.behaviors import CommonElevationBehavior
 from kivymd.uix.card import MDCard
 
-import dev
+import action
 
 class AddHoursActions:
     def __init__(self, widget, hours_progress, main_screen) -> None:
-        dev.logger.info('screens_helper.py: class AddHoursActions __init__()')
+        action.logger.info('screens_helper.py: class AddHoursActions __init__()')
         self.widget = widget
         self.hours_progress = hours_progress
         self.main_screen = main_screen
 
     def add_8_godzin(self, value = 8):
-        dev.logger.info('screens_helper.py: class AddHoursActions add_8_godzin()')
+        action.logger.info('screens_helper.py: class AddHoursActions add_8_godzin()')
         self.widget.ids.hours_line_data.value = 8
         self.widget.ids.current_hours_value.text = str(int(value))
 
     def add_10_godzin(self, value = 10):
-        dev.logger.info('screens_helper.py: class AddHoursActions add_10_godzin()')
+        action.logger.info('screens_helper.py: class AddHoursActions add_10_godzin()')
         self.widget.ids.hours_line_data.value = 10
         self.widget.ids.current_hours_value.text = str(int(value))
 
     def add_12_godzin(self, value = 12):
-        dev.logger.info('screens_helper.py: class AddHoursActions add_12_godzin()')
+        action.logger.info('screens_helper.py: class AddHoursActions add_12_godzin()')
         self.widget.ids.hours_line_data.value = 12
         self.widget.ids.current_hours_value.text = str(int(value))
 
     def add_0_godzin(self, value = 0):
-        dev.logger.info('screens_helper.py: class AddHoursActions add_0_godzin()')
+        action.logger.info('screens_helper.py: class AddHoursActions add_0_godzin()')
         self.widget.ids.hours_line_data.value = 0
         self.widget.ids.current_hours_value.text = str(int(value))
 
     def add_24_godziny(self, value = 24):
-        dev.logger.info('screens_helper.py: class AddHoursActions add_24_godziny()')
+        action.logger.info('screens_helper.py: class AddHoursActions add_24_godziny()')
         self.widget.ids.hours_line_data.value = 24
         self.widget.ids.current_hours_value.text = str(int(value))
 
     def press_ok(self):
-        dev.logger.info('screens_helper.py: class AddHoursActions press_ok()')
+        action.logger.info('screens_helper.py: class AddHoursActions press_ok()')
         self.main_screen.ids.godziny.icon = ''
         self.main_screen.ids.godziny.text = str(int(self.hours_progress))
         self.main_screen.logic.dialog_screen_to_set_godziny.dismiss()
 
     def set_current_value(self, value):
-        dev.logger.info('screens_helper.py: class AddHoursActions set_current_value()')
+        action.logger.info('screens_helper.py: class AddHoursActions set_current_value()')
         self.widget.ids.current_hours_value.text = str(int(value))
 
 
 class ObjectsActions:
     def __init__(self, widget, main_screen) -> None:
-        dev.logger.info('screens_helper.py: class ObjectsActions __init__()')
+        action.logger.info('screens_helper.py: class ObjectsActions __init__()')
         self.widget = widget
         self.main_screen = main_screen
 
     def _change_obj_btn(self, value):
-        dev.logger.info('screens_helper.py: class ObjectsActions _change_obj_btn()')
+        action.logger.info('screens_helper.py: class ObjectsActions _change_obj_btn()')
         if value != '':
             self.main_screen.ids.obiekt.icon = ''
             self.main_screen.ids.obiekt.text = value       
     
     def reaction_on_renoma(self):
-        dev.logger.info('screens_helper.py: class ObjectsActions reaction_on_renoma()')
+        action.logger.info('screens_helper.py: class ObjectsActions reaction_on_renoma()')
         if self.widget.ids.current_object_value.text != '':
             self.widget.ids.current_object_value.text = ''
 
         self.widget.ids.current_object_value.hint_text = 'Renoma'
 
     def reaction_on_zarow(self):
-        dev.logger.info('screens_helper.py: class ObjectsActions reaction_on_zarow()')
+        action.logger.info('screens_helper.py: class ObjectsActions reaction_on_zarow()')
         if self.widget.ids.current_object_value.text != '':
             self.widget.ids.current_object_value.text = ''
 
         self.widget.ids.current_object_value.hint_text = 'Żarów'
 
     def reaction_on_redzin(self):
-        dev.logger.info('screens_helper.py: class ObjectsActions reaction_on_redzin()')
+        action.logger.info('screens_helper.py: class ObjectsActions reaction_on_redzin()')
         if self.widget.ids.current_object_value.text != '':
             self.widget.ids.current_object_value.text = ''
 
         self.widget.ids.current_object_value.hint_text = 'Rędzin'
     
     def press_ok(self):
-        dev.logger.info('screens_helper.py: class ObjectsActions press_ok()')
+        action.logger.info('screens_helper.py: class ObjectsActions press_ok()')
         if self.widget.ids.current_object_value.text == '':
             obj_name = self.widget.ids.current_object_value.hint_text
         else:
@@ -106,7 +106,7 @@ class WorkObjects(MDBoxLayout):
 
     def __init__(self, main_screen, main_screen_logic, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        dev.logger.info('screens_helper.py: class WorkObjects __init__()')
+        action.logger.info('screens_helper.py: class WorkObjects __init__()')
         self.main_screen = main_screen
         self.main_screen_logic = main_screen_logic
         self._objects = None
@@ -130,7 +130,7 @@ class AddHoursWidget(MDBoxLayout):
 
     def __init__(self, main_screen, main_screen_logic, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        dev.logger.info('screens_helper.py: class AddHoursWidget __init__()')
+        action.logger.info('screens_helper.py: class AddHoursWidget __init__()')
         self.main_screen = main_screen
         self.main_screen_logic = main_screen_logic
         self._add_hour_reaction = None
@@ -173,7 +173,7 @@ class DateButton(MDCard, CommonElevationBehavior, ToggleButtonBehavior):
     text = StringProperty("")
 
     def on_state(self, widget, value):
-        dev.logger.info('screens_helper.py: class DateButton on_state()')
+        action.logger.info('screens_helper.py: class DateButton on_state()')
         if value == 'down':
             self.md_bg_color = self.theme_cls.primary_color
             self.text_color = [1, 1, 1, 1]

@@ -1,7 +1,7 @@
 import sqlite3
 
-import dev
-from dev.exceptions import DBConnectionErr
+import action
+from action.exceptions import DBConnectionErr
 
 
 def connection_to_database(create_query_func):
@@ -15,7 +15,7 @@ def connection_to_database(create_query_func):
             cursor = connection.cursor()
             query = create_query_func(self, **kwargs)
             
-            dev.logger.info(f'DEBUG: {query}')
+            action.logger.info(f'DEBUG: {query}')
             
             if 'INSERT' in query:
                 values = list(kwargs['data']['column_data'].values())

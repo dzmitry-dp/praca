@@ -195,30 +195,26 @@
 
                 MDScrollView:
                     size_hint_x: 0.85
-                    size_hint_y: 0.65
+                    size_hint_y: 0.7
                     pos_hint: {"center_x": 0.5, "center_y": 0.5}
                     MDList: 
                         id: scroll
                 
-                MDGridLayout: 
-                    cols: 3
+                MDBoxLayout: 
+                    orientation: 'horizontal'
                     size_hint_x: 1
-                    size_hint_y: 0.2
+                    size_hint_y: 0.15
 
                     Text:
-                        text: 'Godzin: 148'
-                        halign: 'left'
+                        text: '148'
+                        size_hint_x: 0.33
+                        halign: 'center'
                         font_size: '24sp'
                         font_style: 'H6'
                         
                     Text:
-                        text: 'Etat: 22 zl'
-                        halign: 'center'
-                        font_size: '24sp'
-                        font_style: 'H6'
-
-                    Text:
                         text: 'Płatność: 4321'
+                        size_hint_x: 0.6
                         halign: 'right'
                         font_size: '24sp'
                         font_style: 'H6'

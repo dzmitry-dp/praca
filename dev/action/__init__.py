@@ -1,5 +1,4 @@
 from kivy.logger import Logger as logger
-from kivy.config import Config
 
 from kivy.utils import platform
 

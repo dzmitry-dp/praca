@@ -4,7 +4,7 @@ from dirsync import sync
 
 # жестко прописанные пути
 source_path = 'C:\\Users\\dp\\OneDrive\\Personal\\Projects\\Praca'
-target_path = '\\\\wsl.localhost\\Ubuntu\\home\\dp\\Personal\\Projects\\Praca\\dev_app'
+target_path = '\\\\wsl.localhost\\Ubuntu\\home\\dp\\Personal\\Projects\\Praca\\app'
 
 if os.path.exists(target_path):
     # удаляем __pycache__

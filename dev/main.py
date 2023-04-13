@@ -3,9 +3,9 @@ from kivy.uix.screenmanager import ScreenManager
 
 from kivymd.app import MDApp
 
-import dev
-from dev import config
-from dev.build import ScreensConstructor
+import action
+import config
+from action.build import ScreensConstructor
 
 Builder.load_file(config.PATH_TO_KV_FILE)
 
@@ -20,11 +20,11 @@ class PracaApp(MDApp):
     def build(self):
         self.theme_cls.theme_style = "Dark"
 
-        dev.logger.info('Start: ------------ PracaApp.build() ------------')
+        action.logger.info('Start: ------------ PracaApp.build() ------------')
         self.screen_root = ScreenManager()
         self.screen_constructor = ScreensConstructor(self.screen_root)
         self.screen_constructor.start_building()
-        dev.logger.info('End: ------------ PracaApp.build() ------------')
+        action.logger.info('End: ------------ PracaApp.build() ------------')
 
         return self.screen_root
 

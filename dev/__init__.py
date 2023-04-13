@@ -1,5 +1,3 @@
-import os
-
 from kivy.logger import Logger as logger
 from kivy.config import Config
 
@@ -18,11 +16,8 @@ if platform == 'android':
     # Отправляю СМС
     SmsManager = autoclass('android.telephony.SmsManager')
 
-Config.set('kivy', 'log_dir', os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.abspath('static/logs')))
-
 ### Пример использования logger
 # logger.info('title: ++++++++++++++.')
-
 # try:
 #     raise Exception('Ошибка')
 # except Exception:

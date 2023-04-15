@@ -3,9 +3,9 @@ from kivy.uix.screenmanager import ScreenManager
 
 from kivymd.app import MDApp
 
-import action
-import config
-from action.build import ScreensConstructor
+import dev.action as action
+import dev.config as config
+from dev.action.build import ScreensConstructor
 
 Builder.load_file(config.PATH_TO_KV_FILE)
 

@@ -44,10 +44,10 @@ requirements = python3, sqlite3, kivy==master, https://github.com/kivymd/KivyMD/
 # requirements.source.kivy = ../../kivy
 
 # (str) Presplash of the application
-presplash.filename = %(source.dir)s/static/presplash.png
+presplash.filename = %(source.dir)s/dev/static/presplash.png
 
 # (str) Icon of the application
-icon.filename = %(source.dir)s/static/icon.png
+icon.filename = %(source.dir)s/dev/static/icon.png
 
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait or all)
 orientation = portrait

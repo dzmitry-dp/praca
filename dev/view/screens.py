@@ -7,10 +7,10 @@ from kivymd.toast.kivytoast import kivytoast
 from kivymd.uix.screen import MDScreen
 
 
-import action
-from action.logic import AutorizationLogic, MainScreenLogic
-from view.helpers import TabelItem
-from view.calendar import CalendarLogic
+import dev.action as action
+from dev.action.logic import AutorizationLogic, MainScreenLogic
+from dev.view.helpers import TabelItem
+from dev.view.calendar import CalendarLogic
 
 
 class Autorization(MDScreen):

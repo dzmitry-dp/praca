@@ -6,12 +6,12 @@ from kivymd.uix.screen import MDScreen
 from kivymd.uix.spinner import MDSpinner
 from kivymd.uix.dialog import MDDialog
 
-import action
-import config
-import db.memory as memory
-import db.queries_struct as queries
-from action.exceptions import DBConnectionErr
-from view.helpers import AddHoursWidget, WorkObjects
+import dev.action as action
+import dev.config as config
+import dev.db.memory as memory
+import dev.db.queries_struct as queries
+from dev.action.exceptions import DBConnectionErr
+from dev.view.helpers import AddHoursWidget, WorkObjects
 
 
 class VerificationData:

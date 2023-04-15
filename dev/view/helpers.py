@@ -10,7 +10,7 @@ from kivymd.uix.list import OneLineIconListItem
 from kivymd.uix.behaviors import CommonElevationBehavior
 from kivymd.uix.card import MDCard
 
-import action
+import dev.action as action
 
 class AddHoursActions:
     def __init__(self, widget, hours_progress, main_screen) -> None:

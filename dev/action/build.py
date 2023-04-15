@@ -1,7 +1,7 @@
 import threading
 
-import action as action
-from view.screens import Autorization, Main, Calendar
+import dev.action as action
+from dev.view.screens import Autorization, Main, Calendar
 
 
 class ScreensConstructor:

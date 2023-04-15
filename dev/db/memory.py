@@ -1,7 +1,7 @@
 import sqlite3
 
-import action
-from action.exceptions import DBConnectionErr
+import dev.action as action
+from dev.action.exceptions import DBConnectionErr
 
 
 def connection_to_database(create_query_func):

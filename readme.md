@@ -21,7 +21,7 @@ ___
 	- **/action** - действия и логика
 	- **/db** - работа с базой данных
 	- **/static** - логи, картинки, apk и пр.
-		- **/doc** - пояснение реализованного
+		- **/doc** - дополнительная информация
 	- **/view** - отображение для пользователя
 - **/scripts** - вспомогательные сценарии
 
@@ -36,6 +36,7 @@ python ./main.py
 	https://github.com/kivy/buildozer
 
 ```bash
+pip install https://github.com/kivy/buildozer/archive/master.zip
 buildozer android debug
 ```
 

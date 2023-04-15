@@ -65,6 +65,9 @@ class ObjectsActions:
         action.logger.info('screens_helper.py: class ObjectsActions _change_obj_btn()')
         if value != '':
             self.main_screen.ids.obiekt.icon = ''
+            if len(value) > 10:
+                value = value[:10]
+
             self.main_screen.ids.obiekt.text = value       
     
     def reaction_on_renoma(self):

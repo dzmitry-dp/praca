@@ -44,10 +44,10 @@ class AddHoursActions:
         self.widget.ids.hours_line_data.value = 24
         self.widget.ids.current_hours_value.text = str(int(value))
 
-    def press_ok(self):
+    def press_ok(self, value):
         action.logger.info('screens_helper.py: class AddHoursActions press_ok()')
         self.main_screen.ids.godziny.icon = ''
-        self.main_screen.ids.godziny.text = str(int(self.hours_progress))
+        self.main_screen.ids.godziny.text = str(int(value))
         self.main_screen.logic.dialog_screen_to_set_godziny.dismiss()
 
     def set_current_value(self, value):
@@ -133,20 +133,14 @@ class AddHoursWidget(MDBoxLayout):
         action.logger.info('screens_helper.py: class AddHoursWidget __init__()')
         self.main_screen = main_screen
         self.main_screen_logic = main_screen_logic
-        self._add_hour_reaction = None
-        
-        self.widget_height = Window.size[0]
-        self.widget_width = Window.size[1]
-
-    @property
-    def add_hour(self):
-        self._add_hour_reaction = AddHoursActions(
+        self.hour_reaction = AddHoursActions(
             widget = self,
             hours_progress = self.progress_hours_line,
             main_screen = self.main_screen,
         )
-
-        return self._add_hour_reaction
+        
+        self.widget_height = Window.size[0]
+        self.widget_width = Window.size[1]
 
 # главная таблица
 class TabelItem(OneLineAvatarIconListItem):

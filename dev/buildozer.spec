@@ -10,7 +10,7 @@ package.name = TEST
 package.domain = org.test
 
 # (str) Source code where the main.py live
-source.dir = ./app/dev
+source.dir = ./
 
 # (list) Source files to include (let empty to include all the files)
 source.include_exts = py,png,jpg,kv
@@ -44,10 +44,10 @@ requirements = python3, sqlite3, kivy==master, https://github.com/kivymd/KivyMD/
 # requirements.source.kivy = ../../kivy
 
 # (str) Presplash of the application
-presplash.filename = %(source.dir)s/app/static/presplash.png
+presplash.filename = %(source.dir)s/static/presplash.png
 
 # (str) Icon of the application
-icon.filename = %(source.dir)s/app/static/icon.png
+icon.filename = %(source.dir)s/static/icon.png
 
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait or all)
 orientation = portrait
@@ -63,7 +63,7 @@ orientation = portrait
 author = © dzmitry_dp
 
 # change the major version of python used by the app
-# osx.python_version = 3
+# osx.python_version = 3.11
 
 # Kivy version to use
 # osx.kivy_version = 2.2.0

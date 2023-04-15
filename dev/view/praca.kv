@@ -300,7 +300,8 @@
         min: 0
         max: 24
         on_active:
-            root.add_hour.set_current_value(hours_line_data.value)
+            root.hour_reaction.set_current_value(hours_line_data.value)
+            print(hours_line_data.value)
     
     MDLabel:
 
@@ -314,7 +315,7 @@
             text: '0'
             size_hint_x: 1
             on_release:
-                root.add_hour.add_0_godzin()
+                root.hour_reaction.add_0_godzin()
 
         MDTextButton:
             text: "8"
@@ -322,7 +323,7 @@
             font_size: '28sp'
             size_hint_x: 1
             on_release:
-                root.add_hour.add_8_godzin()
+                root.hour_reaction.add_8_godzin()
 
         MDTextButton:
             text: "10"
@@ -330,7 +331,7 @@
             font_size: '28sp'
             size_hint_x: 1
             on_release:
-                root.add_hour.add_10_godzin()
+                root.hour_reaction.add_10_godzin()
 
         MDTextButton:
             text: "12"
@@ -338,13 +339,13 @@
             font_size: '28sp'
             size_hint_x: 1
             on_release:
-                root.add_hour.add_12_godzin()
+                root.hour_reaction.add_12_godzin()
 
         MDTextButton:
             text: '24'
             size_hint_x: 1
             on_release:
-                root.add_hour.add_24_godziny()
+                root.hour_reaction.add_24_godziny()
     
     MDLabel:
 
@@ -354,7 +355,7 @@
         font_size: '28sp'
         size_hint_x: 1
         on_release:
-            root.add_hour.press_ok()
+            root.hour_reaction.press_ok(hours_line_data.value)
     
     MDLabel:
 

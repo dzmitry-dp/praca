@@ -15,4 +15,4 @@ PHONE_NUMBER = '48577655470'
 from kivy.config import Config
 import os
 
-Config.set('kivy', 'log_dir', os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.abspath('../static/logs')))
+Config.set('kivy', 'log_dir', os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.abspath('./static/logs')))

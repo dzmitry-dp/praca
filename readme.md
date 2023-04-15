@@ -15,6 +15,16 @@ ___
 - Запросить документы
 - Получить задачу
 
+# Структура
+
+- **/dev** - папка для разработки приложения Praca
+	- **/action** - действия и логика
+	- **/db** - работа с базой данных
+	- **/static** - логи, картинки, apk и пр.
+		- **/doc** - дополнительная информация
+	- **/view** - отображение для пользователя
+- **/scripts** - вспомогательные сценарии
+
 # Запустить проект
 
 ```bash
@@ -26,6 +36,7 @@ python ./main.py
 	https://github.com/kivy/buildozer
 
 ```bash
+pip install https://github.com/kivy/buildozer/archive/master.zip
 buildozer android debug
 ```
 

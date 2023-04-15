@@ -7,10 +7,10 @@ from kivymd.toast.kivytoast import kivytoast
 from kivymd.uix.screen import MDScreen
 
 
-import dev
-from dev.view.logic import AutorizationLogic, MainScreenLogic
-from dev.view.screens_helper import TabelItem
-from dev.view.screens_calendar import CalendarLogic
+import dev.action as action
+from dev.action.logic import AutorizationLogic, MainScreenLogic
+from dev.view.helpers import TabelItem
+from dev.view.calendar import CalendarLogic
 
 
 class Autorization(MDScreen):
@@ -35,7 +35,7 @@ class Autorization(MDScreen):
 
     def __init__(self, screen_constructor, screen_manager, **kw):
         super().__init__(**kw)
-        dev.logger.info("screens.py: class Autorization(MDScreen) __init__() name = 'authorization_screen'")
+        action.logger.info("screens.py: class Autorization(MDScreen) __init__() name = 'authorization_screen'")
 
         self.screen_constructor = screen_constructor # class ScreensConstructor
         self.screen_manager = screen_manager # class ScreenManager
@@ -45,6 +45,9 @@ class Autorization(MDScreen):
                 screen_manager=self.screen_manager,
                 authorization_obj = self,
                 )
+
+    def btn_logowanie(self):
+        self.logic.set_user()
 
 
 class Main(MDScreen):
@@ -61,7 +64,7 @@ class Main(MDScreen):
             screen_constructor, # class ScreensConstructor
             screen_manager: ScreenManager,
             **kw):
-        dev.logger.info("screens.py: class Main(MDScreen) __init__() name = 'main_screen'")
+        action.logger.info("screens.py: class Main(MDScreen) __init__() name = 'main_screen'")
         super().__init__(**kw)
 
         self.user = f'{user_name} {user_surname}'
@@ -82,35 +85,35 @@ class Main(MDScreen):
 
     def btn_wyloguj(self):
         "Возвращает на экран логирования"
-        dev.logger.info('screens.py: class Main(MDScreen) btn_wyloguj()')
+        action.logger.info('screens.py: class Main(MDScreen) btn_wyloguj()')
+        self.screen_manager.transition.direction = 'right'
         self.screen_constructor.remove_main_screen()
 
     def btn_menu_dodac(self):
-        dev.logger.info('screens.py: class Main(MDScreen) btn_menu_dodac()')
+        action.logger.info('screens.py: class Main(MDScreen) btn_menu_dodac()')
         pass
 
     def btn_menu_wyslij(self):
-        dev.logger.info('screens.py: class Main(MDScreen) btn_menu_wyslij()')
+        action.logger.info('screens.py: class Main(MDScreen) btn_menu_wyslij()')
         pass
 
     def btn_memu_tabela(self):
-        dev.logger.info('screens.py: class Main(MDScreen) btn_memu_tabela()')
+        action.logger.info('screens.py: class Main(MDScreen) btn_memu_tabela()')
         pass
 
     def btn_menu_pytac(self):
-        dev.logger.info('screens.py: class Main(MDScreen) btn_menu_pytac()')
+        action.logger.info('screens.py: class Main(MDScreen) btn_menu_pytac()')
         pass
 
     def btn_menu_zadania(self):
-        dev.logger.info('screens.py: class Main(MDScreen) btn_menu_zadania()')
+        action.logger.info('screens.py: class Main(MDScreen) btn_menu_zadania()')
         pass
 
     def btn_dodac(self):
-        dev.logger.info('screens.py: class Main(MDScreen) btn_dodac()')
+        action.logger.info('screens.py: class Main(MDScreen) btn_dodac()')
 
         if self.ids.godziny.text != 'Godziny' and \
-            self.ids.obiekt.text != 'Obiekt' and \
-                self.ids.date.text != 'Data':
+            self.ids.obiekt.text != 'Obiekt':
 
             item = TabelItem(
                 text=self.ids.obiekt.text,
@@ -127,16 +130,18 @@ class Main(MDScreen):
             pass
 
     def btn_godziny(self):
-        dev.logger.info('screens.py: class Main(MDScreen) btn_godziny()')
+        action.logger.info('screens.py: class Main(MDScreen) btn_godziny()')
         self.logic.select_godziny()
 
     def btn_obiekt(self):
-        dev.logger.info('screens.py: class Main(MDScreen) btn_obiekt()')
+        action.logger.info('screens.py: class Main(MDScreen) btn_obiekt()')
         self.logic.open_objects_menu_list()
 
     def btn_show_calendar(self):
-        dev.logger.info('screens.py: class Main(MDScreen) btn_show_calendar()')
-        self.screen_constructor.add_calendar_screen_obj()
+        action.logger.info('screens.py: class Main(MDScreen) btn_show_calendar()')
+        # self.screen_constructor.add_calendar_screen_obj()
+        self.screen_manager.transition.direction = 'left'
+        self.screen_manager.current = 'calendar_screen'
 
     def _refresh_buttons(self):
         # self.ids.godziny.text = 'Godziny'
@@ -145,13 +150,15 @@ class Main(MDScreen):
         # self.ids.obiekt.text = 'Obiekt'
         # self.ids.obiekt.icon = 'home-lightning-bolt'
 
-        self.ids.date.text = 'Data'
-        self.ids.date.icon = 'calendar-range'
+        # self.ids.date.text = 'Data'
+        # self.ids.date.icon = 'calendar-range'
+        pass
 
 
 class Calendar(MDScreen):
     def __init__(self, name, screen_manager, screen_constructor, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        action.logger.info("screens.py: class Calendar(MDScreen) __init__() name = 'calendar_screen'")
         self.name = name
         self.screen_manager = screen_manager
         self.screen_constructor = screen_constructor

@@ -60,8 +60,8 @@
             pos_hint: {"center_x": 0.5, "center_y": 0.5}
             size_hint_x: 1
             on_release: 
-                root.logic.set_user()
-                root.manager.transition.direction = 'left' if root.user_authorized else 'right'
+                root.btn_logowanie()
+                root.manager.transition.direction = 'left'
                 root.manager.transition.duration = 0.2
                 root.manager.current = "main_screen" if root.user_authorized else "authorization_screen"
             
@@ -158,8 +158,8 @@
                 orientation: 'vertical'
                 padding: 30
 
-                MDBoxLayout: 
-                    orientation: 'horizontal'
+                MDGridLayout: 
+                    cols: 3
                     size_hint_x: 1
                     size_hint_y: 0.15
                     spacing: 10
@@ -170,7 +170,7 @@
                         pos_hint: {'center_x': .5, 'center_y': .5}
                         text: 'Godziny'
                         size_hint_x: 1
-                        font_size: '18sp'
+                        font_size: '16sp'
                         on_release:
                             root.btn_godziny()
                     
@@ -180,15 +180,15 @@
                         pos_hint: {'center_x': .5, 'center_y': .5}
                         text: 'Obiekt'
                         size_hint_x: 1
-                        font_size: '18sp'
+                        font_size: '16sp'
                         on_release: 
                             root.btn_obiekt()
 
                     MDRectangleFlatIconButton:
                         id: date
                         icon: 'calendar-range'
-                        text: 'Data'
-                        font_size: '18sp'
+                        text: root.today[:-5]
+                        font_size: '16sp'
                         pos_hint: {"center_x": 0.5, "center_y": 0.5}
                         size_hint_x: 1
                         on_release: 
@@ -196,28 +196,22 @@
 
                 MDScrollView:
                     size_hint_x: 0.85
-                    size_hint_y: 0.65
+                    size_hint_y: 0.7
                     pos_hint: {"center_x": 0.5, "center_y": 0.5}
                     MDList: 
                         id: scroll
                 
                 MDGridLayout: 
-                    cols: 3
+                    cols: 2
                     size_hint_x: 1
-                    size_hint_y: 0.2
+                    size_hint_y: 0.15
 
                     Text:
-                        text: 'Godzin: 148'
+                        text: 'Masz 148 godzin'
                         halign: 'left'
                         font_size: '24sp'
                         font_style: 'H6'
                         
-                    Text:
-                        text: 'Etat: 22 zl'
-                        halign: 'center'
-                        font_size: '24sp'
-                        font_style: 'H6'
-
                     Text:
                         text: 'Płatność: 4321'
                         halign: 'right'
@@ -247,7 +241,6 @@
                 root.logic.back_from_calendar_to_main_screen()
                 root.manager.transition.direction = 'right'
                 root.manager.current = "main_screen"
-                root.screen_constructor.remove_calendar_screen()
 
         MDLabel:
             size_hint_y: 0.1
@@ -258,7 +251,6 @@
                 root.screen_constructor.main_screen.logic.on_save_calendar(self.date)
                 root.manager.transition.direction = 'right'
                 root.manager.current = "main_screen"
-                root.screen_constructor.remove_calendar_screen()
 
         MDLabel:
             size_hint_y: 0.2
@@ -307,7 +299,8 @@
         min: 0
         max: 24
         on_active:
-            root.add_hour.set_current_value(hours_line_data.value)
+            root.hour_reaction.set_current_value(hours_line_data.value)
+            print(hours_line_data.value)
     
     MDLabel:
 
@@ -321,7 +314,7 @@
             text: '0'
             size_hint_x: 1
             on_release:
-                root.add_hour.add_0_godzin()
+                root.hour_reaction.add_0_godzin()
 
         MDTextButton:
             text: "8"
@@ -329,7 +322,7 @@
             font_size: '28sp'
             size_hint_x: 1
             on_release:
-                root.add_hour.add_8_godzin()
+                root.hour_reaction.add_8_godzin()
 
         MDTextButton:
             text: "10"
@@ -337,7 +330,7 @@
             font_size: '28sp'
             size_hint_x: 1
             on_release:
-                root.add_hour.add_10_godzin()
+                root.hour_reaction.add_10_godzin()
 
         MDTextButton:
             text: "12"
@@ -345,13 +338,13 @@
             font_size: '28sp'
             size_hint_x: 1
             on_release:
-                root.add_hour.add_12_godzin()
+                root.hour_reaction.add_12_godzin()
 
         MDTextButton:
             text: '24'
             size_hint_x: 1
             on_release:
-                root.add_hour.add_24_godziny()
+                root.hour_reaction.add_24_godziny()
     
     MDLabel:
 
@@ -361,8 +354,7 @@
         font_size: '28sp'
         size_hint_x: 1
         on_release:
-            root.add_hour.press_ok()
-            root.main_screen_logic.dialog_screen_to_set_godziny.dismiss()
+            root.hour_reaction.press_ok(hours_line_data.value)
     
     MDLabel:
 
@@ -379,12 +371,13 @@
     MDTextFieldRect:
         id: current_object_value
 
+        size_hint_y: 0.8
         hint_text: 'Renoma'
         mode: "fill"
-        max_text_length: 15 
+        max_text_length: 10 
         halign: 'center'
         pos_hint: {'center_x': .5, 'center_y': .5}
-        font_size: '32sp'
+        font_size: '52sp'
 
     MDLabel:
         halign: 'center'
@@ -392,10 +385,9 @@
         font_style: 'H6'
         text: 'Zaznaczanie obiektu'
 
-    MDLabel:
 
     MDScrollView:
-        size_hint_y: 1.7
+        size_hint_y: 1.5
         MDList:
             OneLineAvatarIconListItem:
                 MDRectangleFlatButton:
@@ -403,7 +395,7 @@
                     halign: "center" 
                     font_size: '28sp'
                     pos_hint: {'center_x': .5, 'center_y': .5}
-                    size_hint_x: 1
+                    size_hint_x: 0.9
                     on_release:
                         root.objects.reaction_on_renoma()
 
@@ -413,7 +405,7 @@
                     halign: "center" 
                     font_size: '28sp'
                     pos_hint: {'center_x': .5, 'center_y': .5}
-                    size_hint_x: 1
+                    size_hint_x: 0.9
                     on_release:
                         root.objects.reaction_on_zarow()
 
@@ -423,11 +415,12 @@
                     halign: "center" 
                     font_size: '28sp'
                     pos_hint: {'center_x': .5, 'center_y': .5}
-                    size_hint_x: 1
+                    size_hint_x: 0.9
                     on_release:
                         root.objects.reaction_on_redzin()
 
     MDLabel:
+        size_hint_y: 0.2
 
     MDRectangleFlatIconButton:
         pos_hint: {'center_x': .5, 'center_y': .5}
@@ -437,5 +430,3 @@
         on_release:
             root.objects.press_ok()
             root.main_screen_logic.dialog_screen_to_set_object.dismiss()
-
-    MDLabel:

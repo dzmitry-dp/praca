@@ -4,12 +4,12 @@ from dirsync import sync
 
 # жестко прописанные пути
 source_path = 'C:\\Users\\dp\\OneDrive\\Personal\\Projects\\Praca'
-target_path = '\\\\wsl.localhost\\Ubuntu\\home\\dp\\Personal\\Projects\\Praca\\dev_app'
+target_path = '\\\\wsl.localhost\\Ubuntu\\home\\dp\\Personal\\Projects\\Praca\\dev'
 
 if os.path.exists(target_path):
     # удаляем __pycache__
     cur_dir = os.path.dirname(os.path.abspath(__file__))
-    os.system(f'pyclean {cur_dir}')
+    os.system(f'pyclean .')
     # синхронизируем
     args = {
     'exclude':[
@@ -19,6 +19,7 @@ if os.path.exists(target_path):
         '^.*\.log$',
         '^.*\.md$',
         '^.*\.txt$',
+        '^.*\.apk$',
         'sync.py'
         ],
     }
@@ -27,3 +28,7 @@ if os.path.exists(target_path):
 else:
     print('[x] Error! Have not target path')
     sys.exit()
+
+###
+os.system(f'move {target_path}\\buildozer.spec {target_path[:-4]}\\buildozer.spec')
+os.system(f'move {target_path}\\scripts\\create_app.py {target_path[:-4]}\\create_app.py')

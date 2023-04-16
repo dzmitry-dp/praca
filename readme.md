@@ -3,6 +3,15 @@ Tags: #python #kivy #sqlite3
 
 [[Структура окружения]]
 ___
+Программа для автоматизации бизнес-процессов: позволяет автоматизировать деловые процессы, облегчая их управление и повышая эффективность
+
+Приложение для обмена файлами: позволяет пользователям обмениваться файлами между собой без использования дополнительных сервисов
+
+<img src="https://github.com/dzmitry-dp/praca/dev/static/Pasted image 20230416133932.png" style="display: inline-block; margin-right: 10px;">
+<img src="https://github.com/dzmitry-dp/praca/dev/static/Pasted image 20230416134054.png" style="display: inline-block; margin-right: 10px;">
+<img src="https://github.com/dzmitry-dp/praca/dev/static/Pasted image 20230416134138.png" style="display: inline-block; margin-right: 10px;">
+<img src="https://github.com/dzmitry-dp/praca/dev/static/Pasted image 20230416134442.png" style="display: inline-block; margin-right: 10px;">
+
 # Pracodawca i pracownik
 
 Работодатель выдает приложение на телефон своему сотруднику.

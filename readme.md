@@ -13,6 +13,7 @@ ___
 	<img src="./dev/static/Pasted image 20230416134138.png" width="150" style="margin-right: 10px; display: inline-block;">
 	<img src="./dev/static/Pasted image 20230416134442.png" width="150" style="margin-right: 10px; display: inline-block;">
 </div>
+
 # Pracodawca i pracownik
 
 Работодатель выдает приложение на телефон своему сотруднику.

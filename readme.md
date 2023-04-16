@@ -1,5 +1,7 @@
 Created: 04-02-2023 19:57
 Tags: #python #kivy #sqlite3
+
+[[Структура окружения]]
 ___
 # Pracodawca i pracownik
 
@@ -51,6 +53,7 @@ android.permissions в файле buildozer.spec
 # Git
 
 branch **master** - рабочая версия приложения
+
 branch **dev** - ветка текущей разработки
 
 ### Клонировать ветку разработки dev
@@ -75,6 +78,7 @@ git push -u origin dev
 Визуализация логики проекта ./static/logic.png
 
 ```bash
+pip3 install code2flow
 code2flow . --language py --output ./static/logic.png 
 ```
 

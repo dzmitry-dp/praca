@@ -1,16 +1,24 @@
 from os.path import abspath
 
 PATH_TO_KV_FILE = abspath('./dev/view/praca.kv')
-PATH_TO_USER_DB = abspath('./dev/db/user.db')
+PATH_TO_USER_DB = abspath('./dev/db/user.db') # только отправляем на сервер
+PATH_TO_EMPLOYER_DB = abspath('./dev/db/rockbit.db') # только скачиваем с сервера
 
 # PHONE_NUMBER = '48663215343' # Жека
 PHONE_NUMBER = '48577655470'
 
-# from kivy.core.window import Window
+# user.db
+FIRST_TABLE = 'godziny'
 
-# Window.top = 75
-# Window.left = 75
-# Window.size = (405, 810)
+# employer.db
+WORKER_TABLE = 'worker' # список работников фирмы
+PROJECT_TABLE = 'project' # список объектов для работников
+
+from kivy.core.window import Window
+
+Window.top = 75
+Window.left = 75
+Window.size = (405, 810)
 
 from kivy.config import Config
 import os

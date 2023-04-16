@@ -81,5 +81,5 @@ class Query:
         return f"DROP TABLE {table_name};"
 
     @connection_to_database
-    def query_select_user(self, table_name: str, name: str, surname: str):
+    def query_login_and_password(self, table_name: str, name: str, surname: str):
         return f"SELECT * FROM {table_name} WHERE name = '{name}' AND surname = '{surname}';"

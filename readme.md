@@ -9,11 +9,10 @@ ___
 
 <div style="margin: 0 auto; width: 50%;">
 	<img src="./dev/static/Pasted image 20230416133932.png" width="150" style="margin-right: 10px; display: inline-block;">
-	<img src="./dev/static/Pasted image 20230416134054.png" width="150" style="margin-right: 10px; display: inline-block;">
+	<img src="./dev/static/Pasted image 20230416151132.png" width="150" style="margin-right: 10px; display: inline-block;">
 	<img src="./dev/static/Pasted image 20230416134138.png" width="150" style="margin-right: 10px; display: inline-block;">
 	<img src="./dev/static/Pasted image 20230416134442.png" width="150" style="margin-right: 10px; display: inline-block;">
 </div>
-
 # Pracodawca i pracownik
 
 Работодатель выдает приложение на телефон своему сотруднику.

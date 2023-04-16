@@ -1,40 +1,52 @@
 from datetime import datetime
 
-USER_BASE = 'user_base'
+from dev.config import FIRST_TABLE, WORKER_TABLE
 
 ###
 # Так выглядят данные на создание таблицы
 ###
 user_table = {
-    'table_name': USER_BASE,
+    'table_name': FIRST_TABLE,
     'column_data': {
         'id': 'INTEGER PRIMARY KEY AUTOINCREMENT',
-        'dt': 'TIMESTAMP',
+        'dt': 'TIMESTAMP', # время добавление записи
         'name': 'TEXT',
         'surname': 'TEXT',
         'hour': 'REAL', # часы работы 
         'building': 'TEXT', # будова
-        'helm': 'REAL', # часы за рулем
+        'data': 'TIMESTAMP', # дата указанная пользователем
         'auto': 'INTEGER', # служебное авто 1 - True, 0 - False
+        'helm': 'REAL', # часы за рулем
         'start': 'INTEGER', # километраж начало
         'end': 'INTEGER', # киллометраж конец
         'es': 'INTEGER', # end - start = es
         }
     }
+
+workers_list = {
+    'table_name': WORKER_TABLE,
+    'column_data': {
+        'id': 'INTEGER PRIMARY KEY AUTOINCREMENT',
+        'dt': 'TIMESTAMP', # время добавление записи
+        'name': 'TEXT',
+        'surname': 'TEXT',
+    }
+}
 ###
 # Так выглядят данные на запись
 ###
 def generate_first_data(name, surname):
     return {
-        'table_name': USER_BASE,
+        'table_name': FIRST_TABLE,
         'column_data': {
             'dt': datetime.now(),
             'name': name,
             'surname': surname,
             'hour': None,
             'building': None,
-            'helm': None,
+            'data': None,
             'auto': None, # 1 - True, 0 - False
+            'helm': None,
             'start': None,
             'end': None,
             'es': None, # end - start = e-s

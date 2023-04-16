@@ -18,53 +18,65 @@ class VerificationData:
     def __init__(self) -> None:
         action.logger.info('logic.py: class VerificationData __init__()')
 
-    def get_permission(self, login, password) -> bool:
-        action.logger.info('logic.py: class VerificationData get_permission()')
-        query_obj = memory.Query(
+        self.query_to_user_base = memory.Query(
             db_path=config.PATH_TO_USER_DB,
             )
+        self.query_to_employer_base = memory.Query(
+            db_path=config.PATH_TO_EMPLOYER_DB,
+        )
+
+    def get_permission(self, login, password) -> bool:
+        action.logger.info('logic.py: class VerificationData get_permission()')
+
 
         try:
             # Проверка на то, что пользователь в базе данных
+            action.logger.info(f'DEBUG: try connect to DB')
+            print(self.query_to_employer_base.show_data_from_table(
+                table_name = config.WORKER_TABLE,
+                ))
             
-            all_data_from_db = query_obj.query_select_user(
-                table_name=queries.USER_BASE,
-                name=login,
-                surname=password,
-                )
+            # all_data_from_db = query_to_user_base.query_select_user(
+            #     table_name=queries.FIRST_TABLE,
+            #     name=login,
+            #     surname=password,
+            #     )
 
-            action.logger.info(f'DEBUG: DB answer {all_data_from_db}')
+            # action.logger.info(f'DEBUG: DB answer {all_data_from_db}')
 
-            if len(all_data_from_db) == 0:
-                # если ответ из базы -> []
-                query_obj.write_values(data=queries.generate_first_data(self._login, self._password))
-                all_data_from_db = query_obj.query_select_user(
-                    table_name=queries.USER_BASE,
-                    name=self._login,
-                    surname=self._password,
-                    ) # запрашиваем данные у которых логин и пароль\
-                # совпадают с данными которые ввел пльзователь
+            # if len(all_data_from_db) == 0:
+            #     # если ответ из базы -> []
+            #     query_to_user_base.write_values(data=queries.generate_first_data(self._login, self._password))
+            #     all_data_from_db = query_to_user_base.query_select_user(
+            #         table_name=queries.FIRST_TABLE,
+            #         name=self._login,
+            #         surname=self._password,
+            #         ) # запрашиваем данные у которых логин и пароль\
+            #             # совпадают с данными которые ввел пользователь
 
         except DBConnectionErr:
             # Если таблица еще не создана
             action.logger.error('logic.py: class VerificationData get_permission() "DB have NOT table"')
-            query_obj.create_table(data=queries.user_table)
-            query_obj.write_values(data=queries.generate_first_data(self._login, self._password))
-            all_data_from_db = query_obj.query_select_user(
-                table_name=queries.USER_BASE,
-                name=self._login,
-                surname=self._password,
-                ) # запрашиваем данные у которых логин и пароль\
-                # совпадают с данными которые ввел пользователь
-
-        if len(all_data_from_db) != 0:
-            # если длина сообщения из базы не равна 0
-            # составленный запрос нашел данные в базе
-            return True
-        else:
-            # если собщение из базы -> []
-            action.logger.info('logic.py: class VerificationData get_permission() "New user"')
-            return False
+            # query_to_user_base.create_table(data=queries.user_table)
+            # query_to_user_base.write_values(data=queries.generate_first_data(self._login, self._password))
+            # all_data_from_db = query_to_user_base.query_select_user(
+            #     table_name=queries.FIRST_TABLE,
+            #     name=self._login,
+            #     surname=self._password,
+            #     ) # запрашиваем данные у которых логин и пароль\
+            #     # совпадают с данными которые ввел пользователь
+        
+        # all_data_from_db = ['Что-то из DB',]
+        # if len(all_data_from_db) != 0:
+        #     action.logger.info('DEBUG: class VerificationData get_permission() "Have user data"')
+        #     # если длина сообщения из базы не равна 0
+        #     # составленный запрос нашел данные в базе
+        #     return True
+        # else:
+        #     # если собщение из базы -> []
+        #     action.logger.info('DEBUG: class VerificationData get_permission() "New user"')
+        #     return False
+        return True
 
 
 class AutorizationLogic(VerificationData):
@@ -76,6 +88,8 @@ class AutorizationLogic(VerificationData):
 
         self._login = None
         self._password = None
+
+        self._remember_me = False # checkbox active
 
         self.screen_constructor = screen_constructor # ScreensConstructor()
         self.screen_manager = screen_manager # ScreenManager()
@@ -123,6 +137,7 @@ class AutorizationLogic(VerificationData):
             )
             self.screen_constructor.popup_screen = self.screen_manager.get_screen('main_screen').children[0].ids['_front_layer'].children[0].children[0].children[0]
 
+    # функция выполняется в отдельном потоке
     def _seach_user_in_base(self):
         """# Проверка пользователя в базе данных
         - Если пользователь в базе данных, то вывести его данные
@@ -136,6 +151,7 @@ class AutorizationLogic(VerificationData):
         else:
             # не зарегистрированный пользователь
             self.authorization_obj.user_authorized = False
+            # как вариант можно показать рекламу
             pass # ничего не делаю если пользователь не авторизирован
         
         action.logger.debug(f'-: user_authorized = {self.authorization_obj.user_authorized}')
@@ -169,9 +185,13 @@ class AutorizationLogic(VerificationData):
     def on_checkbox_active(self, checkbox, value):
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) on_checkbox_active()')
         if value:
-            print('The checkbox', checkbox, 'is active', 'and', checkbox.state, 'state')
+            # print('The checkbox', checkbox, 'is active', 'and', checkbox.state, 'state')
+            self._remember_me = True
         else:
-            print('The checkbox', checkbox, 'is inactive', 'and', checkbox.state, 'state')
+            # print('The checkbox', checkbox, 'is inactive', 'and', checkbox.state, 'state')
+            self._remember_me = False
+        
+        action.logger.info(f'DEBUG: self._remember_me = {self._remember_me}')
 
 
 class MainScreenLogic:
@@ -220,11 +240,14 @@ class MainScreenLogic:
             )
         self.dialog_screen_to_set_godziny.open()
 
+    def _read_user_data_from_json(self):
+        pass
+
     def make_data_table(self, search_user_thread):
         action.logger.info('logic.py: class MainScreenLogic make_data_table()')
 
         search_user_thread.join() # дождался когда закончится сборка данных для конкретного пользователя
-        user_data = None
+        user_data = self._read_user_data_from_json()
 
         if user_data:
             action.logger.info(f'DEBUG: Have user_data = {user_data}')

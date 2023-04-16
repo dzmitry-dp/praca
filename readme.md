@@ -8,6 +8,7 @@ ___
 	<img src="./dev/static/Pasted image 20230416133932.png" width="400" height="840" style="margin-right: 10px; display: inline-block;">
 	<img src="./dev/static/Pasted image 20230416134442.png" width="400" height="840" style="margin-right: 10px; display: inline-block;">
 </div>
+# PracaApp
 
 Программа для автоматизации бизнес-процессов: позволяет автоматизировать деловые процессы, облегчая их управление и повышая эффективность
 

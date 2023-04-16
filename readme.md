@@ -7,10 +7,10 @@ ___
 
 Приложение для обмена файлами: позволяет пользователям обмениваться файлами между собой без использования дополнительных сервисов
 
-<img src="./dev/static/Pasted image 20230416133932.png" style="display: inline-block; margin-right: 10px;">
-<img src="./dev/static/Pasted image 20230416134054.png" style="display: inline-block; margin-right: 10px;">
-<img src="./dev/static/Pasted image 20230416134138.png" style="display: inline-block; margin-right: 10px;">
-<img src="./dev/static/Pasted image 20230416134442.png" style="display: inline-block; margin-right: 10px;">
+<img src="./dev/static/Pasted image 20230416133932.png" width="200" style="display: inline-block; margin-right: 10px;">
+<img src="./dev/static/Pasted image 20230416134054.png" width="200" style="display: inline-block; margin-right: 10px;">
+<img src="./dev/static/Pasted image 20230416134138.png" width="200" style="display: inline-block; margin-right: 10px;">
+<img src="./dev/static/Pasted image 20230416134442.png" width="200" style="display: inline-block; margin-right: 10px;">
 
 # Pracodawca i pracownik
 

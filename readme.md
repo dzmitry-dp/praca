@@ -8,16 +8,16 @@ ___
 Приложение для обмена файлами: позволяет пользователям обмениваться файлами между собой без использования дополнительных сервисов
 
 <ul>
-	<li style="display: inline-block">
+	<li style="display: inline-block; list-style-type: none;">
 		<img src="./dev/static/Pasted image 20230416133932.png" width="200" style="margin-right: 10px">
 	</li>
-	<li style="display: inline-block">
+	<li style="display: inline-block; list-style-type: none;">
 		<img src="./dev/static/Pasted image 20230416134054.png" width="200" style="margin-right: 10px">
 	</li>
-	<li style="display: inline-block">
+	<li style="display: inline-block; list-style-type: none;">
 		<img src="./dev/static/Pasted image 20230416134138.png" width="200" style="margin-right: 10px">
 	</li>
-	<li style="display: inline-block">
+	<li style="display: inline-block; list-style-type: none;">
 		<img src="./dev/static/Pasted image 20230416134442.png" width="200" style="margin-right: 10px">
 	</li>
 </ul>

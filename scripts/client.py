@@ -2,7 +2,7 @@ import socket
 from threading import Thread
 
 
-SERVER = "159.223.25.102"
+SERVER = "167.71.37.89"
 PORT = 1489
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

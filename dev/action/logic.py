@@ -28,7 +28,6 @@ class VerificationData:
     def get_permission(self, login, password) -> bool:
         action.logger.info('logic.py: class VerificationData get_permission()')
 
-
         try:
             # Проверка на то, что пользователь в базе данных
             action.logger.info(f'DEBUG: try connect to DB')
@@ -152,7 +151,6 @@ class AutorizationLogic(VerificationData):
             # не зарегистрированный пользователь
             self.authorization_obj.user_authorized = False
             # как вариант можно показать рекламу
-            pass # ничего не делаю если пользователь не авторизирован
         
         action.logger.debug(f'-: user_authorized = {self.authorization_obj.user_authorized}')
     

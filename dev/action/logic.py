@@ -12,6 +12,7 @@ import dev.db.memory as memory
 import dev.db.queries_struct as queries
 from dev.action.exceptions import DBConnectionErr
 from dev.view.helpers import AddHoursWidget, WorkObjects
+from dev.client import start_client_server_dialog
 
 
 class VerificationData:
@@ -118,24 +119,6 @@ class AutorizationLogic(VerificationData):
         """Реакция на то, что логин и пароль не находится в базе данных"""
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) _no_password_reaction()')
 
-    def _create_main_screen(self, search_user_thread):
-        """Создаю главный экран после авторизации пользователя, если экран еще не создан
-        
-        self.screen_constructor.popup_screen - подвижная вкладка
-        """
-        action.logger.info('logic.py: class AutorizationLogic(VerificationData) _create_main_screen()')
-
-        if self.screen_manager.has_screen(name='main_screen'):
-            self.screen_constructor.popup_screen = self.screen_manager.get_screen('main_screen').children[0].ids['_front_layer'].children[0].children[0].children[0]
-        else:
-            self.screen_constructor.add_main_screen_obj(
-                user_name = self.authorization_obj.user_name.text,
-                user_surname = self.authorization_obj.user_surname.text,
-                screen_constructor = self.screen_constructor,
-                search_user_thread = search_user_thread,
-            )
-            self.screen_constructor.popup_screen = self.screen_manager.get_screen('main_screen').children[0].ids['_front_layer'].children[0].children[0].children[0]
-
     # функция выполняется в отдельном потоке
     def _seach_user_in_base(self):
         """# Проверка пользователя в базе данных
@@ -154,6 +137,25 @@ class AutorizationLogic(VerificationData):
         
         action.logger.debug(f'-: user_authorized = {self.authorization_obj.user_authorized}')
     
+    @mainthread
+    def _create_main_screen(self, dt, search_user_thread = None):
+        """Создаю главный экран после авторизации пользователя, если экран еще не создан
+        
+        self.screen_constructor.popup_screen - подвижная вкладка
+        """
+        action.logger.info('logic.py: class AutorizationLogic(VerificationData) _create_main_screen()')
+
+        if self.screen_manager.has_screen(name='main_screen'):
+            self.screen_constructor.main_screen.user_name = self._login
+            self.screen_constructor.main_screen.user_surname = self._password
+            self.screen_manager.get_screen('main_screen').ids.backdrop.title = f'{self.screen_constructor.main_screen.user_name} {self.screen_constructor.main_screen.user_surname}'
+            self.screen_constructor.popup_screen = self.screen_manager.get_screen('main_screen').children[0].ids['_front_layer'].children[0].children[0].children[0]
+
+            self.screen_manager.current = 'main_screen'
+        else:
+            action.logger.error('logic.py: _create_main_screen() Don`t have `main_screen`')
+            pass
+            
     def set_user(self) -> None:
         """Вызов этой функции происходит по нажатию кнопки авторизации.
         Исходя из того, что написано в полях ввода,
@@ -175,10 +177,20 @@ class AutorizationLogic(VerificationData):
                 name='search_user_thread')
             search_user_thread.start()
             ###
-            self._create_main_screen(search_user_thread)
+
+            start_client_server_dialog(self.login, self.password)
+
         else:
             action.logger.warning(f"DEBUG: Have NOT Login and Password: '{_login}' '{_password}'")
-            pass
+            
+        if search_user_thread:
+            action.logger.info("DEBUG: Thread search_user_thread run")
+            self._create_main_screen(search_user_thread)
+        else:
+            action.logger.info("DEBUG: Without search_user_thread")
+            self._create_main_screen()
+
+        self.screen_constructor.authorization_screen.ids.spinner.active = False
 
     def on_checkbox_active(self, checkbox, value):
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) on_checkbox_active()')
@@ -210,6 +222,7 @@ class MainScreenLogic:
         self.main_screen = main_screen # class Main(MDScreen)
 
         self.widgets: AddHoursWidget = None
+        self.dialog_screen_to_set_godziny: MDDialog = None
 
     # def process_of_view_table(self):
     #     "Добавление таблицы во вкладку главного экрана"
@@ -239,7 +252,10 @@ class MainScreenLogic:
         self.dialog_screen_to_set_godziny.open()
 
     def _read_user_data_from_json(self):
-        pass
+        return {
+            'user_name': 'User',
+            'user_surname': 'Surname',
+        }
 
     def make_data_table(self, search_user_thread):
         action.logger.info('logic.py: class MainScreenLogic make_data_table()')
@@ -247,10 +263,10 @@ class MainScreenLogic:
         search_user_thread.join() # дождался когда закончится сборка данных для конкретного пользователя
         user_data = self._read_user_data_from_json()
 
-        if user_data:
-            action.logger.info(f'DEBUG: Have user_data = {user_data}')
-        else:
+        if user_data is None:
             action.logger.info(f'DEBUG: Have NOT user_data = {user_data}')
+        else:
+            action.logger.info(f'DEBUG: Have user_data = {user_data}')
 
     def on_click_table_row(self, widget):
         "Функция отрабатывает по клику на строку таблицы"

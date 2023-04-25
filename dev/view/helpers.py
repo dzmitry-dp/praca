@@ -1,6 +1,5 @@
 from kivy.properties import NumericProperty, StringProperty, ListProperty
 from kivy.uix.behaviors import ToggleButtonBehavior
-from kivy.core.window import Window
 
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.list import OneLineAvatarIconListItem, ILeftBody, IRightBodyTouch
@@ -10,6 +9,7 @@ from kivymd.uix.list import OneLineIconListItem
 from kivymd.uix.behaviors import CommonElevationBehavior
 from kivymd.uix.card import MDCard
 
+from dev.config import Window
 import dev.action as action
 
 class AddHoursActions:

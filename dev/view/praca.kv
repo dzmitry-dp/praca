@@ -8,9 +8,17 @@
     hint_text_color_normal: "white"
     font_size: '24sp'
 
+### Экран авторизации
 <Autorization>:
     user_name: login
     user_surname: password
+
+    MDSpinner:
+        id: spinner
+        size_hint: None, None
+        size: dp(46), dp(46)
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        active: False
 
     MDGridLayout: 
         cols: 1
@@ -36,9 +44,10 @@
             size_hint_x: 1
 
             MDCheckbox:
-                id: 'remember_me'
+                id: remember_me
                 halign: 'center'
                 size_hint_x: .33
+                active: True
                 on_active:
                     root.logic.on_checkbox_active(*args)
 
@@ -59,11 +68,11 @@
             font_size: '28sp'
             pos_hint: {"center_x": 0.5, "center_y": 0.5}
             size_hint_x: 1
-            on_release: 
+            on_release:
+###                root.manager.transition.direction = 'left'
+###                root.manager.transition.duration = 0.2
                 root.btn_logowanie()
-                root.manager.transition.direction = 'left'
-                root.manager.transition.duration = 0.2
-                root.manager.current = "main_screen" if root.user_authorized else "authorization_screen"
+###                root.manager.current = "main_screen" if root.user_authorized else "authorization_screen"
             
         MDLabel:
 
@@ -153,78 +162,89 @@
 
         MDBackdropFrontLayer:
             id: front
+
+            MDFloatLayout:
+
+                MDSpinner:
+                    id: spinner
+                    size_hint: None, None
+                    size: dp(46), dp(46)
+                    pos_hint: {'center_x': .5, 'center_y': .5}
+                    active: True
  
-            MDBoxLayout: 
-                orientation: 'vertical'
-                padding: 30
+                MDBoxLayout: 
+                    orientation: 'vertical'
+                    padding: 30
+                    pos_hint: {'center_x': .5, 'center_y': .5}
 
-                MDGridLayout: 
-                    cols: 3
-                    size_hint_x: 1
-                    size_hint_y: 0.15
-                    spacing: 10
-
-                    MDRectangleFlatIconButton:
-                        id: godziny
-                        icon: 'hours-24'
-                        pos_hint: {'center_x': .5, 'center_y': .5}
-                        text: 'Godziny'
+                    MDGridLayout: 
+                        cols: 3
                         size_hint_x: 1
-                        font_size: '16sp'
-                        on_release:
-                            root.btn_godziny()
+                        size_hint_y: 0.15
+                        spacing: 10
+
+                        MDRectangleFlatIconButton:
+                            id: godziny
+                            icon: 'hours-24'
+                            pos_hint: {'center_x': .5, 'center_y': .5}
+                            text: 'Godziny'
+                            size_hint_x: 1
+                            font_size: '16sp'
+                            on_release:
+                                root.btn_godziny()
+                        
+                        MDRectangleFlatIconButton:
+                            id: obiekt
+                            icon: 'home-lightning-bolt'
+                            pos_hint: {'center_x': .5, 'center_y': .5}
+                            text: 'Obiekt'
+                            size_hint_x: 1
+                            font_size: '16sp'
+                            on_release: 
+                                root.btn_obiekt()
+
+                        MDRectangleFlatIconButton:
+                            id: date
+                            icon: 'calendar-range'
+                            text: root.today[:-5]
+                            font_size: '16sp'
+                            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                            size_hint_x: 1
+                            on_release: 
+                                root.btn_show_calendar()
+
+                    MDScrollView:
+                        size_hint_x: 0.85
+                        size_hint_y: 0.7
+                        pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                        
+                        MDList: 
+                            id: scroll
                     
-                    MDRectangleFlatIconButton:
-                        id: obiekt
-                        icon: 'home-lightning-bolt'
-                        pos_hint: {'center_x': .5, 'center_y': .5}
-                        text: 'Obiekt'
+                    MDGridLayout: 
+                        cols: 2
                         size_hint_x: 1
-                        font_size: '16sp'
-                        on_release: 
-                            root.btn_obiekt()
+                        size_hint_y: 0.15
+
+                        Text:
+                            text: 'Masz 148 godzin'
+                            halign: 'left'
+                            font_size: '24sp'
+                            font_style: 'H6'
+                            
+                        Text:
+                            text: 'Płatność: 4321'
+                            halign: 'right'
+                            font_size: '24sp'
+                            font_style: 'H6'
 
                     MDRectangleFlatIconButton:
-                        id: date
-                        icon: 'calendar-range'
-                        text: root.today[:-5]
-                        font_size: '16sp'
+                        text: "Dodać"
+                        font_size: '28sp'
                         pos_hint: {"center_x": 0.5, "center_y": 0.5}
                         size_hint_x: 1
-                        on_release: 
-                            root.btn_show_calendar()
-
-                MDScrollView:
-                    size_hint_x: 0.85
-                    size_hint_y: 0.7
-                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
-                    MDList: 
-                        id: scroll
-                
-                MDGridLayout: 
-                    cols: 2
-                    size_hint_x: 1
-                    size_hint_y: 0.15
-
-                    Text:
-                        text: 'Masz 148 godzin'
-                        halign: 'left'
-                        font_size: '24sp'
-                        font_style: 'H6'
-                        
-                    Text:
-                        text: 'Płatność: 4321'
-                        halign: 'right'
-                        font_size: '24sp'
-                        font_style: 'H6'
-
-                MDRectangleFlatIconButton:
-                    text: "Dodać"
-                    font_size: '28sp'
-                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
-                    size_hint_x: 1
-                    on_release:
-                        root.btn_dodac()
+                        on_release:
+                            root.btn_dodac()
 
 ### Экран календаря
 <Calendar>:
@@ -271,8 +291,8 @@
 
     orientation: "vertical"
     size_hint:(None, None)
-    height: self.widget_height
-    width: self.widget_width
+    height: int(self.widget_height)
+    width: int(self.widget_width)
     pos_hint: {'center_x': .5, 'center_y': .5}
     size_hint_x: 1
     padding: 30
@@ -362,8 +382,8 @@
 <WorkObjects>:
     orientation: "vertical"
     size_hint:(None, None)
-    height: self.widget_height
-    width: self.widget_width
+    height: int(self.widget_height)
+    width: int(self.widget_width)
     pos_hint: {'center_x': .5, 'center_y': .5}
     size_hint_x: 1
     padding: 30

@@ -30,7 +30,9 @@ class ScreensConstructor:
         "Первый запуск системы"
         action.logger.info('build.py: class ScreensConstructor start_building()')
         self.add_authorization_screen_obj()
+        self.screen_manager.current = 'authorization_screen'
         self.add_calendar_screen_obj()
+        self.add_main_screen_obj(user_name='', user_surname='', screen_constructor=self, search_user_thread=None)
 
     def add_authorization_screen_obj(self):
         "Создаю и добавляю экран авторизации"
@@ -56,19 +58,20 @@ class ScreensConstructor:
                 user_name = user_name,
                 user_surname = user_surname,
                 screen_constructor = screen_constructor,
-                screen_manager = self.screen_manager
+                screen_manager = self.screen_manager,
             )
-        
-        ### Отдельным потоком создаем таблицу данных
-        make_table_thread = threading.Thread(
-            target=self.main_screen.logic.make_data_table,
-            daemon=True,
-            name='make_table_thread',
-            args = [search_user_thread,]
-        )
-        make_table_thread.start()
-        ###
         self.screen_manager.add_widget(self.main_screen)
+        
+        if search_user_thread is not None:
+            ### Отдельным потоком создаем таблицу данных
+            make_table_thread = threading.Thread(
+                target=self.main_screen.logic.make_data_table,
+                daemon=True,
+                name='make_table_thread',
+                args = [search_user_thread,]
+            )
+            make_table_thread.start()
+            ###
 
     def remove_main_screen(self) -> None:
         action.logger.info('build.py: class ScreensConstructor remove_main_screen()')

@@ -1,9 +1,12 @@
 from datetime import date
+import time
+import threading
 
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.screenmanager import ScreenManager
+from kivymd.uix.spinner import MDSpinner
 
-from kivymd.toast.kivytoast import kivytoast
+# from kivymd.toast.kivytoast import kivytoast
 from kivymd.uix.screen import MDScreen
 
 
@@ -11,6 +14,7 @@ import dev.action as action
 from dev.action.logic import AutorizationLogic, MainScreenLogic
 from dev.view.helpers import TabelItem
 from dev.view.calendar import CalendarLogic
+# from dev.client import start_client_server_dialog
 
 
 class Autorization(MDScreen):
@@ -45,9 +49,16 @@ class Autorization(MDScreen):
                 screen_manager=self.screen_manager,
                 authorization_obj = self,
                 )
-
+        
     def btn_logowanie(self):
-        self.logic.set_user()
+        # запускаем виджет ожидания крутиться
+        self.screen_constructor.authorization_screen.ids.spinner.active = True
+        # self.screen_manager.add_widget(self.screen_constructor.main_screen)
+
+        set_user_thread = threading.Thread(target=self.logic.set_user)
+        set_user_thread.start()
+        # start_client_server_dialog(self.logic.login, self.logic.password)
+        # self.ids.spinner.active = True
 
 
 class Main(MDScreen):
@@ -67,7 +78,9 @@ class Main(MDScreen):
         action.logger.info("screens.py: class Main(MDScreen) __init__() name = 'main_screen'")
         super().__init__(**kw)
 
-        self.user = f'{user_name} {user_surname}'
+        self.user_name = user_name
+        self.user_surname = user_surname
+        self.user = f'{self.user_name} {self.user_surname}'
 
         self.today = date.today().strftime("%d.%m.%Y")
         self.year = date.today().year # int

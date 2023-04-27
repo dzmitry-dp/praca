@@ -3,13 +3,14 @@ import threading
 from kivy.clock import mainthread
 
 from kivymd.uix.screen import MDScreen
-from kivymd.uix.spinner import MDSpinner
+# from kivymd.uix.spinner import MDSpinner
 from kivymd.uix.dialog import MDDialog
+# from kivymd.toast.kivytoast import kivytoast
 
 import dev.action as action
 import dev.config as config
 import dev.db.memory as memory
-import dev.db.queries_struct as queries
+# import dev.db.queries_struct as queries
 from dev.action.exceptions import DBConnectionErr
 from dev.view.helpers import AddHoursWidget, WorkObjects
 from dev.client import start_client_server_dialog
@@ -138,12 +139,12 @@ class AutorizationLogic(VerificationData):
         action.logger.debug(f'-: user_authorized = {self.authorization_obj.user_authorized}')
     
     @mainthread
-    def _create_main_screen(self, dt, search_user_thread = None):
+    def _display_main_screen(self, search_user_thread = None):
         """Создаю главный экран после авторизации пользователя, если экран еще не создан
         
         self.screen_constructor.popup_screen - подвижная вкладка
         """
-        action.logger.info('logic.py: class AutorizationLogic(VerificationData) _create_main_screen()')
+        action.logger.info('logic.py: class AutorizationLogic(VerificationData) _display_main_screen()')
 
         if self.screen_manager.has_screen(name='main_screen'):
             self.screen_constructor.main_screen.user_name = self._login
@@ -153,9 +154,19 @@ class AutorizationLogic(VerificationData):
 
             self.screen_manager.current = 'main_screen'
         else:
-            action.logger.error('logic.py: _create_main_screen() Don`t have `main_screen`')
-            pass
-            
+            action.logger.error("logic.py: _create_main_screen() Don't have 'main_screen'")
+            self.screen_constructor.add_main_screen_obj(
+                user_name = self._login,
+                user_surname = self._password,
+                screen_constructor = self.screen_constructor,
+                search_user_thread = search_user_thread,
+                )
+            self.screen_manager.get_screen('main_screen').ids.backdrop.title = f'{self.screen_constructor.main_screen.user_name} {self.screen_constructor.main_screen.user_surname}'
+            self.screen_constructor.popup_screen = self.screen_manager.get_screen('main_screen').children[0].ids['_front_layer'].children[0].children[0].children[0]
+
+            self.screen_manager.current = 'main_screen'
+        print('---End!!!')
+
     def set_user(self) -> None:
         """Вызов этой функции происходит по нажатию кнопки авторизации.
         Исходя из того, что написано в полях ввода,
@@ -165,11 +176,9 @@ class AutorizationLogic(VerificationData):
         _login = self.authorization_obj.user_name.text.replace(' ', '')
         _password = self.authorization_obj.user_surname.text.replace(' ', '')
 
-        if _login != '' and _password != '':
-            action.logger.info(f"DEBUG: Have Login and Password: '{_login}' '{_password}'")
-            self.login = _login
-            self.password = _password
-
+        def start_logic_logowania():
+            "Логика того, что происходит после нажатия кнопки Logowanie"
+            action.logger.info('logic.py: class AutorizationLogic(VerificationData) set_user() start_logic_logowania()')
             ### Отдельным потоком отправляемся искать данные о пользователе
             search_user_thread = threading.Thread(
                 target=self._seach_user_in_base, 
@@ -177,19 +186,36 @@ class AutorizationLogic(VerificationData):
                 name='search_user_thread')
             search_user_thread.start()
             ###
+            ### Отдельным потоком создаем главный экран
+            display_main_screen_thread = threading.Thread(
+                target=self._display_main_screen, 
+                daemon=True,
+                name='display_main_screen_thread',
+                args=[search_user_thread,],
+            )
+            display_main_screen_thread.start()
+            ###
 
-            start_client_server_dialog(self.login, self.password)
+            start_client_server_dialog(
+                self.login,
+                self.password,
+                display_main_screen_thread,
+                )
+            
+            self.screen_constructor.authorization_screen.ids.spinner.active = False
+            self.screen_constructor.main_screen.ids.spinner.active = False
 
+        if _login != '' and _password != '':
+            action.logger.info(f"DEBUG: Have Login and Password: '{_login}' '{_password}'")
+            self.login = _login
+            self.password = _password
+
+            start_logic_logowania()
+            
         else:
             action.logger.warning(f"DEBUG: Have NOT Login and Password: '{_login}' '{_password}'")
+            # kivytoast.toast('Сoś nie tak ...')
             
-        if search_user_thread:
-            action.logger.info("DEBUG: Thread search_user_thread run")
-            self._create_main_screen(search_user_thread)
-        else:
-            action.logger.info("DEBUG: Without search_user_thread")
-            self._create_main_screen()
-
         self.screen_constructor.authorization_screen.ids.spinner.active = False
 
     def on_checkbox_active(self, checkbox, value):
@@ -224,20 +250,6 @@ class MainScreenLogic:
         self.widgets: AddHoursWidget = None
         self.dialog_screen_to_set_godziny: MDDialog = None
 
-    # def process_of_view_table(self):
-    #     "Добавление таблицы во вкладку главного экрана"
-    #     def spiner_screen():
-    #         return MDSpinner(
-    #             size_hint = (None, None),
-    #             size = (46, 46),
-    #             pos_hint = {'center_x': .5, 'center_y': .5},
-    #             active = True,
-    #         )
-
-    #     spiner = spiner_screen()
-    #     self.popup_screen.add_widget(spiner) # add to FloatLayout
-    #     Clock.schedule_once(create_table, 1.6)
-
     def select_godziny(self):
         action.logger.info('logic.py: class MainScreenLogic select_godziny()')
         if not self.dialog_screen_to_set_godziny:
@@ -257,10 +269,12 @@ class MainScreenLogic:
             'user_surname': 'Surname',
         }
 
-    def make_data_table(self, search_user_thread):
+    def make_data_table(self, search_user_thread = None):
         action.logger.info('logic.py: class MainScreenLogic make_data_table()')
 
-        search_user_thread.join() # дождался когда закончится сборка данных для конкретного пользователя
+        if search_user_thread is not None:
+            search_user_thread.join() # дождался когда закончится сборка данных для конкретного пользователя
+        
         user_data = self._read_user_data_from_json()
 
         if user_data is None:

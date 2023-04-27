@@ -72,6 +72,8 @@ class ScreensConstructor:
             )
             make_table_thread.start()
             ###
+        else:
+           self.main_screen.logic.make_data_table(search_user_thread) 
 
     def remove_main_screen(self) -> None:
         action.logger.info('build.py: class ScreensConstructor remove_main_screen()')

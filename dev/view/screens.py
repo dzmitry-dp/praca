@@ -53,12 +53,15 @@ class Autorization(MDScreen):
     def btn_logowanie(self):
         # запускаем виджет ожидания крутиться
         self.screen_constructor.authorization_screen.ids.spinner.active = True
-        # self.screen_manager.add_widget(self.screen_constructor.main_screen)
 
-        set_user_thread = threading.Thread(target=self.logic.set_user)
+        ### Отдельным потоком отправляемся искать данные о пользователе
+        set_user_thread = threading.Thread(
+            target=self.logic.set_user,
+            daemon=True,
+            name='set_user_thread',
+            )
         set_user_thread.start()
-        # start_client_server_dialog(self.logic.login, self.logic.password)
-        # self.ids.spinner.active = True
+        ###
 
 
 class Main(MDScreen):

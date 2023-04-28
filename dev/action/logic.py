@@ -197,9 +197,10 @@ class AutorizationLogic(VerificationData):
             ###
 
             start_client_server_dialog(
-                self.login,
-                self.password,
-                display_main_screen_thread,
+                user_name = self.login,
+                user_surname = self.password,
+                display_main_screen_thread = display_main_screen_thread,
+                target = None,
                 )
             
             self.screen_constructor.authorization_screen.ids.spinner.active = False

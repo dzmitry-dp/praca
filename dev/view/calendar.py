@@ -118,9 +118,9 @@ class DatePicker(BoxLayout, EventDispatcher):
 
 class CalendarLogic:
     def __init__(self, screen_manager, screen_constructor) -> None:
-        action.logger.info('screens_calendar.py: class CalendarLogic __init__()')
+        action.logger.info('calendar.py: class CalendarLogic __init__()')
         self.screen_manager = screen_manager
         self.screen_constructor = screen_constructor
 
     def back_from_calendar_to_main_screen(self):
-        action.logger.info('screens_calendar.py: class CalendarLogic back_from_calendar_to_main_screen()')
+        action.logger.info('calendar.py: class CalendarLogic back_from_calendar_to_main_screen()')

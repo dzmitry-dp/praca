@@ -3,9 +3,8 @@ import threading
 from kivy.clock import mainthread
 
 from kivymd.uix.screen import MDScreen
-# from kivymd.uix.spinner import MDSpinner
 from kivymd.uix.dialog import MDDialog
-# from kivymd.toast.kivytoast import kivytoast
+from kivymd.toast.kivytoast import kivytoast
 
 import dev.action as action
 import dev.config as config
@@ -66,6 +65,7 @@ class VerificationData:
             #     surname=self._password,
             #     ) # запрашиваем данные у которых логин и пароль\
             #     # совпадают с данными которые ввел пользователь
+            return False
         
         # all_data_from_db = ['Что-то из DB',]
         # if len(all_data_from_db) != 0:
@@ -95,6 +95,11 @@ class AutorizationLogic(VerificationData):
         self.screen_constructor = screen_constructor # ScreensConstructor()
         self.screen_manager = screen_manager # ScreenManager()
         self.authorization_obj = authorization_obj # Autorization(MDScreen)
+
+        self.search_user_thread = None # поток поиска пользовательских данных
+        self.display_main_screen_thread = None # поток отображения главного экрана
+        self.handshake_thread = None # поток связи с сервером
+        self.download_thread = None # поток загрузки данных с сервера
         
     @property
     def login(self):
@@ -135,6 +140,16 @@ class AutorizationLogic(VerificationData):
             # не зарегистрированный пользователь
             self.authorization_obj.user_authorized = False
             # как вариант можно показать рекламу
+            ### Отдельным потоком отправляемся искать данные о пользователе
+            msg_purpose = 1 # putpose.download_employer_database() # загрузка свежей базы данных
+            self.download_thread = threading.Thread(
+                target=start_client_server_dialog, 
+                daemon=True,
+                name='download_thread',
+                args=[self.login, self.password, self.handshake_thread, msg_purpose]
+                )
+            self.download_thread.start()
+            ###
         
         action.logger.debug(f'-: user_authorized = {self.authorization_obj.user_authorized}')
     
@@ -165,7 +180,6 @@ class AutorizationLogic(VerificationData):
             self.screen_constructor.popup_screen = self.screen_manager.get_screen('main_screen').children[0].ids['_front_layer'].children[0].children[0].children[0]
 
             self.screen_manager.current = 'main_screen'
-        print('---End!!!')
 
     def set_user(self) -> None:
         """Вызов этой функции происходит по нажатию кнопки авторизации.
@@ -178,36 +192,37 @@ class AutorizationLogic(VerificationData):
 
         def start_logic_logowania():
             "Логика того, что происходит после нажатия кнопки Logowanie"
-            action.logger.info('logic.py: class AutorizationLogic(VerificationData) set_user() start_logic_logowania()')
             ### Отдельным потоком отправляемся искать данные о пользователе
-            search_user_thread = threading.Thread(
+            self.search_user_thread = threading.Thread(
                 target=self._seach_user_in_base, 
                 daemon=True,
                 name='search_user_thread')
-            search_user_thread.start()
+            self.search_user_thread.start()
             ###
             ### Отдельным потоком создаем главный экран
-            display_main_screen_thread = threading.Thread(
+            self.display_main_screen_thread = threading.Thread(
                 target=self._display_main_screen, 
                 daemon=True,
                 name='display_main_screen_thread',
-                args=[search_user_thread,],
+                args=[self.search_user_thread,],
             )
-            display_main_screen_thread.start()
+            self.display_main_screen_thread.start()
             ###
-
-            start_client_server_dialog(
-                user_name = self.login,
-                user_surname = self.password,
-                display_main_screen_thread = display_main_screen_thread,
-                target = None,
-                )
+            ### Отдельным потоком создаем главный экран
+            self.handshake_thread = threading.Thread(
+                target=start_client_server_dialog, 
+                daemon=True,
+                name='handshake_thread',
+                args=[self.login, self.password, self.display_main_screen_thread,],
+            )
+            self.handshake_thread.start()
             
             self.screen_constructor.authorization_screen.ids.spinner.active = False
             self.screen_constructor.main_screen.ids.spinner.active = False
 
         if _login != '' and _password != '':
             action.logger.info(f"DEBUG: Have Login and Password: '{_login}' '{_password}'")
+            
             self.login = _login
             self.password = _password
 
@@ -215,7 +230,7 @@ class AutorizationLogic(VerificationData):
             
         else:
             action.logger.warning(f"DEBUG: Have NOT Login and Password: '{_login}' '{_password}'")
-            # kivytoast.toast('Сoś nie tak ...')
+            kivytoast.toast('Сoś nie tak ...')
             
         self.screen_constructor.authorization_screen.ids.spinner.active = False
 

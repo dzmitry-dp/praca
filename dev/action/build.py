@@ -49,7 +49,7 @@ class ScreensConstructor:
             user_name,
             user_surname,
             screen_constructor,
-            search_user_thread, # поток в котором получаем все данные о пользователе
+            search_user_thread = None, # поток в котором получаем все данные о пользователе
             ):
         "Создаю и добавляю главный экран приложения"
         action.logger.info('build.py: class ScreensConstructor add_main_screen_obj()')
@@ -72,8 +72,7 @@ class ScreensConstructor:
             )
             make_table_thread.start()
             ###
-        else:
-           self.main_screen.logic.make_data_table(search_user_thread) 
+        
 
     def remove_main_screen(self) -> None:
         action.logger.info('build.py: class ScreensConstructor remove_main_screen()')

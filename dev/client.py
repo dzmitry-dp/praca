@@ -13,7 +13,66 @@ from dev.action.hash import hash_raw
 SERVER = "167.71.37.89"
 PORT = 1489
 
-def select_msg(client_name: str, key: bytes, msg_purpose: int) -> bytes:
+def thread_control(dialog):
+    def wrapper(**kwargs):
+        if kwargs['thread'].name == 'handshake_thread':
+            action.logger.info(f'client.py: thread_control() handshake_thread')
+            dialog(**kwargs)
+            kwargs['thread'].join()
+        elif kwargs['thread'].name == 'download_thread':
+            action.logger.info(f'client.py: thread_control() download_thread')
+            kwargs['thread'].join()
+            dialog(**kwargs)
+        elif kwargs['thread'].name == 'display_main_screen_thread':
+            action.logger.info(f'client.py: thread_control() display_main_screen_thread')
+            # первый запуск после логировани
+            dialog(**kwargs)
+            kwargs['thread'].join()
+    return wrapper
+
+
+class Client:
+    @thread_control
+    def start_client_server_dialog(user_name: str, user_surname: str, thread: Thread = None, msg_purpose: str = None):
+        action.logger.info('client.py: start_client_server_dialog()')
+        response = requests.get("http://ifconfig.me/ip")
+        client_name = f'{user_name} {user_surname}'
+        client_ip = response.text
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        key: bytes = hash_raw(client_ip, PORT)
+
+        action.logger.info(f"DEBUG: IP '{client_ip}")
+        action.logger.info(f"DEBUG: key = {key}")
+
+        if _connect_to_server(client_socket, key):
+            ### Отдельный поток для информации
+            output_thread = Thread(
+                target = send_json_msg_to_server,
+                args = [client_name, client_ip, client_socket, key, msg_purpose],
+                daemon = True,
+                name = 'output_thread',
+                )
+            output_thread.start()
+            output_thread.join() # жду пока не закончим диалог с сервером сервер
+            ###
+
+def _connect_to_server(client_socket, key) -> bool:
+    try:
+        action.logger.info(f'client.py: Try connect to {SERVER}:{PORT}')
+        client_socket.connect((SERVER, PORT))
+    except ConnectionRefusedError:
+        action.logger.error('client.py: ConnectionRefusedError - Not connections')
+        return False
+    else:
+        action.logger.info(f'client.py: Connected to {SERVER}:{PORT}')
+        ### Отдельным потоком принимаем входящую информацию
+        input_thread = Thread(target = _forever_listen_server, daemon = True, name = 'input_thread', args = [client_socket, key,])
+        input_thread.start()
+        ###
+        return True
+
+
+def _select_msg(client_name: str, key: bytes, msg_purpose: int) -> bytes:
     "Возвращаю зашифрованный json"
     action.logger.info('client.py: select_msg()')
 
@@ -28,21 +87,29 @@ def select_msg(client_name: str, key: bytes, msg_purpose: int) -> bytes:
     
     return encrypted_data
 
-def forever_listen_server(client_socket: socket.socket, key: bytes):
+def send_json_msg_to_server(client_name: str, client_ip: str, client_socket: socket.socket, key: bytes, msg_purpose: int):
+    action.logger.info('client.py: send_json_msg_to_server()')
+
+    msg: bytes = _select_msg(client_name, key, msg_purpose) # зашифрованный json
+    client_socket.sendall(msg)
+
+def _forever_listen_server(client_socket: socket.socket, key: bytes):
     action.logger.info('client.py: forever_listen_server()')
 
     def select_client_reaction(decode_data):
-        if decode_data['header']['title'] == 'send_ssl_port':
+        if decode_data == '':
+            client_socket.close()
+        elif decode_data['header']['title'] == 'send_ssl_port':
             # у нас есть порт по которому настроен ftp
             # скачать актуальную базу
-            pass
+            pass # запрос на скачивание файла
 
     while True:
         try:
             action.logger.info(f"client.py: I'm waiting for a message from the {SERVER}")
             encrypted_data =  client_socket.recv(4096)
 
-            if not encrypted_data:
+            if not encrypted_data: # if '' -> break
                 action.logger.info(f"DEBUG: Shutting down the server after a message = {encrypted_data}")
                 break
             else:
@@ -60,58 +127,3 @@ def forever_listen_server(client_socket: socket.socket, key: bytes):
             break
     
     client_socket.close()
-    
-
-def send_json_msg_to_server(client_name: str, client_ip: str, client_socket: socket.socket, key: bytes, msg_purpose: int):
-    action.logger.info('client.py: send_json_msg_to_server()')
-
-    msg: bytes = select_msg(client_name, key, msg_purpose) # зашифрованный json
-    client_socket.sendall(msg)
-
-def connect_to_server(client_socket, key):
-    try:
-        action.logger.info(f'client.py: Try connect to {SERVER}:{PORT}')
-        client_socket.connect((SERVER, PORT))
-    except ConnectionRefusedError:
-        action.logger.error('client.py: ConnectionRefusedError - Not connections')
-        return False
-    else:
-        action.logger.info(f'client.py: Connected to {SERVER}:{PORT}')
-        ### Отдельным потоком принимаем входящую информацию
-        input_thread = Thread(target = forever_listen_server, daemon = True, name = 'input_thread', args = [client_socket, key,])
-        input_thread.start()
-        ###
-        return True
-
-def thread_control(client_server_dilog):
-    def wrapper(**kwargs):
-        if kwargs.thread.name == 'handshake_thread':
-            client_server_dilog(**kwargs)
-            kwargs.thread.join()
-        elif kwargs.thread.name == 'download_thread':
-            kwargs.thread.join()
-            client_server_dilog(**kwargs)
-    return wrapper
-
-@thread_control
-def start_client_server_dialog(user_name: str, user_surname: str, thread: Thread = None, msg_purpose: str = None):
-    action.logger.info('client.py: start_client_server_dialog()')
-    response = requests.get("http://ifconfig.me/ip")
-    client_name = f'{user_name} {user_surname}'
-    client_ip = response.text
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    key: bytes = hash_raw(client_ip, PORT)
-
-    action.logger.info(f"DEBUG: IP '{client_ip}")
-    action.logger.info(f"DEBUG: key = {key}")
-
-    if connect_to_server(client_socket, key):
-        # Поток для исходящей информации
-        output_thread = Thread(
-            target = send_json_msg_to_server,
-            args = [client_name, client_ip, client_socket, key, msg_purpose],
-            daemon = True,
-            name = 'output_thread',
-            )
-        output_thread.start()
-        output_thread.join() # жду пока не ответит сервер

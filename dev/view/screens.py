@@ -56,7 +56,7 @@ class Autorization(MDScreen):
 
         ### Отдельным потоком отправляемся искать данные о пользователе
         set_user_thread = threading.Thread(
-            target=self.logic.set_user,
+            target=self.logic.check_user_in_database,
             daemon=True,
             name='set_user_thread',
             )

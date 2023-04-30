@@ -1,10 +1,10 @@
 import threading
+import json
 
 from kivy.clock import mainthread
 
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.dialog import MDDialog
-from kivymd.toast.kivytoast import kivytoast
 
 import dev.action as action
 import dev.config as config
@@ -12,7 +12,7 @@ import dev.db.memory as memory
 # import dev.db.queries_struct as queries
 from dev.action.exceptions import DBConnectionErr
 from dev.view.helpers import AddHoursWidget, WorkObjects
-from dev.client import start_client_server_dialog
+from dev.client import Client
 
 
 class VerificationData:
@@ -140,14 +140,19 @@ class AutorizationLogic(VerificationData):
             # не зарегистрированный пользователь
             self.authorization_obj.user_authorized = False
             # как вариант можно показать рекламу
-            ### Отдельным потоком отправляемся искать данные о пользователе
+            ### Отдельным потоком скачиваем актуальные данные
             msg_purpose = 1 # putpose.download_employer_database() # загрузка свежей базы данных
             self.download_thread = threading.Thread(
-                target=start_client_server_dialog, 
+                target=Client.start_client_server_dialog, 
                 daemon=True,
                 name='download_thread',
-                args=[self.login, self.password, self.handshake_thread, msg_purpose]
-                )
+                kwargs={
+                    'user_name': self.login,
+                    'user_surname': self.password,
+                    'thread': self.handshake_thread,
+                    'msg_purpose': msg_purpose,
+                }
+            )
             self.download_thread.start()
             ###
         
@@ -181,7 +186,41 @@ class AutorizationLogic(VerificationData):
 
             self.screen_manager.current = 'main_screen'
 
-    def set_user(self) -> None:
+    def _start_logic_logowania(self):
+        "Логика того, что происходит после нажатия кнопки Logowanie"
+        ### Отдельным потоком отправляемся искать данные о пользователе
+        self.search_user_thread = threading.Thread(
+            target=self._seach_user_in_base, 
+            daemon=True,
+            name='search_user_thread')
+        self.search_user_thread.start()
+        ###
+        ### Отдельным потоком создаем главный экран
+        self.display_main_screen_thread = threading.Thread(
+            target=self._display_main_screen, 
+            daemon=True,
+            name='display_main_screen_thread',
+            args=[self.search_user_thread,],
+        )
+        self.display_main_screen_thread.start()
+        ###
+        ### Отдельным потоком создаем главный экран
+        self.handshake_thread = threading.Thread(
+            target=Client.start_client_server_dialog, 
+            daemon=True,
+            name='handshake_thread',
+            kwargs={
+                'user_name': self.login,
+                'user_surname': self.password,
+                'thread': self.display_main_screen_thread,
+            },
+        )
+        self.handshake_thread.start()
+        
+        self.screen_constructor.authorization_screen.ids.spinner.active = False
+        self.screen_constructor.main_screen.ids.spinner.active = False
+
+    def check_user_in_database(self) -> None:
         """Вызов этой функции происходит по нажатию кнопки авторизации.
         Исходя из того, что написано в полях ввода,
         составляю представление о пользователе"""
@@ -190,35 +229,6 @@ class AutorizationLogic(VerificationData):
         _login = self.authorization_obj.user_name.text.replace(' ', '')
         _password = self.authorization_obj.user_surname.text.replace(' ', '')
 
-        def start_logic_logowania():
-            "Логика того, что происходит после нажатия кнопки Logowanie"
-            ### Отдельным потоком отправляемся искать данные о пользователе
-            self.search_user_thread = threading.Thread(
-                target=self._seach_user_in_base, 
-                daemon=True,
-                name='search_user_thread')
-            self.search_user_thread.start()
-            ###
-            ### Отдельным потоком создаем главный экран
-            self.display_main_screen_thread = threading.Thread(
-                target=self._display_main_screen, 
-                daemon=True,
-                name='display_main_screen_thread',
-                args=[self.search_user_thread,],
-            )
-            self.display_main_screen_thread.start()
-            ###
-            ### Отдельным потоком создаем главный экран
-            self.handshake_thread = threading.Thread(
-                target=start_client_server_dialog, 
-                daemon=True,
-                name='handshake_thread',
-                args=[self.login, self.password, self.display_main_screen_thread,],
-            )
-            self.handshake_thread.start()
-            
-            self.screen_constructor.authorization_screen.ids.spinner.active = False
-            self.screen_constructor.main_screen.ids.spinner.active = False
 
         if _login != '' and _password != '':
             action.logger.info(f"DEBUG: Have Login and Password: '{_login}' '{_password}'")
@@ -226,11 +236,10 @@ class AutorizationLogic(VerificationData):
             self.login = _login
             self.password = _password
 
-            start_logic_logowania()
+            self._start_logic_logowania()
             
         else:
             action.logger.warning(f"DEBUG: Have NOT Login and Password: '{_login}' '{_password}'")
-            kivytoast.toast('Сoś nie tak ...')
             
         self.screen_constructor.authorization_screen.ids.spinner.active = False
 
@@ -279,11 +288,12 @@ class MainScreenLogic:
             )
         self.dialog_screen_to_set_godziny.open()
 
-    def _read_user_data_from_json(self):
-        return {
+    def _read_user_data_from_json(self) -> json:
+        #
+        return json.dumps({
             'user_name': 'User',
             'user_surname': 'Surname',
-        }
+        })
 
     def make_data_table(self, search_user_thread = None):
         action.logger.info('logic.py: class MainScreenLogic make_data_table()')

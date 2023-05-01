@@ -140,20 +140,20 @@ class AutorizationLogic(VerificationData):
             # не зарегистрированный пользователь
             self.authorization_obj.user_authorized = False
             # как вариант можно показать рекламу
-            ### Отдельным потоком скачиваем актуальные данные
-            msg_purpose = 1 # putpose.download_employer_database() # загрузка свежей базы данных
-            self.download_thread = threading.Thread(
-                target=Client.start_client_server_dialog, 
-                daemon=True,
-                name='download_thread',
-                kwargs={
-                    'user_name': self.login,
-                    'user_surname': self.password,
-                    'thread': self.handshake_thread,
-                    'msg_purpose': msg_purpose,
-                }
-            )
-            self.download_thread.start()
+            # ### Отдельным потоком скачиваем актуальные данные
+            # msg_purpose = 1 # putpose.download_employer_database() # загрузка свежей базы данных
+            # self.download_thread = threading.Thread(
+            #     target=Client.start_client_server_dialog, 
+            #     daemon=True,
+            #     name='download_thread',
+            #     kwargs={
+            #         'user_name': self.login,
+            #         'user_surname': self.password,
+            #         'thread': self.handshake_thread,
+            #         'msg_purpose': msg_purpose,
+            #     }
+            # )
+            # self.download_thread.start()
             ###
         
         action.logger.debug(f'-: user_authorized = {self.authorization_obj.user_authorized}')
@@ -204,7 +204,7 @@ class AutorizationLogic(VerificationData):
         )
         self.display_main_screen_thread.start()
         ###
-        ### Отдельным потоком создаем главный экран
+        ### Отдельным потоком пытаемся связаться с срвером
         self.handshake_thread = threading.Thread(
             target=Client.start_client_server_dialog, 
             daemon=True,
@@ -212,15 +212,15 @@ class AutorizationLogic(VerificationData):
             kwargs={
                 'user_name': self.login,
                 'user_surname': self.password,
-                'thread': self.display_main_screen_thread,
             },
         )
         self.handshake_thread.start()
+        self.handshake_thread.join()
         
         self.screen_constructor.authorization_screen.ids.spinner.active = False
         self.screen_constructor.main_screen.ids.spinner.active = False
 
-    def check_user_in_database(self) -> None:
+    def check_user(self) -> None:
         """Вызов этой функции происходит по нажатию кнопки авторизации.
         Исходя из того, что написано в полях ввода,
         составляю представление о пользователе"""

@@ -73,21 +73,19 @@ class ScreensConstructor:
             make_table_thread.start()
             ###
         
-
     def remove_main_screen(self) -> None:
         action.logger.info('build.py: class ScreensConstructor remove_main_screen()')
         self.screen_manager.remove_widget(self.main_screen)
         self.main_screen = None
 
     def add_calendar_screen_obj(self): # calendar_screen
+        action.logger.info('build.py: class ScreensConstructor add_calendar_screen_obj()')
         self.calendar = Calendar(
             name = 'calendar_screen',
             screen_manager = self.screen_manager,
             screen_constructor = self,
         )
         self.screen_manager.add_widget(self.calendar)
-        # self.screen_manager.transition.direction = 'left'
-        # self.screen_manager.current = 'calendar_screen'
 
     def remove_calendar_screen(self):
         action.logger.info('build.py: class ScreensConstructor remove_calendar_screen()')

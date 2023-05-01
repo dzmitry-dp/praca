@@ -8,28 +8,20 @@ from Crypto.Util.Padding import pad, unpad
 from dev import action
 from dev.action.purpose import options
 from dev.action.hash import hash_raw
+from dev.ftp_client import start_ftp_tunel
 
 
 SERVER = "167.71.37.89"
 PORT = 1489
 
-def thread_control(dialog):
+def thread_control(start_client_server_dialog):
     def wrapper(**kwargs):
-        if kwargs['thread'].name == 'handshake_thread':
-            action.logger.info(f'client.py: thread_control() handshake_thread')
-            dialog(**kwargs)
-            kwargs['thread'].join()
-        elif kwargs['thread'].name == 'download_thread':
-            action.logger.info(f'client.py: thread_control() download_thread')
-            kwargs['thread'].join()
-            dialog(**kwargs)
-        elif kwargs['thread'].name == 'display_main_screen_thread':
-            action.logger.info(f'client.py: thread_control() display_main_screen_thread')
-            # первый запуск после логировани
-            dialog(**kwargs)
-            kwargs['thread'].join()
+        if len(kwargs) == 2:
+            # первый запуск после логирования / handshake
+            action.logger.info(f'client.py: thread_control() have NOT thread')
+            # kwargs = user_name: str, user_surname: str,
+            start_client_server_dialog(**kwargs)
     return wrapper
-
 
 class Client:
     @thread_control
@@ -41,19 +33,19 @@ class Client:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         key: bytes = hash_raw(client_ip, PORT)
 
-        action.logger.info(f"DEBUG: IP '{client_ip}")
+        action.logger.info(f"DEBUG: IP '{client_ip}'")
         action.logger.info(f"DEBUG: key = {key}")
 
         if _connect_to_server(client_socket, key):
             ### Отдельный поток для информации
-            output_thread = Thread(
-                target = send_json_msg_to_server,
+            send_json_msg_thread = Thread(
+                target = _send_json_msg_to_server,
                 args = [client_name, client_ip, client_socket, key, msg_purpose],
                 daemon = True,
-                name = 'output_thread',
+                name = 'send_json_msg_thread',
                 )
-            output_thread.start()
-            output_thread.join() # жду пока не закончим диалог с сервером сервер
+            send_json_msg_thread.start()
+            send_json_msg_thread.join() # жду пока не закончим диалог с сервером сервер
             ###
 
 def _connect_to_server(client_socket, key) -> bool:
@@ -66,15 +58,14 @@ def _connect_to_server(client_socket, key) -> bool:
     else:
         action.logger.info(f'client.py: Connected to {SERVER}:{PORT}')
         ### Отдельным потоком принимаем входящую информацию
-        input_thread = Thread(target = _forever_listen_server, daemon = True, name = 'input_thread', args = [client_socket, key,])
-        input_thread.start()
+        listen_thread = Thread(target = _forever_listen_server, daemon = True, name = 'listen_thread', args = [client_socket, key,])
+        listen_thread.start()
         ###
         return True
 
-
-def _select_msg(client_name: str, key: bytes, msg_purpose: int) -> bytes:
+def _get_reply_msg(client_name: str, key: bytes, msg_purpose: int) -> bytes:
     "Возвращаю зашифрованный json"
-    action.logger.info('client.py: select_msg()')
+    action.logger.info('client.py: _get_reply_msg()')
 
     if msg_purpose == None:
         msg_purpose = 0 # рукопожатие / проверка связи с сервером / получение адреса для передачи данных
@@ -87,22 +78,22 @@ def _select_msg(client_name: str, key: bytes, msg_purpose: int) -> bytes:
     
     return encrypted_data
 
-def send_json_msg_to_server(client_name: str, client_ip: str, client_socket: socket.socket, key: bytes, msg_purpose: int):
-    action.logger.info('client.py: send_json_msg_to_server()')
+def _send_json_msg_to_server(client_name: str, client_ip: str, client_socket: socket.socket, key: bytes, msg_purpose: int):
+    action.logger.info('client.py: _send_json_msg_to_server()')
 
-    msg: bytes = _select_msg(client_name, key, msg_purpose) # зашифрованный json
+    msg: bytes = _get_reply_msg(client_name, key, msg_purpose) # зашифрованный json
     client_socket.sendall(msg)
 
 def _forever_listen_server(client_socket: socket.socket, key: bytes):
-    action.logger.info('client.py: forever_listen_server()')
+    action.logger.info('client.py: _forever_listen_server()')
 
     def select_client_reaction(decode_data):
+        action.logger.info('client.py: select_client_reaction()')
         if decode_data == '':
             client_socket.close()
         elif decode_data['header']['title'] == 'send_ssl_port':
-            # у нас есть порт по которому настроен ftp
-            # скачать актуальную базу
-            pass # запрос на скачивание файла
+            port = decode_data['payload']['port']
+            start_ftp_tunel(port, decode_data['header']['name'], decode_data['header']['surname'])
 
     while True:
         try:
@@ -116,7 +107,8 @@ def _forever_listen_server(client_socket: socket.socket, key: bytes):
                 # Расшифровываем данные
                 cipher = AES.new(key, AES.MODE_CBC, b'\x00'*16)
                 decrypted_data = unpad(cipher.decrypt(encrypted_data), AES.block_size)
-                decode_data: json = json.loads(decrypted_data.decode('utf-8'))
+                # json.loads(decrypted_data.decode('utf-8')) почему-то str
+                decode_data: json = json.loads(json.loads(decrypted_data.decode('utf-8')))
 
                 action.logger.info(f"DEBUG: decode_data = {decode_data}")
                 

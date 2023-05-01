@@ -1,25 +1,31 @@
-# запускай из /Praca командой python ./scripts/ftp_client.py
-
 from ftplib import FTP_TLS
 import os
 
+from dev import action
+
 HOST = "167.71.37.89"
-PORT = 1488
+PORT = 19663
 
 CERTFILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                        "../static/.ssl/cert.pem"))
+                                        "./dev/static/.ssl/cert.pem"))
 
-def send_cmd() -> str:
+def _send_cmd_to_ftp_server(ftp) -> str:
+    action.logger.info(f"ftp_client: _send_cmd")
     return ftp.sendcmd('pwd')
 
-if __name__ == '__main__':
+def start_ftp_tunel(port: int, login: str, password: str):
+    action.logger.info(f"ftp_client: start_ftp_tunel()")
     ftp = FTP_TLS()
 
     ftp.certfile = CERTFILE
-    ftp.connect(HOST, PORT)
-    ftp.login('user', '12345')
+    action.logger.info(f"DEBUG: Try connect to {HOST}:{port}")
+    # ftp.connect(HOST, PORT)
+    ftp.connect(HOST, port)
+    action.logger.info(f"DEBUG: login = {login}, password = {password}")
+    ftp.login(login, password)
 
-    data = send_cmd()
-    print(data)
+
+    data = _send_cmd_to_ftp_server(ftp)
+    action.logger.info(f"DEBUG: From server: {data}")
 
     ftp.quit()

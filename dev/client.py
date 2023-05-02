@@ -92,8 +92,9 @@ def _forever_listen_server(client_socket: socket.socket, key: bytes):
         if decode_data == '':
             client_socket.close()
         elif decode_data['header']['title'] == 'send_ssl_port':
-            port = decode_data['payload']['port']
-            connect_to_ftp(port, decode_data['header']['name'], decode_data['header']['surname'])
+            port: int = decode_data['payload']['ftp_port']
+            cert: str = decode_data['payload']['cert']
+            connect_to_ftp(port, decode_data['header']['name'], decode_data['header']['surname'], cert)
 
     while True:
         try:

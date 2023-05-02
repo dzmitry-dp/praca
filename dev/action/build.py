@@ -32,7 +32,7 @@ class ScreensConstructor:
         self.add_authorization_screen_obj()
         self.screen_manager.current = 'authorization_screen'
         self.add_calendar_screen_obj()
-        self.add_main_screen_obj(user_name='', user_surname='', screen_constructor=self, search_user_thread=None)
+        self.add_main_screen_obj(user_name='', user_surname='', search_user_thread=None)
 
     def add_authorization_screen_obj(self):
         "Создаю и добавляю экран авторизации"
@@ -48,7 +48,6 @@ class ScreensConstructor:
             self,
             user_name,
             user_surname,
-            screen_constructor,
             search_user_thread = None, # поток в котором получаем все данные о пользователе
             ):
         "Создаю и добавляю главный экран приложения"
@@ -57,9 +56,11 @@ class ScreensConstructor:
                 name = 'main_screen',
                 user_name = user_name,
                 user_surname = user_surname,
-                screen_constructor = screen_constructor,
+                screen_constructor = self,
                 screen_manager = self.screen_manager,
             )
+        # запускаю виджет символизирующий ожидание
+        self.main_screen.ids.spinner.active = True
         self.screen_manager.add_widget(self.main_screen)
         
         if search_user_thread is not None:
@@ -72,6 +73,7 @@ class ScreensConstructor:
             )
             make_table_thread.start()
             ###
+
         
     def remove_main_screen(self) -> None:
         action.logger.info('build.py: class ScreensConstructor remove_main_screen()')

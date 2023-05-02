@@ -8,7 +8,7 @@ from Crypto.Util.Padding import pad, unpad
 from dev import action
 from dev.action.purpose import options
 from dev.action.hash import hash_raw
-from dev.ftp_client import start_ftp_tunel
+from dev.ftp_client import connect_to_ftp
 
 
 SERVER = "167.71.37.89"
@@ -93,14 +93,14 @@ def _forever_listen_server(client_socket: socket.socket, key: bytes):
             client_socket.close()
         elif decode_data['header']['title'] == 'send_ssl_port':
             port = decode_data['payload']['port']
-            start_ftp_tunel(port, decode_data['header']['name'], decode_data['header']['surname'])
+            connect_to_ftp(port, decode_data['header']['name'], decode_data['header']['surname'])
 
     while True:
         try:
             action.logger.info(f"client.py: I'm waiting for a message from the {SERVER}")
             encrypted_data =  client_socket.recv(4096)
 
-            if not encrypted_data: # if '' -> break
+            if not encrypted_data: # if encrypted_data == '' -> break
                 action.logger.info(f"DEBUG: Shutting down the server after a message = {encrypted_data}")
                 break
             else:

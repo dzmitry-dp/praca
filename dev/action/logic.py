@@ -56,7 +56,7 @@ class VerificationData:
 
         except DBConnectionErr:
             # Если таблица еще не создана
-            action.logger.error('logic.py: class VerificationData get_permission() "DB have NOT table"')
+            action.logger.error('DEBUG: DB have NOT table')
             # query_to_user_base.create_table(data=queries.user_table)
             # query_to_user_base.write_values(data=queries.generate_first_data(self._login, self._password))
             # all_data_from_db = query_to_user_base.query_select_user(
@@ -158,7 +158,7 @@ class AutorizationLogic(VerificationData):
         
         action.logger.debug(f'-: user_authorized = {self.authorization_obj.user_authorized}')
     
-    @mainthread
+    # @mainthread
     def _display_main_screen(self, search_user_thread = None):
         """Создаю главный экран после авторизации пользователя, если экран еще не создан
         
@@ -167,24 +167,21 @@ class AutorizationLogic(VerificationData):
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) _display_main_screen()')
 
         if self.screen_manager.has_screen(name='main_screen'):
-            self.screen_constructor.main_screen.user_name = self._login
-            self.screen_constructor.main_screen.user_surname = self._password
-            self.screen_manager.get_screen('main_screen').ids.backdrop.title = f'{self.screen_constructor.main_screen.user_name} {self.screen_constructor.main_screen.user_surname}'
-            self.screen_constructor.popup_screen = self.screen_manager.get_screen('main_screen').children[0].ids['_front_layer'].children[0].children[0].children[0]
-
-            self.screen_manager.current = 'main_screen'
+            action.logger.info(f"DEBUG: Have 'main_screen'")
+            self.screen_manager.get_screen('main_screen').user_name = self._login
+            self.screen_manager.get_screen('main_screen').user_surname = self._password
+            
         else:
-            action.logger.error("logic.py: _create_main_screen() Don't have 'main_screen'")
+            action.logger.info(f"DEBUG: Don't have 'main_screen'")
             self.screen_constructor.add_main_screen_obj(
                 user_name = self._login,
                 user_surname = self._password,
-                screen_constructor = self.screen_constructor,
                 search_user_thread = search_user_thread,
                 )
-            self.screen_manager.get_screen('main_screen').ids.backdrop.title = f'{self.screen_constructor.main_screen.user_name} {self.screen_constructor.main_screen.user_surname}'
-            self.screen_constructor.popup_screen = self.screen_manager.get_screen('main_screen').children[0].ids['_front_layer'].children[0].children[0].children[0]
 
-            self.screen_manager.current = 'main_screen'
+        self.screen_constructor.main_screen.ids.backdrop.title = f'{self.screen_constructor.main_screen.user_name} {self.screen_constructor.main_screen.user_surname}'
+        self.screen_constructor.popup_screen = self.screen_constructor.main_screen.children[0].ids['_front_layer'].children[0].children[0].children[0]
+        self.screen_manager.current = 'main_screen' 
 
     def _start_logic_logowania(self):
         "Логика того, что происходит после нажатия кнопки Logowanie"
@@ -195,40 +192,18 @@ class AutorizationLogic(VerificationData):
             name='search_user_thread')
         self.search_user_thread.start()
         ###
-        ### Отдельным потоком создаем главный экран
-        self.display_main_screen_thread = threading.Thread(
-            target=self._display_main_screen, 
-            daemon=True,
-            name='display_main_screen_thread',
-            args=[self.search_user_thread,],
-        )
-        self.display_main_screen_thread.start()
-        ###
-        ### Отдельным потоком пытаемся связаться с срвером
-        self.handshake_thread = threading.Thread(
-            target=Client.start_client_server_dialog, 
-            daemon=True,
-            name='handshake_thread',
-            kwargs={
-                'user_name': self.login,
-                'user_surname': self.password,
-            },
-        )
-        self.handshake_thread.start()
-        self.handshake_thread.join()
-        
-        self.screen_constructor.authorization_screen.ids.spinner.active = False
-        self.screen_constructor.main_screen.ids.spinner.active = False
+        self._display_main_screen(self.search_user_thread)
+        Client.start_client_server_dialog(user_name=self.login, user_surname=self.password)
 
+    @mainthread    
     def check_user(self) -> None:
         """Вызов этой функции происходит по нажатию кнопки авторизации.
         Исходя из того, что написано в полях ввода,
         составляю представление о пользователе"""
-        action.logger.info('logic.py: class AutorizationLogic(VerificationData) set_user()')
+        action.logger.info('logic.py: class AutorizationLogic(VerificationData) check_user()')
 
         _login = self.authorization_obj.user_name.text.replace(' ', '')
         _password = self.authorization_obj.user_surname.text.replace(' ', '')
-
 
         if _login != '' and _password != '':
             action.logger.info(f"DEBUG: Have Login and Password: '{_login}' '{_password}'")
@@ -237,12 +212,15 @@ class AutorizationLogic(VerificationData):
             self.password = _password
 
             self._start_logic_logowania()
+
+            # выключаю спинеры
+            self.screen_constructor.authorization_screen.ids.spinner.active = False
+            self.screen_constructor.main_screen.ids.spinner.active = False
             
         else:
             action.logger.warning(f"DEBUG: Have NOT Login and Password: '{_login}' '{_password}'")
-            
-        self.screen_constructor.authorization_screen.ids.spinner.active = False
 
+ 
     def on_checkbox_active(self, checkbox, value):
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) on_checkbox_active()')
         if value:

@@ -33,7 +33,7 @@ def download_employer_database(client_name: str):
     }
 
 options = {
-    0: get_handshake, # проверка связи с сервером
+    'handshake': get_handshake, # проверка связи с сервером
     1: download_employer_database, # загрузка свежей базы данных
 }
 

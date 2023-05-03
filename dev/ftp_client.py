@@ -1,7 +1,10 @@
 from ftplib import FTP_TLS
+import socket
 import os
+import ssl
 
 from dev import action
+import dev.config as config
 
 HOST = "167.71.37.89"
 
@@ -10,30 +13,33 @@ CERTFILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
 
 def _check_public_key(cert: str):
     if os.path.exists(CERTFILE):
-        print('Тут')
+        pass
     else:
-        print('Не тут')
         with open(CERTFILE, 'w') as file:
             file.write(cert)
     return CERTFILE
 
-def _send_cmd_to_ftp_server(ftp) -> str:
-    action.logger.info(f"ftp_client: _send_cmd_to_ftp_server")
-    return ftp.sendcmd('pwd')
-
-def connect_to_ftp(port: int, login: str, password: str, cert: str):
+def connect_to_ftp(purpose: str, port: int, login: str, password: str, cert: str, path_to_employer_base: str):
     action.logger.info(f"ftp_client: connect_to_ftp()")
+
+    def _send_cmd_to_ftp_server():
+        action.logger.info(f"ftp_client: _send_cmd_to_ftp_server()")
+        if purpose == 'update':
+            # print(ftp.nlst())
+            # Скачивание файла с сервера
+            with open(config.PATH_TO_EMPLOYER_DB, 'wb') as f:
+                ftp.retrbinary(f'RETR ./employer_base/rockbit.db', f.write)
+    
+    # Создаем объект FTP
     ftp = FTP_TLS()
-
+    # Подключаемся к серверу
     ftp.certfile = _check_public_key(cert)
-    action.logger.info(f"DEBUG: Try connect to {HOST}:{port}")
+    # ftp.host = HOST
+    # ftp.port = port
     ftp.connect(HOST, port)
-    action.logger.info(f"DEBUG: login = {login}, password = {password}")
     ftp.login(login, password)
+    ftp.prot_p()
 
-
-    data = _send_cmd_to_ftp_server(ftp)
-    action.logger.info(f"DEBUG: From server: {data}")
-
+    _send_cmd_to_ftp_server()
     ftp.quit()
-    action.logger.info(f'DEBUG: Close connect')
+    

@@ -63,12 +63,12 @@ def _connect_to_server(client_socket, key) -> bool:
         ###
         return True
 
-def _get_reply_msg(client_name: str, key: bytes, msg_purpose: int) -> bytes:
+def _get_reply_msg(client_name: str, key: bytes, msg_purpose: str) -> bytes:
     "Возвращаю зашифрованный json"
     action.logger.info('client.py: _get_reply_msg()')
 
     if msg_purpose == None:
-        msg_purpose = 0 # рукопожатие / проверка связи с сервером / получение адреса для передачи данных
+        msg_purpose = 'handshake' # рукопожатие / проверка связи с сервером / получение адреса для передачи данных
 
     # Зашифровываем данные
     cipher = AES.new(key, AES.MODE_CBC, b'\x00'*16)
@@ -78,7 +78,7 @@ def _get_reply_msg(client_name: str, key: bytes, msg_purpose: int) -> bytes:
     
     return encrypted_data
 
-def _send_json_msg_to_server(client_name: str, client_ip: str, client_socket: socket.socket, key: bytes, msg_purpose: int):
+def _send_json_msg_to_server(client_name: str, client_ip: str, client_socket: socket.socket, key: bytes, msg_purpose: str):
     action.logger.info('client.py: _send_json_msg_to_server()')
 
     msg: bytes = _get_reply_msg(client_name, key, msg_purpose) # зашифрованный json
@@ -92,9 +92,17 @@ def _forever_listen_server(client_socket: socket.socket, key: bytes):
         if decode_data == '':
             client_socket.close()
         elif decode_data['header']['title'] == 'send_ssl_port':
-            port: int = decode_data['payload']['ftp_port']
-            cert: str = decode_data['payload']['cert']
-            connect_to_ftp(port, decode_data['header']['name'], decode_data['header']['surname'], cert)
+            pass
+
+        if decode_data['signature']['update']: # если сервер предлагает обновить базы данных
+            connect_to_ftp(
+                purpose = 'update',
+                port = decode_data['payload']['ftp_port'],
+                login  = decode_data['header']['name'],
+                password = decode_data['header']['surname'],
+                cert = decode_data['payload']['cert'],
+                path_to_employer_base = decode_data['payload']['employer_base'],
+                )
 
     while True:
         try:

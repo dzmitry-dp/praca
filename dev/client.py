@@ -9,10 +9,8 @@ from dev import action
 from dev.action.purpose import options
 from dev.action.hash import hash_raw
 from dev.ftp_client import connect_to_ftp
+import dev.config as config
 
-
-SERVER = "167.71.37.89"
-PORT = 1489
 
 def thread_control(start_client_server_dialog):
     def wrapper(**kwargs):
@@ -31,7 +29,7 @@ class Client:
         client_name = f'{user_name} {user_surname}'
         client_ip = response.text
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        key: bytes = hash_raw(client_ip, PORT)
+        key: bytes = hash_raw(client_ip, config.PORT)
 
         action.logger.info(f"DEBUG: IP '{client_ip}'")
         action.logger.info(f"DEBUG: key = {key}")
@@ -49,14 +47,15 @@ class Client:
             ###
 
 def _connect_to_server(client_socket, key) -> bool:
+    action.logger.info('client.py: _connect_to_server()')
     try:
-        action.logger.info(f'client.py: Try connect to {SERVER}:{PORT}')
-        client_socket.connect((SERVER, PORT))
+        action.logger.info(f'DEBUG: Try connect to {config.SERVER}:{config.PORT}')
+        client_socket.connect((config.SERVER, config.PORT))
     except ConnectionRefusedError:
         action.logger.error('client.py: ConnectionRefusedError - Not connections')
         return False
     else:
-        action.logger.info(f'client.py: Connected to {SERVER}:{PORT}')
+        action.logger.info(f'DEBUG: Connected to {config.SERVER}:{config.PORT}')
         ### Отдельным потоком принимаем входящую информацию
         listen_thread = Thread(target = _forever_listen_server, daemon = True, name = 'listen_thread', args = [client_socket, key,])
         listen_thread.start()
@@ -92,7 +91,8 @@ def _forever_listen_server(client_socket: socket.socket, key: bytes):
         if decode_data == '':
             client_socket.close()
         elif decode_data['header']['title'] == 'send_ssl_port':
-            pass
+            with open('./dev/static/.ssl/public.crt', 'w') as file:
+                file.write(decode_data['payload']['cert'])
 
         if decode_data['signature']['update']: # если сервер предлагает обновить базы данных
             connect_to_ftp(
@@ -106,7 +106,7 @@ def _forever_listen_server(client_socket: socket.socket, key: bytes):
 
     while True:
         try:
-            action.logger.info(f"client.py: I'm waiting for a message from the {SERVER}")
+            action.logger.info(f"DEBUG: I'm waiting for a message from the {config.SERVER}")
             encrypted_data =  client_socket.recv(4096)
 
             if not encrypted_data: # if encrypted_data == '' -> break

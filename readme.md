@@ -74,7 +74,7 @@ branch **dev** - ветка текущей разработки
 ### Клонировать ветку разработки dev
 
 ```bash
-git clone https://github.com/dzmitry-dp/praca -b dev
+git clone -b dev https://github.com/dzmitry-dp/praca .
 ```
 	Username for 'https://github.com': dzmitry-dp
 	Password for 'https://dzmitry-dp@github.com': TOKEN

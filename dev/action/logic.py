@@ -32,9 +32,9 @@ class VerificationData:
         try:
             # Проверка на то, что пользователь в базе данных
             action.logger.info(f'DEBUG: try connect to DB')
-            print(self.query_to_employer_base.show_data_from_table(
-                table_name = config.WORKER_TABLE,
-                ))
+            # print(self.query_to_employer_base.show_data_from_table(
+            #     table_name = config.WORKER_TABLE,
+            #     ))
             
             # all_data_from_db = query_to_user_base.query_select_user(
             #     table_name=queries.FIRST_TABLE,
@@ -158,7 +158,6 @@ class AutorizationLogic(VerificationData):
         
         action.logger.debug(f'-: user_authorized = {self.authorization_obj.user_authorized}')
     
-    # @mainthread
     def _display_main_screen(self, search_user_thread = None):
         """Создаю главный экран после авторизации пользователя, если экран еще не создан
         

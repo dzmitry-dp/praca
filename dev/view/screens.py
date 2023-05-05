@@ -1,9 +1,10 @@
 from datetime import date
+import threading
 
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.screenmanager import ScreenManager
 
-from kivymd.toast.kivytoast import kivytoast
+# from kivymd.toast.kivytoast import kivytoast
 from kivymd.uix.screen import MDScreen
 
 
@@ -33,12 +34,12 @@ class Autorization(MDScreen):
     user_surname = ObjectProperty()
     user_authorized: bool = False # set in seach_user_in_base()
 
-    def __init__(self, screen_constructor, screen_manager, **kw):
+    def __init__(self, screen_constructor, screen_manager: ScreenManager, **kw):
         super().__init__(**kw)
         action.logger.info("screens.py: class Autorization(MDScreen) __init__() name = 'authorization_screen'")
 
-        self.screen_constructor = screen_constructor # class ScreensConstructor
-        self.screen_manager = screen_manager # class ScreenManager
+        self._screen_constructor = screen_constructor # class ScreensConstructor
+        self._screen_manager: ScreenManager = screen_manager # class ScreenManager
 
         self.logic = AutorizationLogic(
                 screen_constructor = self.screen_constructor,
@@ -46,8 +47,31 @@ class Autorization(MDScreen):
                 authorization_obj = self,
                 )
 
+    @property
+    def screen_constructor(self):
+        return self._screen_constructor
+    
+    @screen_constructor.setter
+    def screen_constructor(self, value):
+        self._screen_constructor = value
+
+    @property
+    def screen_manager(self) -> ScreenManager:
+        return self._screen_manager
+    
+    @screen_manager.setter
+    def screen_manager(self, value: ScreenManager):
+        self._screen_manager = value
+        
     def btn_logowanie(self):
-        self.logic.set_user()
+        ### Отдельным потоком отправляемся искать данные о пользователе
+        set_user_thread = threading.Thread(
+            target=self.logic.check_user,
+            daemon=True,
+            name='set_user_thread',
+            )
+        set_user_thread.start()
+        ### Отдельный поток позволяет сменить экран до окончания всех расчетоа
 
 
 class Main(MDScreen):
@@ -67,7 +91,9 @@ class Main(MDScreen):
         action.logger.info("screens.py: class Main(MDScreen) __init__() name = 'main_screen'")
         super().__init__(**kw)
 
-        self.user = f'{user_name} {user_surname}'
+        self.user_name = user_name
+        self.user_surname = user_surname
+        self.user = f'{self.user_name} {self.user_surname}'
 
         self.today = date.today().strftime("%d.%m.%Y")
         self.year = date.today().year # int

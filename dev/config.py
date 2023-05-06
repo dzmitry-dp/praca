@@ -28,4 +28,4 @@ Config.set('kivy', 'log_dir', os.path.join(os.path.dirname(os.path.abspath(__fil
 SERVER = "64.226.119.172"
 PORT = 1489 # порт к серверу, который принимает шифрованные сообщения
 CERTFILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                        "./static/.ssl/cert.pem"))
+                                        "./static/.ssl/public.crt"))

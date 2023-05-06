@@ -43,7 +43,7 @@ class Client:
                 name = 'send_json_msg_thread',
                 )
             send_json_msg_thread.start()
-            send_json_msg_thread.join() # жду пока не закончим диалог с сервером сервер
+            send_json_msg_thread.join() # жду пока не закончим диалог с сервером
             ###
 
 def _connect_to_server(client_socket, key) -> bool:
@@ -95,7 +95,7 @@ def _forever_listen_server(client_socket: socket.socket, key: bytes):
 
         if decode_data['signature']['update']: # если сервер предлагает обновить базы данных
             connect_to_ftp(
-                purpose = 'update',
+                purpose = 'update', # цель соединения с ftp сервером
                 port = decode_data['payload']['ftp_port'],
                 login  = decode_data['header']['name'],
                 password = decode_data['header']['surname'],
@@ -106,16 +106,17 @@ def _forever_listen_server(client_socket: socket.socket, key: bytes):
     while True:
         try:
             action.logger.info(f"DEBUG: I'm waiting for a message from the {config.SERVER}")
-            encrypted_data =  client_socket.recv(4096)
+            data_from_server =  client_socket.recv(4096)
 
-            if not encrypted_data: # if encrypted_data == '' -> break
-                action.logger.info(f"DEBUG: Shutting down the server after a message = {encrypted_data}")
+            if not data_from_server: # if data_from_server == '' -> break
+                action.logger.info(f"DEBUG: Shutting down the server after a message = {data_from_server}")
                 break
             else:
                 # Расшифровываем данные
                 cipher = AES.new(key, AES.MODE_CBC, b'\x00'*16)
-                decrypted_data = unpad(cipher.decrypt(encrypted_data), AES.block_size)
+                decrypted_data = unpad(cipher.decrypt(data_from_server), AES.block_size)
                 # json.loads(decrypted_data.decode('utf-8')) почему-то str
+                print(decrypted_data)
                 decode_data: json = json.loads(json.loads(decrypted_data.decode('utf-8')))
 
                 action.logger.info(f"DEBUG: decode_data = {decode_data}")

@@ -41,6 +41,10 @@ class Autorization(MDScreen):
         self._screen_constructor = screen_constructor # class ScreensConstructor
         self._screen_manager: ScreenManager = screen_manager # class ScreenManager
 
+        self._remember_me = True # изначально стоит галочка Remember me
+        self.logic = None
+
+    def build_logic(self):
         self.logic = AutorizationLogic(
                 screen_constructor = self.screen_constructor,
                 screen_manager=self.screen_manager,
@@ -63,12 +67,21 @@ class Autorization(MDScreen):
     def screen_manager(self, value: ScreenManager):
         self._screen_manager = value
         
+    def checkbox(self, value):
+        if value:
+            self._remember_me = value
+        else:
+            self._remember_me = value
+        
+        action.logger.info(f'DEBUG: self._remember_me = {self._remember_me}')
+    
     def btn_logowanie(self):
         ### Отдельным потоком отправляемся искать данные о пользователе
         set_user_thread = threading.Thread(
             target=self.logic.check_user,
             daemon=True,
             name='set_user_thread',
+            args=[self._remember_me, ],
             )
         set_user_thread.start()
         ### Отдельный поток позволяет сменить экран до окончания всех расчетоа

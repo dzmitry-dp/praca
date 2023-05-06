@@ -42,6 +42,7 @@ class ScreensConstructor:
                 screen_constructor = self,
                 screen_manager=self.screen_manager
             )
+        self.authorization_screen.build_logic()
         self.screen_manager.add_widget(self.authorization_screen)
 
     def add_main_screen_obj( # main_screen
@@ -74,10 +75,10 @@ class ScreensConstructor:
             make_table_thread.start()
             ###
 
-        
     def remove_main_screen(self) -> None:
         action.logger.info('build.py: class ScreensConstructor remove_main_screen()')
         self.screen_manager.remove_widget(self.main_screen)
+        self.authorization_screen.build_logic()
         self.main_screen = None
 
     def add_calendar_screen_obj(self): # calendar_screen

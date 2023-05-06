@@ -13,17 +13,25 @@ import dev.config as config
 
 
 def thread_control(start_client_server_dialog):
+    action.logger.info('client.py: thread_control()')
     def wrapper(**kwargs):
-        if len(kwargs) == 2:
+        action.logger.info('client.py: @thread_control')
+        if kwargs['msg_purpose'] == 'handshake':
             # первый запуск после логирования / handshake
-            action.logger.info(f'client.py: thread_control() have NOT thread')
-            # kwargs = user_name: str, user_surname: str,
             start_client_server_dialog(**kwargs)
     return wrapper
 
 class Client:
     @thread_control
-    def start_client_server_dialog(user_name: str, user_surname: str, thread: Thread = None, msg_purpose: str = None):
+    def start_client_server_dialog(
+        user_name: str,
+        user_surname: str,
+        remember_me: bool, # галочка Запомнить меня на экране авторизации
+        msg_purpose: str, # цель с которой связывается клиент с сервером
+        ):
+        """
+        msg_purpose - цель обращения к серверу
+        """
         action.logger.info('client.py: start_client_server_dialog()')
         response = requests.get("http://ifconfig.me/ip")
         client_name = f'{user_name} {user_surname}'
@@ -37,10 +45,10 @@ class Client:
         if _connect_to_server(client_socket, key):
             ### Отдельный поток для информации
             send_json_msg_thread = Thread(
-                target = _send_json_msg_to_server,
-                args = [client_name, client_ip, client_socket, key, msg_purpose],
-                daemon = True,
                 name = 'send_json_msg_thread',
+                target = _send_json_msg_to_server,
+                daemon = True,
+                args = [client_name, client_ip, client_socket, key, msg_purpose, remember_me],
                 )
             send_json_msg_thread.start()
             send_json_msg_thread.join() # жду пока не закончим диалог с сервером
@@ -62,7 +70,7 @@ def _connect_to_server(client_socket, key) -> bool:
         ###
         return True
 
-def _get_reply_msg(client_name: str, key: bytes, msg_purpose: str) -> bytes:
+def _get_reply_msg(client_name: str, key: bytes, msg_purpose: str, remember_me: bool) -> bytes:
     "Возвращаю зашифрованный json"
     action.logger.info('client.py: _get_reply_msg()')
 
@@ -71,16 +79,16 @@ def _get_reply_msg(client_name: str, key: bytes, msg_purpose: str) -> bytes:
 
     # Зашифровываем данные
     cipher = AES.new(key, AES.MODE_CBC, b'\x00'*16)
-    json_data = json.dumps(options[msg_purpose](client_name))
+    json_data = json.dumps(options[msg_purpose](client_name, remember_me))
     padded_data = pad(json_data.encode('utf-8'), AES.block_size)
     encrypted_data = cipher.encrypt(padded_data)
     
     return encrypted_data
 
-def _send_json_msg_to_server(client_name: str, client_ip: str, client_socket: socket.socket, key: bytes, msg_purpose: str):
+def _send_json_msg_to_server(client_name: str, client_ip: str, client_socket: socket.socket, key: bytes, msg_purpose: str, remember_me: bool):
     action.logger.info('client.py: _send_json_msg_to_server()')
 
-    msg: bytes = _get_reply_msg(client_name, key, msg_purpose) # зашифрованный json
+    msg: bytes = _get_reply_msg(client_name, key, msg_purpose, remember_me) # зашифрованный json
     client_socket.sendall(msg)
 
 def _forever_listen_server(client_socket: socket.socket, key: bytes):
@@ -116,11 +124,9 @@ def _forever_listen_server(client_socket: socket.socket, key: bytes):
                 cipher = AES.new(key, AES.MODE_CBC, b'\x00'*16)
                 decrypted_data = unpad(cipher.decrypt(data_from_server), AES.block_size)
                 # json.loads(decrypted_data.decode('utf-8')) почему-то str
-                print(decrypted_data)
                 decode_data: json = json.loads(json.loads(decrypted_data.decode('utf-8')))
 
                 action.logger.info(f"DEBUG: decode_data = {decode_data}")
-                
                 select_client_reaction(decode_data)
 
         except ConnectionAbortedError:

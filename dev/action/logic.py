@@ -1,5 +1,6 @@
 import threading
 import json
+import time
 
 from kivy.clock import mainthread
 
@@ -32,9 +33,9 @@ class VerificationData:
         try:
             # Проверка на то, что пользователь в базе данных
             action.logger.info(f'DEBUG: try connect to DB')
-            # print(self.query_to_employer_base.show_data_from_table(
-            #     table_name = config.WORKER_TABLE,
-            #     ))
+            print(self.query_to_employer_base.show_data_from_table(
+                table_name = config.WORKER_TABLE,
+                ))
             
             # all_data_from_db = query_to_user_base.query_select_user(
             #     table_name=queries.FIRST_TABLE,
@@ -90,8 +91,6 @@ class AutorizationLogic(VerificationData):
         self._login = None
         self._password = None
 
-        self._remember_me = False # checkbox active
-
         self.screen_constructor = screen_constructor # ScreensConstructor()
         self.screen_manager = screen_manager # ScreenManager()
         self.authorization_obj = authorization_obj # Autorization(MDScreen)
@@ -99,7 +98,6 @@ class AutorizationLogic(VerificationData):
         self.search_user_thread = None # поток поиска пользовательских данных
         self.display_main_screen_thread = None # поток отображения главного экрана
         self.handshake_thread = None # поток связи с сервером
-        self.download_thread = None # поток загрузки данных с сервера
         
     @property
     def login(self):
@@ -126,7 +124,7 @@ class AutorizationLogic(VerificationData):
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) _no_password_reaction()')
 
     # функция выполняется в отдельном потоке
-    def _seach_user_in_base(self):
+    def _seach_user_in_base(self, remember_me: bool):
         """# Проверка пользователя в базе данных
         - Если пользователь в базе данных, то вывести его данные
         - Если нельзя найти совпадений по login и password, то заводим нового пользователя
@@ -155,16 +153,15 @@ class AutorizationLogic(VerificationData):
             # )
             # self.download_thread.start()
             ###
-        
-        action.logger.debug(f'-: user_authorized = {self.authorization_obj.user_authorized}')
+        action.logger.info(f'DEBUG: remember_me = {remember_me}, user_authorized = {self.authorization_obj.user_authorized}')
     
-    def _display_main_screen(self, search_user_thread = None):
+    @mainthread
+    def _display_main_screen(self, search_user_thread: threading.Thread):
         """Создаю главный экран после авторизации пользователя, если экран еще не создан
         
         self.screen_constructor.popup_screen - подвижная вкладка
         """
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) _display_main_screen()')
-
         if self.screen_manager.has_screen(name='main_screen'):
             action.logger.info(f"DEBUG: Have 'main_screen'")
             self.screen_manager.get_screen('main_screen').user_name = self._login
@@ -182,20 +179,46 @@ class AutorizationLogic(VerificationData):
         self.screen_constructor.popup_screen = self.screen_constructor.main_screen.children[0].ids['_front_layer'].children[0].children[0].children[0]
         self.screen_manager.current = 'main_screen' 
 
-    def _start_logic_logowania(self):
+    def _start_logic_logowania(self, remember_me: bool):
         "Логика того, что происходит после нажатия кнопки Logowanie"
-        ### Отдельным потоком отправляемся искать данные о пользователе
+        ## Отдельным потоком отправляемся искать данные о пользователе
         self.search_user_thread = threading.Thread(
             target=self._seach_user_in_base, 
             daemon=True,
-            name='search_user_thread')
+            name='search_user_thread',
+            args=[remember_me, ],
+            )
         self.search_user_thread.start()
         ###
-        self._display_main_screen(self.search_user_thread)
-        Client.start_client_server_dialog(user_name=self.login, user_surname=self.password)
+        ### Отдельным потоком переходим на главный экран
+        self.display_main_screen_thread = threading.Thread(
+            target=self._display_main_screen,
+            daemon=True,
+            name='display_main_screen_thread',
+            args=[self.search_user_thread, ],
+        )
+        self.display_main_screen_thread.start()
+        # self._display_main_screen(self.search_user_thread)
+        ###
+        ### Отдельным потоком проверяю связь с сервером
+        self.handshake_thread = threading.Thread(
+            target=Client.start_client_server_dialog,
+            daemon=True,
+            name='handshake_thread',
+            kwargs={
+                'user_name': self.login,
+                'user_surname': self.password,
+                'remember_me': remember_me,
+                'msg_purpose': 'handshake', # цель обращения - рукопожатие / проверка связи с сервером / получение сертификата для передачи данных
+                }
+        )
+        self.handshake_thread.start()
+        # ###
+        # цель обращения - рукопожатие / проверка связи с сервером / получение сертификата для передачи данных
+        # Client.start_client_server_dialog(user_name=self.login, user_surname=self.password, remember_me=remember_me, msg_purpose='handshake')
 
     @mainthread    
-    def check_user(self) -> None:
+    def check_user(self, remember_me: bool) -> None:
         """Вызов этой функции происходит по нажатию кнопки авторизации.
         Исходя из того, что написано в полях ввода,
         составляю представление о пользователе"""
@@ -210,26 +233,23 @@ class AutorizationLogic(VerificationData):
             self.login = _login
             self.password = _password
 
-            self._start_logic_logowania()
+            self._start_logic_logowania(remember_me)
+            self.display_main_screen_thread.join()
+            self.handshake_thread.join()
 
-            # выключаю спинеры
-            self.screen_constructor.authorization_screen.ids.spinner.active = False
-            self.screen_constructor.main_screen.ids.spinner.active = False
-            
         else:
             action.logger.warning(f"DEBUG: Have NOT Login and Password: '{_login}' '{_password}'")
 
-    def on_checkbox_active(self, checkbox, value):
-        action.logger.info('logic.py: class AutorizationLogic(VerificationData) on_checkbox_active()')
-        if value:
-            # print('The checkbox', checkbox, 'is active', 'and', checkbox.state, 'state')
-            self._remember_me = True
-        else:
-            # print('The checkbox', checkbox, 'is inactive', 'and', checkbox.state, 'state')
-            self._remember_me = False
-        
-        action.logger.info(f'DEBUG: self._remember_me = {self._remember_me}')
+        ### Через секунду остановить спинеры
+        threading.Thread(target=self.spinners_off, daemon=True).start()
+        ###
 
+    def spinners_off(self):
+        time.sleep(1)
+        # выключаю спинеры
+        self.screen_constructor.authorization_screen.ids.spinner.active = False
+        self.screen_constructor.main_screen.ids.spinner.active = False
+            
 
 class MainScreenLogic:
     """Логика главного экрана"""

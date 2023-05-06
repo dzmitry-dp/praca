@@ -27,6 +27,7 @@ def connect_to_ftp(purpose: str, port: int, login: str, password: str, cert: str
     
     ftp = FTP_TLS()
     ftp.certfile = _check_public_key(cert)
+    action.logger.info(f"DEBUG: IP: {config.SERVER} PORT: {port}")
     ftp.connect(config.SERVER, port)
     ftp.login(login, password)
     ftp.prot_p()

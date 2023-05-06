@@ -91,8 +91,7 @@ def _forever_listen_server(client_socket: socket.socket, key: bytes):
         if decode_data == '':
             client_socket.close()
         elif decode_data['header']['title'] == 'send_ssl_port':
-            with open('./dev/static/.ssl/public.crt', 'w') as file:
-                file.write(decode_data['payload']['cert'])
+            pass
 
         if decode_data['signature']['update']: # если сервер предлагает обновить базы данных
             connect_to_ftp(

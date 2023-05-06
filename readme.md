@@ -80,9 +80,13 @@ git clone -b dev https://github.com/dzmitry-dp/praca .
 	Password for 'https://dzmitry-dp@github.com': TOKEN
 
 ### Слияние dev ветки проекта в dev ветку
+
 ```bash
-git pull dev:dev
+git pull branch_1:branch_2
 ```
+
+`branch1` является удаленной веткой, а ветка `branch2` является локальной веткой
+
 ### Отправить ветку dev на сервер
 
 ```bash

@@ -219,7 +219,6 @@ class AutorizationLogic(VerificationData):
         else:
             action.logger.warning(f"DEBUG: Have NOT Login and Password: '{_login}' '{_password}'")
 
- 
     def on_checkbox_active(self, checkbox, value):
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) on_checkbox_active()')
         if value:

@@ -12,9 +12,9 @@ user_table = {
         'dt': 'TIMESTAMP', # время добавление записи
         'name': 'TEXT',
         'surname': 'TEXT',
-        'hour': 'REAL', # часы работы 
+        'hour': 'INTEGER', # часы работы 
         'building': 'TEXT', # будова
-        'data': 'TIMESTAMP', # дата указанная пользователем
+        'date': 'TIMESTAMP', # дата указанная пользователем
         'auto': 'INTEGER', # служебное авто 1 - True, 0 - False
         'helm': 'REAL', # часы за рулем
         'start': 'INTEGER', # километраж начало
@@ -23,28 +23,28 @@ user_table = {
         }
     }
 
-workers_list = {
-    'table_name': WORKER_TABLE,
-    'column_data': {
-        'id': 'INTEGER PRIMARY KEY AUTOINCREMENT',
-        'dt': 'TIMESTAMP', # время добавление записи
-        'name': 'TEXT',
-        'surname': 'TEXT',
-    }
-}
+# workers_list = {
+#     'table_name': WORKER_TABLE,
+#     'column_data': {
+#         'id': 'INTEGER PRIMARY KEY AUTOINCREMENT',
+#         'dt': 'TIMESTAMP', # время добавление записи
+#         'name': 'TEXT',
+#         'surname': 'TEXT',
+#     }
+# }
 ###
 # Так выглядят данные на запись
 ###
-def generate_first_data(name, surname):
+def generate_first_data(user_name, user_surname, date, build_object, hour):
     return {
         'table_name': FIRST_TABLE,
         'column_data': {
             'dt': datetime.now(),
-            'name': name,
-            'surname': surname,
-            'hour': None,
-            'building': None,
-            'data': None,
+            'name': user_name,
+            'surname': user_surname,
+            'hour': hour,
+            'building': build_object,
+            'date': date,
             'auto': None, # 1 - True, 0 - False
             'helm': None,
             'start': None,
@@ -55,12 +55,12 @@ def generate_first_data(name, surname):
 ###
 # Так выглядят данные на исправление
 ###
-replace_data = {
-    'table_name': 'zero_test',
-    'column_data': {
-        'dt': datetime.now(),
-        'name': 'new',
-        'surname': 'new',
-        'id': 4 # последним стоит id т.к. в конце запроса стоит WHERE id = ?
-        }
-    }
+# replace_data = {
+#     'table_name': 'zero_test',
+#     'column_data': {
+#         'dt': datetime.now(),
+#         'name': 'new',
+#         'surname': 'new',
+#         'id': 4 # последним стоит id т.к. в конце запроса стоит WHERE id = ?
+#         }
+#     }

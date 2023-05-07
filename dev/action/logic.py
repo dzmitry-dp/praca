@@ -10,6 +10,7 @@ from kivymd.uix.dialog import MDDialog
 import dev.action as action
 import dev.config as config
 import dev.db.memory as memory
+import dev.db.queries_struct as queries
 # import dev.db.queries_struct as queries
 from dev.action.exceptions import DBConnectionErr
 from dev.view.helpers import AddHoursWidget, WorkObjects
@@ -20,12 +21,12 @@ class VerificationData:
     def __init__(self) -> None:
         action.logger.info('logic.py: class VerificationData __init__()')
 
-        self.query_to_user_base = memory.Query(
-            db_path=config.PATH_TO_USER_DB,
-            )
-        self.query_to_employer_base = memory.Query(
-            db_path=config.PATH_TO_EMPLOYER_DB,
-        )
+        # self.query_to_user_base = memory.Query(
+        #     db_path=config.PATH_TO_USER_DB,
+        #     )
+        # self.query_to_employer_base = memory.Query(
+        #     db_path=config.PATH_TO_EMPLOYER_DB,
+        # )
 
     def get_permission(self, login, password) -> bool:
         action.logger.info('logic.py: class VerificationData get_permission()')
@@ -33,9 +34,10 @@ class VerificationData:
         try:
             # Проверка на то, что пользователь в базе данных
             action.logger.info(f'DEBUG: try connect to DB')
-            print(self.query_to_employer_base.show_data_from_table(
-                table_name = config.WORKER_TABLE,
-                ))
+            
+            # print(self.query_to_employer_base.show_data_from_table(
+            #     table_name = config.WORKER_TABLE,
+            #     ))
             
             # all_data_from_db = query_to_user_base.query_select_user(
             #     table_name=queries.FIRST_TABLE,
@@ -181,7 +183,7 @@ class AutorizationLogic(VerificationData):
 
     def _start_logic_logowania(self, remember_me: bool):
         "Логика того, что происходит после нажатия кнопки Logowanie"
-        ## Отдельным потоком отправляемся искать данные о пользователе
+        ### Отдельным потоком отправляемся искать данные о пользователе
         self.search_user_thread = threading.Thread(
             target=self._seach_user_in_base, 
             daemon=True,
@@ -198,7 +200,6 @@ class AutorizationLogic(VerificationData):
             args=[self.search_user_thread, ],
         )
         self.display_main_screen_thread.start()
-        # self._display_main_screen(self.search_user_thread)
         ###
         ### Отдельным потоком проверяю связь с сервером
         self.handshake_thread = threading.Thread(
@@ -213,9 +214,7 @@ class AutorizationLogic(VerificationData):
                 }
         )
         self.handshake_thread.start()
-        # ###
-        # цель обращения - рукопожатие / проверка связи с сервером / получение сертификата для передачи данных
-        # Client.start_client_server_dialog(user_name=self.login, user_surname=self.password, remember_me=remember_me, msg_purpose='handshake')
+        ###
 
     @mainthread    
     def check_user(self, remember_me: bool) -> None:
@@ -341,3 +340,23 @@ class MainScreenLogic:
                 content_cls = self.widgets
             )
         self.dialog_screen_to_set_object.open()
+
+    def create_user_data_base(self, user_name, user_surname, date, build_object, hour):
+        "Создаю базу данных для пользователя, если файл еще не создан"
+        query_to_user_base = memory.Query(
+            db_path=config.PATH_TO_USER_DB,
+            )
+        query_to_user_base.create_table(data = queries.user_table)
+        query_to_user_base.write_values(
+            data = queries.generate_first_data(user_name, user_surname, date, build_object, hour),
+            )
+        
+    def add_to_user_data_base(self, user_name, user_surname, date, build_object, hour):
+        "Добавляю данные в пользовательскую базу данных"
+        query_to_user_base = memory.Query(
+            db_path=config.PATH_TO_USER_DB,
+            )
+        query_to_user_base.write_values(
+            data = queries.generate_first_data(user_name, user_surname, date, build_object, hour),
+            )
+        print(query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE))

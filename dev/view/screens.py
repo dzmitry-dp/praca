@@ -1,5 +1,6 @@
-from datetime import date
+from datetime import date, datetime
 import threading
+import os
 
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.screenmanager import ScreenManager
@@ -7,7 +8,7 @@ from kivy.uix.screenmanager import ScreenManager
 # from kivymd.toast.kivytoast import kivytoast
 from kivymd.uix.screen import MDScreen
 
-
+import dev.config as config
 import dev.action as action
 from dev.action.logic import AutorizationLogic, MainScreenLogic
 from dev.view.helpers import TabelItem
@@ -153,11 +154,45 @@ class Main(MDScreen):
 
         if self.ids.godziny.text != 'Godziny' and \
             self.ids.obiekt.text != 'Obiekt':
+            
+            date = datetime(datetime.now().year, int(self.ids.date.text.split('.')[1]), int(self.ids.date.text.split('.')[0]))
+            # Проверяю на наличие файла с базой данных
+            if not os.path.exists(config.PATH_TO_USER_DB):
+                ### Отдельным потоком создаю базу данных для нового пользователя
+                wr_to_user_db_thread = threading.Thread(
+                    target = self.logic.create_user_data_base,
+                    name = 'wr_to_user_db_thread',
+                    daemon = True,
+                    kwargs = {
+                        'user_name': self.user_name,
+                        'user_surname': self.user_surname,
+                        'date': date,
+                        'build_object': self.ids.obiekt.text,
+                        'hour': self.ids.godziny.text,
+                    }
+                )
+                wr_to_user_db_thread.start()
+            else:
+                ### Отдельныйм потоком записываю новые данные в базу данных пользователя
+                wr_to_user_db_thread = threading.Thread(
+                    target = self.logic.add_to_user_data_base,
+                    name = 'wr_to_user_db_thread',
+                    daemon = True,
+                    kwargs = {
+                        'user_name': self.user_name,
+                        'user_surname': self.user_surname,
+                        'date': date,
+                        'build_object': self.ids.obiekt.text,
+                        'hour': self.ids.godziny.text,
+                    }
+                )
+                wr_to_user_db_thread.start()
+                ###
 
             item = TabelItem(
                 text=self.ids.obiekt.text,
                 on_release=self.logic.on_click_table_row,
-                )
+            )
                 
             item.ids.left_label.text = self.ids.godziny.text
             item.ids.right_button.text = self.ids.date.text
@@ -165,6 +200,7 @@ class Main(MDScreen):
                 
             self.ids.scroll.add_widget(item)
             self._refresh_buttons()
+            wr_to_user_db_thread.join()
         else:
             pass
 

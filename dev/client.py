@@ -74,9 +74,6 @@ def _get_reply_msg(client_name: str, key: bytes, msg_purpose: str, remember_me: 
     "Возвращаю зашифрованный json"
     action.logger.info('client.py: _get_reply_msg()')
 
-    if msg_purpose == None:
-        msg_purpose = 'handshake' # рукопожатие / проверка связи с сервером / получение адреса для передачи данных
-
     # Зашифровываем данные
     cipher = AES.new(key, AES.MODE_CBC, b'\x00'*16)
     json_data = json.dumps(options[msg_purpose](client_name, remember_me))

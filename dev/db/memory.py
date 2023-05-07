@@ -25,8 +25,10 @@ def connection_to_database(create_query_func):
                 cursor.execute(query, values)
             elif 'SELECT' in query:
                 cursor.execute(query)
+                print(query)
                 record = cursor.fetchall()
-                return record
+                print(record)
+                # return record
             elif 'CREATE' in query:
                 values = list(kwargs['data']['column_data'].values())
                 cursor.execute(query)

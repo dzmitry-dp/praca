@@ -8,9 +8,7 @@ import dev.config as config
 
 
 def _check_public_key(cert: str):
-    if os.path.exists(config.CERTFILE):
-        pass
-    else:
+    if not os.path.exists(config.CERTFILE):
         with open(config.CERTFILE, 'w') as file:
             file.write(cert)
     return config.CERTFILE

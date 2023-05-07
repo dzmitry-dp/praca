@@ -62,6 +62,9 @@ def _connect_to_server(client_socket, key) -> bool:
     except ConnectionRefusedError:
         action.logger.error('client.py: ConnectionRefusedError - Not connections')
         return False
+    except TimeoutError:
+        action.logger.error('client.py: TimeoutError - Not connections')
+        return False
     else:
         action.logger.info(f'DEBUG: Connected to {config.SERVER}:{config.PORT}')
         ### Отдельным потоком принимаем входящую информацию

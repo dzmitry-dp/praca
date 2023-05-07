@@ -38,3 +38,4 @@ git_token.txt
 *.apk
 *.ppk
 *.pem
+*.json

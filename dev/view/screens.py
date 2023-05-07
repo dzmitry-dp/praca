@@ -13,6 +13,7 @@ import dev.action as action
 from dev.action.logic import AutorizationLogic, MainScreenLogic
 from dev.view.helpers import TabelItem
 from dev.view.calendar import CalendarLogic
+from dev.action.hash import hash_to_user_name
 
 
 class Autorization(MDScreen):
@@ -73,6 +74,10 @@ class Autorization(MDScreen):
             self._remember_me = value
         else:
             self._remember_me = value
+            # user_hash = hash_to_user_name(f'{}')
+            # path = config.PATH_TO_REMEMBER_ME + f'/{user_hash}.json'
+            # if os.path.exists(path):
+            #     os.remove(path)
         
         action.logger.info(f'DEBUG: self._remember_me = {self._remember_me}')
     
@@ -85,8 +90,7 @@ class Autorization(MDScreen):
             args=[self._remember_me, ],
             )
         set_user_thread.start()
-        ### Отдельный поток позволяет сменить экран до окончания всех расчетоа
-
+        ### Отдельный поток позволяет сменить экран до окончания всех расчетов
 
 class Main(MDScreen):
     '''Главный экран данных на котором расположен интерфейс пользователя.
@@ -156,14 +160,18 @@ class Main(MDScreen):
             self.ids.obiekt.text != 'Obiekt':
             
             date = datetime(datetime.now().year, int(self.ids.date.text.split('.')[1]), int(self.ids.date.text.split('.')[0]))
+            user_hash = hash_to_user_name(f'{self.user_name}{self.user_surname}', config.PORT)
+            print(user_hash)
             # Проверяю на наличие файла с базой данных
-            if not os.path.exists(config.PATH_TO_USER_DB):
+            path = config.PATH_TO_USER_DB + f'/{user_hash}.db'
+            if not os.path.exists(path):
                 ### Отдельным потоком создаю базу данных для нового пользователя
                 wr_to_user_db_thread = threading.Thread(
                     target = self.logic.create_user_data_base,
                     name = 'wr_to_user_db_thread',
                     daemon = True,
                     kwargs = {
+                        'path': path,
                         'user_name': self.user_name,
                         'user_surname': self.user_surname,
                         'date': date,
@@ -179,6 +187,7 @@ class Main(MDScreen):
                     name = 'wr_to_user_db_thread',
                     daemon = True,
                     kwargs = {
+                        'path': path,
                         'user_name': self.user_name,
                         'user_surname': self.user_surname,
                         'date': date,

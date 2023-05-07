@@ -14,7 +14,14 @@ def get_handshake(client_name: str, remember: bool) -> dict:
         }
     }
 
+def save_user_data(name, surname) -> dict:
+    return {
+        'name': name,
+        'surname': surname,
+    }
+
 options = {
     'handshake': get_handshake, # проверка связи с сервером
+    'remember_me': save_user_data, # сохранение пользовательских данных в файл
 }
 

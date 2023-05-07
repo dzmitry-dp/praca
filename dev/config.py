@@ -1,8 +1,9 @@
 from os.path import abspath
 
 PATH_TO_KV_FILE = abspath('./dev/view/praca.kv')
-PATH_TO_USER_DB = abspath('./dev/db/user.db') # только отправляем на сервер
+PATH_TO_USER_DB = abspath('./dev/db/user')
 PATH_TO_EMPLOYER_DB = abspath('./dev/db/rockbit.db') # только скачиваем с сервера
+PATH_TO_REMEMBER_ME = abspath('./dev/db')
 
 # PHONE_NUMBER = '48663215343' # Жека
 PHONE_NUMBER = '48577655470'

@@ -46,7 +46,7 @@ class Autorization(MDScreen):
         self._remember_me = True # изначально стоит галочка Remember me
         self.logic = None
 
-    def build_logic(self):
+    def build_logic_object(self):
         self.logic = AutorizationLogic(
                 screen_constructor = self.screen_constructor,
                 screen_manager=self.screen_manager,
@@ -91,6 +91,7 @@ class Autorization(MDScreen):
             )
         set_user_thread.start()
         ### Отдельный поток позволяет сменить экран до окончания всех расчетов
+
 
 class Main(MDScreen):
     '''Главный экран данных на котором расположен интерфейс пользователя.

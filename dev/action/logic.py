@@ -96,11 +96,18 @@ class AutorizationLogic(VerificationData):
         """
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) seach_user_in_base()')
         def remove_remember_me_file():
+            "Если есть файл, то удаляю"
             action.logger.info('logic.py: _seach_user_in_base() remove_remember_me_file()')
             path_to_json = config.PATH_TO_REMEMBER_ME + f'/{self.user_hash}.json'
             if os.path.isfile(path_to_json):
                 os.remove(path_to_json)
         
+        def write_remember_me_file():
+            self.screen_constructor.path_to_freeze_file = config.PATH_TO_REMEMBER_ME + f'/{self.user_hash}.json'
+            with open(self.screen_constructor.path_to_freeze_file, 'w') as file:
+                json.dump(options['remember_me'](self.login, self.password), file)
+
+
         if self.get_permission(self.login, self.password, self.user_hash): # проверяю пароль
             # прошли авторизацию
             self.authorization_obj.user_authorized = True
@@ -109,7 +116,8 @@ class AutorizationLogic(VerificationData):
                 # если есть файл с базой данных
                 # и если стоит галочка "запомнить меня"
                 action.logger.info(f'logic.py: _seach_user_in_base() have DB and checkbox')
-                pass
+                # запомнить стартовые данные пользователя
+                write_remember_me_file()
             else:
                 # если есть файл с базой данных
                 # но нет галочки "запомнить меня"
@@ -123,7 +131,7 @@ class AutorizationLogic(VerificationData):
                 # если нет файла, но
                 # стоит галочка "запомнить меня"
                 action.logger.info(f'logic.py: _seach_user_in_base() have NOT DB and have checkbox')
-                pass
+                write_remember_me_file()
             else:
                 # если нет файла базы данных
                 # и не стоит галочка
@@ -214,10 +222,6 @@ class AutorizationLogic(VerificationData):
 
             self._start_logic_logowania(remember_me)
 
-            # запомнить стартовые данные пользователя
-            if remember_me:
-                with open(config.PATH_TO_REMEMBER_ME + f'/{self.user_hash}.json', 'w') as file:
-                    json.dump(options['remember_me'](self.login, self.password), file)
         else:
             action.logger.warning(f"DEBUG: Have NOT Login and Password: '{_login}' '{_password}'")
 

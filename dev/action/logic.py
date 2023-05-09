@@ -185,50 +185,54 @@ class AutorizationLogic(VerificationData):
         self.display_main_screen_thread.start()
         ###
         self.search_user_thread.join()
-        if self.authorization_obj.user_authorized:
-            ### Отдельным потоком проверяю связь с сервером
-            self.handshake_thread = threading.Thread(
-                target=Client.start_client_server_dialog,
-                daemon=True,
-                name='handshake_thread',
-                kwargs={
-                    'user_name': self.login,
-                    'user_surname': self.password,
-                    'remember_me': remember_me,
-                    'msg_purpose': 'handshake', # цель обращения - рукопожатие / проверка связи с сервером / получение сертификата для передачи данных
-                    }
-            )
-            self.handshake_thread.start()
-            self.handshake_thread.join()
-            ###
-        self.display_main_screen_thread.join()
+        # if self.authorization_obj.user_authorized:
+        ### Отдельным потоком проверяю связь с сервером
+        self.handshake_thread = threading.Thread(
+            target=Client.start_client_server_dialog,
+            daemon=True,
+            name='handshake_thread',
+            kwargs={
+                'user_name': self.login,
+                'user_surname': self.password,
+                'remember_me': remember_me,
+                'msg_purpose': 'handshake', # цель обращения - рукопожатие / проверка связи с сервером / получение сертификата для передачи данных
+                }
+        )
+        self.handshake_thread.start()
+        # self.handshake_thread.join()
+        ###
+        # self.display_main_screen_thread.join()
 
     @mainthread    
-    def check_user(self, remember_me: bool) -> None:
+    def check_user(self, remember_me: bool, login: str = None, password: str = None) -> None:
         """Вызов этой функции происходит по нажатию кнопки авторизации.
         Исходя из того, что написано в полях ввода,
         составляю представление о пользователе"""
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) check_user()')
 
-        _login = self.authorization_obj.user_name.text.replace(' ', '')
-        _password = self.authorization_obj.user_surname.text.replace(' ', '')
+        if login is None and password is None:
+            login = self.authorization_obj.user_name.text.replace(' ', '')
+            password = self.authorization_obj.user_surname.text.replace(' ', '')
 
-        if _login != '' and _password != '':
-            action.logger.info(f"DEBUG: Have Login and Password: '{_login}' '{_password}'")
+        if login != '' and password != '':
+            action.logger.info(f"DEBUG: Have Login and Password: '{login}' '{password}'")
             
-            self.login = _login
-            self.password = _password
-            self.user_hash = hash_to_user_name(f'{_login}{_password}', config.PORT)
+            self.login = login
+            self.password = password
+            self.user_hash = hash_to_user_name(f'{login}{password}', config.PORT)
 
             self._start_logic_logowania(remember_me)
+            self.display_main_screen_thread.join()
+            self.handshake_thread.join()
 
         else:
-            action.logger.warning(f"DEBUG: Have NOT Login and Password: '{_login}' '{_password}'")
+            action.logger.warning(f"DEBUG: Have NOT Login and Password: '{login}' '{password}'")
 
         ### Через секунду остановить спинеры
         threading.Thread(target=self.spinners_off, daemon=True).start()
         ###
-
+    
+    @mainthread
     def spinners_off(self):
         time.sleep(1)
         # выключаю спинеры

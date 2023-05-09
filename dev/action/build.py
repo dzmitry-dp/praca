@@ -66,12 +66,16 @@ class ScreensConstructor:
         if self._freeze_member():
             # если пользователь хочет чтобы приложение помнило его
             # если в каталоге /db/freeze всего один файл
-            user_name = self.freeze_file['name']
-            user_surname = self.freeze_file['surname']
-            self.add_main_screen_obj(user_name=user_name, user_surname=user_surname, search_user_thread=None)
-            self.screen_manager.current = 'main_screen'
             self.add_authorization_screen_obj()
             self.add_calendar_screen_obj()
+            self.authorization_screen.ids.spinner.active = True
+
+            user_name = self.freeze_file['name']
+            self.authorization_screen.user_name.text = user_name
+            user_surname = self.freeze_file['surname']
+            self.authorization_screen.user_surname.text = user_surname
+
+            self.authorization_screen.logic.check_user(self.authorization_screen.remember_me, user_name, user_surname)
         else:
             self.add_authorization_screen_obj()
             self.add_calendar_screen_obj()

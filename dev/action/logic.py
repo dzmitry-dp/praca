@@ -12,11 +12,11 @@ import dev.action as action
 import dev.config as config
 import dev.db.memory as memory
 import dev.db.queries_struct as queries
-# import dev.db.queries_struct as queries
 from dev.view.helpers import AddHoursWidget, WorkObjects
 from dev.client import Client
 from dev.action.hash import hash_to_user_name
 from dev.action.purpose import options
+from dev.view.helpers import TabelItem
 
 class VerificationData:
     def __init__(self) -> None:
@@ -107,21 +107,29 @@ class AutorizationLogic(VerificationData):
             with open(self.screen_constructor.path_to_freeze_file, 'w') as file:
                 json.dump(options['remember_me'](self.login, self.password), file)
 
-
+        def get_data_from_db():
+            "Нахожу данные пользователя"
+            query_to_user_base = memory.Query(
+                    db_path = config.PATH_TO_USER_DB + f'/{self.user_hash}.db',
+                    )
+            self.screen_constructor.user_data_from_db: list = query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
+            
         if self.get_permission(self.login, self.password, self.user_hash): # проверяю пароль
-            # прошли авторизацию
+            # прошли авторизацию - есть база данных
             self.authorization_obj.user_authorized = True
 
             if remember_me:
                 # если есть файл с базой данных
                 # и если стоит галочка "запомнить меня"
                 action.logger.info(f'logic.py: _seach_user_in_base() have DB and checkbox')
+                get_data_from_db()
                 # запомнить стартовые данные пользователя
                 write_remember_me_file()
             else:
                 # если есть файл с базой данных
                 # но нет галочки "запомнить меня"
                 action.logger.info(f'logic.py: _seach_user_in_base() have DB and NOT checkbox')
+                get_data_from_db()
                 remove_remember_me_file()
         else:
             # не зарегистрированный пользователь
@@ -199,9 +207,7 @@ class AutorizationLogic(VerificationData):
                 }
         )
         self.handshake_thread.start()
-        # self.handshake_thread.join()
         ###
-        # self.display_main_screen_thread.join()
 
     @mainthread    
     def check_user(self, remember_me: bool, login: str = None, password: str = None) -> None:
@@ -273,25 +279,33 @@ class MainScreenLogic:
             )
         self.dialog_screen_to_set_godziny.open()
 
-    def _read_user_data_from_json(self) -> json:
-        #
-        return json.dumps({
-            'user_name': 'User',
-            'user_surname': 'Surname',
-        })
+    def _transforming_data_from_database(self, user_data_from_db: list[tuple,]) -> json:
+        if user_data_from_db == []:
+            return None
+        keys = queries.user_table['column_data'].keys()
+        return [dict(zip(keys, values)) for values in user_data_from_db]
 
-    def make_data_table(self, search_user_thread = None):
+    @mainthread
+    def make_data_table(self, user_data_from_db):
         action.logger.info('logic.py: class MainScreenLogic make_data_table()')
 
-        if search_user_thread is not None:
-            search_user_thread.join() # дождался когда закончится сборка данных для конкретного пользователя
-        
-        user_data = self._read_user_data_from_json()
+        user_data: list[tuple,] = self._transforming_data_from_database(user_data_from_db)
 
         if user_data is None:
             action.logger.info(f'DEBUG: Have NOT user_data = {user_data}')
         else:
             action.logger.info(f'DEBUG: Have user_data = {user_data}')
+            for row in user_data:
+                item = TabelItem(
+                    text=row['building'],
+                    on_release=self.on_click_table_row,
+                )
+                    
+                item.ids.left_label.text = str(row['hour'])
+                item.ids.right_button.text = row['date'].strftime('%d.%m')
+                item.ids.right_button.on_release = lambda widget=item.ids.right_button: self.on_click_table_right_button(widget)
+                
+                self.main_screen.ids.scroll.add_widget(item)
 
     def on_click_table_row(self, widget):
         "Функция отрабатывает по клику на строку таблицы"

@@ -32,6 +32,9 @@ class ScreensConstructor:
         # Remember me
         self.freeze_file: json = None
         self.path_to_freeze_file = None
+        # с потока где считываются данные пользователя из базы данные
+        self.user_data_from_db = None
+
 
     def _freeze_member(self) -> bool:
         action.logger.info('build.py: class ScreensConstructor _freeze_member()')
@@ -114,11 +117,12 @@ class ScreensConstructor:
         
         if search_user_thread is not None:
             ### Отдельным потоком создаем таблицу данных
+            search_user_thread.join()
             make_table_thread = threading.Thread(
                 target=self.main_screen.logic.make_data_table,
                 daemon=True,
                 name='make_table_thread',
-                args = [search_user_thread,]
+                args = [self.user_data_from_db]
             )
             make_table_thread.start()
             ###

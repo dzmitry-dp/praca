@@ -25,14 +25,11 @@ def connection_to_database(create_query_func):
                 cursor.execute(query, values)
             elif 'SELECT' in query:
                 cursor.execute(query)
-                print(query)
                 record = cursor.fetchall()
-                print(record)
-                # return record
+                return record
             elif 'CREATE' in query:
                 values = list(kwargs['data']['column_data'].values())
                 cursor.execute(query)
-
         except sqlite3.Error as error:
             raise DBConnectionErr(f"Error while connecting to database\n\n{error}")
         finally:

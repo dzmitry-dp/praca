@@ -300,12 +300,13 @@ class MainScreenLogic:
                     text=row['building'],
                     on_release=self.on_click_table_row,
                 )
-                    
+                self.main_screen.sum_godziny += row['hour']
                 item.ids.left_label.text = str(row['hour'])
                 item.ids.right_button.text = row['date'].strftime('%d.%m')
                 item.ids.right_button.on_release = lambda widget=item.ids.right_button: self.on_click_table_right_button(widget)
                 
                 self.main_screen.ids.scroll.add_widget(item)
+            self.main_screen.ids.summa.text = f'Masz {self.main_screen.sum_godziny} godzin'
 
     def on_click_table_row(self, widget):
         "Функция отрабатывает по клику на строку таблицы"

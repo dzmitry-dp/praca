@@ -114,6 +114,8 @@ class Main(MDScreen):
         self.user_surname = user_surname
         self.user = f'{self.user_name} {self.user_surname}'
 
+        self.sum_godziny = 0 # сумма наработанных часов
+
         self.today = date.today().strftime("%d.%m.%Y")
         self.year = date.today().year # int
         self.month = date.today().month # int
@@ -203,11 +205,13 @@ class Main(MDScreen):
                 text=self.ids.obiekt.text,
                 on_release=self.logic.on_click_table_row,
             )
-                
+            
+            self.sum_godziny += int(self.ids.godziny.text)
             item.ids.left_label.text = self.ids.godziny.text
             item.ids.right_button.text = self.ids.date.text
             item.ids.right_button.on_release = lambda widget=item.ids.right_button: self.logic.on_click_table_right_button(widget)
-                
+
+            self.ids.summa.text = f'Masz {self.sum_godziny} godzin'    
             self.ids.scroll.add_widget(item)
             self._refresh_buttons()
             wr_to_user_db_thread.join()

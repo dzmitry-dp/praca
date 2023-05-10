@@ -138,7 +138,8 @@ class ScreensConstructor:
         self.screen_manager.remove_widget(self.main_screen)
         self.authorization_screen.build_logic_object()
         self.main_screen = None
-        remove_remember_me_file()
+        if self.path_to_freeze_file is not None:
+            remove_remember_me_file()
 
     def add_calendar_screen_obj(self): # calendar_screen
         action.logger.info('build.py: class ScreensConstructor add_calendar_screen_obj()')

@@ -164,7 +164,6 @@ class Main(MDScreen):
             
             date = datetime(datetime.now().year, int(self.ids.date.text.split('.')[1]), int(self.ids.date.text.split('.')[0]))
             user_hash = hash_to_user_name(f'{self.user_name}{self.user_surname}', config.PORT)
-            print(user_hash)
             # Проверяю на наличие файла с базой данных
             path = config.PATH_TO_USER_DB + f'/{user_hash}.db'
             if not os.path.exists(path):
@@ -184,21 +183,22 @@ class Main(MDScreen):
                 )
                 wr_to_user_db_thread.start()
             else:
+                if self.screen_constructor.authorization_screen.remember_me:
                 ### Отдельныйм потоком записываю новые данные в базу данных пользователя
-                wr_to_user_db_thread = threading.Thread(
-                    target = self.logic.add_to_user_data_base,
-                    name = 'wr_to_user_db_thread',
-                    daemon = True,
-                    kwargs = {
-                        'path': path,
-                        'user_name': self.user_name,
-                        'user_surname': self.user_surname,
-                        'date': date,
-                        'build_object': self.ids.obiekt.text,
-                        'hour': self.ids.godziny.text,
-                    }
-                )
-                wr_to_user_db_thread.start()
+                    wr_to_user_db_thread = threading.Thread(
+                        target = self.logic.add_to_user_data_base,
+                        name = 'wr_to_user_db_thread',
+                        daemon = True,
+                        kwargs = {
+                            'path': path,
+                            'user_name': self.user_name,
+                            'user_surname': self.user_surname,
+                            'date': date,
+                            'build_object': self.ids.obiekt.text,
+                            'hour': self.ids.godziny.text,
+                        }
+                    )
+                    wr_to_user_db_thread.start()
                 ###
 
             item = TabelItem(
@@ -214,7 +214,7 @@ class Main(MDScreen):
             self.ids.summa.text = f'Masz {self.sum_godziny} godzin'    
             self.ids.scroll.add_widget(item)
             self._refresh_buttons()
-            wr_to_user_db_thread.join()
+            # wr_to_user_db_thread.join()
         else:
             pass
 

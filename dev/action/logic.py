@@ -22,13 +22,6 @@ class VerificationData:
     def __init__(self) -> None:
         action.logger.info('logic.py: class VerificationData __init__()')
 
-        # self.query_to_user_base = memory.Query(
-        #     db_path=config.PATH_TO_USER_DB,
-        #     )
-        # self.query_to_employer_base = memory.Query(
-        #     db_path=config.PATH_TO_EMPLOYER_DB,
-        # )
-
     def get_permission(self, login, password, user_hash) -> bool:
         """
         Наличие файла базы данных авторизирует пользователя

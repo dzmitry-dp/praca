@@ -133,8 +133,19 @@ class Main(MDScreen):
     def btn_wyloguj(self):
         "Возвращает на экран логирования"
         action.logger.info('screens.py: class Main(MDScreen) btn_wyloguj()')
+
+        def remove_remember_me_file():
+            "Если есть файл, то удаляю"
+            action.logger.info('build.py: remove_main_screen() remove_remember_me_file()')
+            if os.path.isfile(self.screen_constructor.path_to_freeze_file):
+                os.remove(self.screen_constructor.path_to_freeze_file)
+
         self.screen_manager.transition.direction = 'right'
         self.screen_constructor.remove_main_screen()
+        self.screen_constructor.remove_calendar_screen()
+
+        if self.screen_constructor.path_to_freeze_file is not None:
+            remove_remember_me_file()
 
     def btn_menu_dodac(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_menu_dodac()')

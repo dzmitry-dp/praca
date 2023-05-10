@@ -165,6 +165,9 @@ class AutorizationLogic(VerificationData):
         self.screen_constructor.popup_screen = self.screen_constructor.main_screen.children[0].ids['_front_layer'].children[0].children[0].children[0]
         self.screen_manager.current = 'main_screen' 
 
+        if not self.screen_manager.has_screen(name='calendar_screen'):
+            self.screen_constructor.add_calendar_screen_obj()
+
     def _start_logic_logowania(self, remember_me: bool):
         "Логика того, что происходит после нажатия кнопки Logowanie"
         ### Отдельным потоком отправляемся искать данные о пользователе

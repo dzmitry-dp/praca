@@ -2,8 +2,6 @@ import socket
 import requests
 from threading import Thread
 import json
-# from Crypto.Cipher import AES
-# from Crypto.Util.Padding import pad, unpad
 from cryptography.fernet import Fernet
 
 from dev import action
@@ -82,9 +80,6 @@ def _get_reply_msg(client_name: str, key: bytes, msg_purpose: str, remember_me: 
     f = Fernet(key)
     json_data = json.dumps(options[msg_purpose](client_name, remember_me))
     encrypted_data = f.encrypt(json_data.encode('utf-8'))
-    print('---')
-    print(encrypted_data)
-    print('---')
     
     return encrypted_data
 

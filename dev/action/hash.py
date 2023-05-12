@@ -1,6 +1,7 @@
 #!/bin/python
 
 import hashlib
+import base64
 
 def hash_raw(input_str: str, _salt: int) -> bytes:
     # input_str = ip
@@ -10,7 +11,7 @@ def hash_raw(input_str: str, _salt: int) -> bytes:
     input_str = input_str.replace(' ', '').replace('.', '')
     mix_variable = salt.encode() + input_str.encode()
     hash_from_ip_port: str = hashlib.sha1(mix_variable).hexdigest()
-    return hash_from_ip_port.encode('utf-8')[:32]
+    return base64.urlsafe_b64encode(hash_from_ip_port.encode('utf-8')[:32])
 
 def hash_to_user_name(input_str: str, _salt: int) -> str:
     # input_str = ip

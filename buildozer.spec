@@ -29,7 +29,7 @@ source.include_exts = py,png,jpg,kv
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 0.4
+version = 0.5
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
@@ -37,17 +37,17 @@ version = 0.4
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3, sqlite3, kivy==master, https://github.com/kivymd/KivyMD/archive/master.zip, android, pyjnius
+requirements = python3, sqlite3, kivy==master, https://github.com/kivymd/KivyMD/archive/master.zip, android, pyjnius, requests
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
 # requirements.source.kivy = ../../kivy
 
 # (str) Presplash of the application
-presplash.filename = %(source.dir)s/dev/static/presplash.png
+presplash.filename = %(source.dir)s/dev/static/presplash.jpg
 
 # (str) Icon of the application
-icon.filename = %(source.dir)s/dev/static/icon.png
+icon.filename = %(source.dir)s/dev/static/icon.jpg
 
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait or all)
 orientation = portrait
@@ -93,7 +93,7 @@ fullscreen = 1
 #icon.adaptive_background.filename = %(source.dir)s/data/icon_bg.png
 
 # (list) Permissions
-android.permissions = READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,SEND_SMS
+android.permissions = INTERNET, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, SEND_SMS
 
 # (list) features (adds uses-feature -tags to manifest)
 #android.features = android.hardware.usb.host

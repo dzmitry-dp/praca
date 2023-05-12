@@ -2,8 +2,9 @@ import socket
 import requests
 from threading import Thread
 import json
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
+# from Crypto.Cipher import AES
+# from Crypto.Util.Padding import pad, unpad
+from cryptography.fernet import Fernet
 
 from dev import action
 from dev.action.purpose import options
@@ -34,7 +35,7 @@ class Client:
         """
         action.logger.info('client.py: start_client_server_dialog()')
         response = requests.get("http://ifconfig.me/ip")
-        client_name = f'{user_name} {user_surname}'
+        client_name: str = f'{user_name} {user_surname}'
         client_ip = response.text
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         key: bytes = hash_raw(client_ip, config.PORT)
@@ -78,16 +79,18 @@ def _get_reply_msg(client_name: str, key: bytes, msg_purpose: str, remember_me: 
     action.logger.info('client.py: _get_reply_msg()')
 
     # Зашифровываем данные
-    cipher = AES.new(key, AES.MODE_CBC, b'\x00'*16)
+    f = Fernet(key)
     json_data = json.dumps(options[msg_purpose](client_name, remember_me))
-    padded_data = pad(json_data.encode('utf-8'), AES.block_size)
-    encrypted_data = cipher.encrypt(padded_data)
+    encrypted_data = f.encrypt(json_data.encode('utf-8'))
+    print('---')
+    print(encrypted_data)
+    print('---')
     
     return encrypted_data
 
 def _send_json_msg_to_server(client_name: str, client_ip: str, client_socket: socket.socket, key: bytes, msg_purpose: str, remember_me: bool):
     action.logger.info('client.py: _send_json_msg_to_server()')
-
+    
     msg: bytes = _get_reply_msg(client_name, key, msg_purpose, remember_me) # зашифрованный json
     client_socket.sendall(msg)
 
@@ -95,10 +98,14 @@ def _forever_listen_server(client_socket: socket.socket, key: bytes):
     action.logger.info('client.py: _forever_listen_server()')
 
     def select_client_reaction(decode_data):
+        print(type(decode_data))
         action.logger.info('client.py: select_client_reaction()')
         if decode_data == '':
             client_socket.close()
-        elif decode_data['header']['title'] == 'send_ssl_port':
+        else:
+            decode_data = json.loads(decode_data)
+
+        if decode_data['header']['title'] == 'send_ssl_port':
             pass
 
         if decode_data['signature']['update']: # если сервер предлагает обновить базы данных
@@ -121,10 +128,9 @@ def _forever_listen_server(client_socket: socket.socket, key: bytes):
                 break
             else:
                 # Расшифровываем данные
-                cipher = AES.new(key, AES.MODE_CBC, b'\x00'*16)
-                decrypted_data = unpad(cipher.decrypt(data_from_server), AES.block_size)
-                # json.loads(decrypted_data.decode('utf-8')) почему-то str
-                decode_data: json = json.loads(json.loads(decrypted_data.decode('utf-8')))
+                f = Fernet(key)
+                decrypted_data = f.decrypt(data_from_server)
+                decode_data: dict = json.loads(decrypted_data.decode('utf-8'))
 
                 action.logger.info(f"DEBUG: decode_data = {decode_data}")
                 select_client_reaction(decode_data)

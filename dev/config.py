@@ -1,8 +1,8 @@
 from kivy.core.window import Window
 
-Window.top = 75
-Window.left = 75
-Window.size = (405, 810)
+# Window.top = 75
+# Window.left = 75
+# Window.size = (405, 810)
 
 from kivy.config import Config
 import os

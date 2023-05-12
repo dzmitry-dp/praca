@@ -20,7 +20,8 @@ if os.path.exists(target_path):
         '^.*\.md$',
         '^.*\.txt$',
         '^.*\.apk$',
-        'sync.py'
+        'sync.py',
+        '.ssh',
         ],
     }
 

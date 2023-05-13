@@ -20,9 +20,14 @@ if os.path.exists(target_path):
         '^.*\.md$',
         '^.*\.txt$',
         '^.*\.apk$',
+        'Praca.code-workspace',
         'sync.py',
         '.ssh',
-        'examples',
+        'scripts',
+        'dev/static/android_app',
+        'dev/static/logs',
+        'dev/static/doc',
+        'dev/static/wallpapers',
         ],
     }
 

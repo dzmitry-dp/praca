@@ -22,6 +22,7 @@ if os.path.exists(target_path):
         '^.*\.apk$',
         'sync.py',
         '.ssh',
+        'examples',
         ],
     }
 

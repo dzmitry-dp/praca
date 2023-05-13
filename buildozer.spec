@@ -37,7 +37,7 @@ version = 0.5
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3, kivy==master, https://github.com/kivymd/KivyMD/archive/master.zip, android, pyjnius, requests, cryptography
+requirements = python3, kivy==master, https://github.com/kivymd/KivyMD/archive/master.zip, android, pyjnius, requests, cryptography, urllib3, chardet, idna
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -47,7 +47,7 @@ requirements = python3, kivy==master, https://github.com/kivymd/KivyMD/archive/m
 presplash.filename = %(source.dir)s/dev/static/presplash.jpg
 
 # (str) Icon of the application
-icon.filename = %(source.dir)s/dev/static/icon.jpg
+icon.filename = %(source.dir)s/dev/static/icon.png
 
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait or all)
 orientation = portrait

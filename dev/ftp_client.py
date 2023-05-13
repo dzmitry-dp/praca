@@ -1,7 +1,5 @@
 from ftplib import FTP_TLS
-import socket
 import os
-import ssl
 
 from dev import action
 import dev.config as config
@@ -20,7 +18,7 @@ def connect_to_ftp(purpose: str, port: int, login: str, password: str, cert: str
         action.logger.info(f"ftp_client: _send_cmd_to_ftp_server()")
         if purpose == 'update':
             # Скачивание файла с сервера
-            with open(config.PATH_TO_EMPLOYER_DB, 'wb') as f:
+            with open(f'{config.PATH_TO_EMPLOYER_DB}/rockbit.db', 'wb') as f:
                 ftp.retrbinary(f'RETR ./employer_base/rockbit.db', f.write)
     
     ftp = FTP_TLS()

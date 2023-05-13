@@ -39,24 +39,39 @@ class ScreensConstructor:
     def _freeze_member(self) -> bool:
         action.logger.info('build.py: class ScreensConstructor _freeze_member()')
         # список всех файлов в папке
-        files = os.listdir(config.PATH_TO_REMEMBER_ME)
-        # фильтрация файлов по расширению
-        json_files = [file for file in files if file.endswith('.json')]
-        
-        if len(json_files) == 0:
-            action.logger.info(f'DEBUG: Have NOT json files')
-            return False
-        
-        if len(json_files) == 1:
-            action.logger.info(f'DEBUG: Have json file {json_files[0]}')
-            self.path_to_freeze_file = config.PATH_TO_REMEMBER_ME + f'/{json_files[0]}'
-            with open(self.path_to_freeze_file, 'r') as file:
-                self.freeze_file = json.load(file)
-            return True
+        try:
+            files = os.listdir(config.PATH_TO_REMEMBER_ME)
+            # фильтрация файлов по расширению
+            json_files = [file for file in files if file.endswith('.json')]
+            
+            if len(json_files) == 0:
+                action.logger.info(f'DEBUG: Have NOT json files')
+                return False
+            
+            if len(json_files) == 1:
+                action.logger.info(f'DEBUG: Have json file {json_files[0]}')
+                self.path_to_freeze_file = config.PATH_TO_REMEMBER_ME + f'/{json_files[0]}'
+                with open(self.path_to_freeze_file, 'r') as file:
+                    self.freeze_file = json.load(file)
+                return True
 
-        if len(json_files) > 1:
-            action.logger.info(f'DEBUG: Have json files {json_files}')
-            return False # если нет файлов или нужно выбирать
+            if len(json_files) > 1:
+                action.logger.info(f'DEBUG: Have json files {json_files}')
+                return False # если нет файлов или нужно выбирать
+        except FileNotFoundError:
+            os.makedirs(config.PATH_TO_REMEMBER_ME)
+            
+            try:
+                os.makedirs(config.PATH_TO_EMPLOYER_DB)
+            except FileExistsError:
+                pass
+
+            try:
+                os.makedirs(config.PATH_TO_USER_DB)
+            except FileExistsError:
+                pass
+
+            return False
 
     def start_building(self):
         """

@@ -7,13 +7,14 @@ if platform == 'android':
     from jnius import autoclass
 
     request_permissions([
+        Permission.INTERNET,
         Permission.READ_EXTERNAL_STORAGE,
         Permission.WRITE_EXTERNAL_STORAGE,
         Permission.SEND_SMS,
         ])
 
     # Отправляю СМС
-    SmsManager = autoclass('android.telephony.SmsManager')
+    # SmsManager = autoclass('android.telephony.SmsManager')
 
 ### Пример использования logger
 # logger.info('title: ++++++++++++++.')

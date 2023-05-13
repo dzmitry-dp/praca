@@ -63,7 +63,7 @@ buildozer android debug
 
 android.permissions в файле buildozer.spec
 
-	android.permissions = READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, SEND_SMS
+	android.permissions = INTERNET, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, SEND_SMS
 
 # Git
 
@@ -71,7 +71,7 @@ branch **master** - рабочая версия приложения
 
 branch **dev** - ветка текущей разработки
 
-### Клонировать ветку разработки dev
+### Клонировать ветку разработки dev в текущий каталог
 
 ```bash
 git clone -b dev https://github.com/dzmitry-dp/praca .
@@ -79,10 +79,14 @@ git clone -b dev https://github.com/dzmitry-dp/praca .
 	Username for 'https://github.com': dzmitry-dp
 	Password for 'https://dzmitry-dp@github.com': TOKEN
 
-### Слияние dev ветки проекта в dev ветку
+### Слияние удаленной dev ветки проекта в локальную dev ветку
+
 ```bash
-git pull dev:dev
+git pull branch_1:branch_2
 ```
+
+`branch1` является удаленной веткой, а ветка `branch2` является локальной веткой
+
 ### Отправить ветку dev на сервер
 
 ```bash

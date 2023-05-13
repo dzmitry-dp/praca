@@ -1,5 +1,6 @@
-from datetime import date
+from datetime import date, datetime
 import threading
+import os
 
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.screenmanager import ScreenManager
@@ -7,11 +8,12 @@ from kivy.uix.screenmanager import ScreenManager
 # from kivymd.toast.kivytoast import kivytoast
 from kivymd.uix.screen import MDScreen
 
-
+import dev.config as config
 import dev.action as action
 from dev.action.logic import AutorizationLogic, MainScreenLogic
 from dev.view.helpers import TabelItem
 from dev.view.calendar import CalendarLogic
+from dev.action.hash import hash_to_user_name
 
 
 class Autorization(MDScreen):
@@ -41,6 +43,10 @@ class Autorization(MDScreen):
         self._screen_constructor = screen_constructor # class ScreensConstructor
         self._screen_manager: ScreenManager = screen_manager # class ScreenManager
 
+        self.remember_me = True # изначально стоит галочка Remember me
+        self.logic = None
+
+    def build_logic_object(self):
         self.logic = AutorizationLogic(
                 screen_constructor = self.screen_constructor,
                 screen_manager=self.screen_manager,
@@ -63,15 +69,28 @@ class Autorization(MDScreen):
     def screen_manager(self, value: ScreenManager):
         self._screen_manager = value
         
+    def checkbox(self, value):
+        if value:
+            self.remember_me = value
+        else:
+            self.remember_me = value
+            # user_hash = hash_to_user_name(f'{}')
+            # path = config.PATH_TO_REMEMBER_ME + f'/{user_hash}.json'
+            # if os.path.exists(path):
+            #     os.remove(path)
+        
+        action.logger.info(f'DEBUG: self._remember_me = {self.remember_me}')
+    
     def btn_logowanie(self):
         ### Отдельным потоком отправляемся искать данные о пользователе
         set_user_thread = threading.Thread(
             target=self.logic.check_user,
             daemon=True,
             name='set_user_thread',
+            args=[self.remember_me, ],
             )
         set_user_thread.start()
-        ### Отдельный поток позволяет сменить экран до окончания всех расчетоа
+        ### Отдельный поток позволяет сменить экран до окончания всех расчетов
 
 
 class Main(MDScreen):
@@ -95,6 +114,8 @@ class Main(MDScreen):
         self.user_surname = user_surname
         self.user = f'{self.user_name} {self.user_surname}'
 
+        self.sum_godziny = 0 # сумма наработанных часов
+
         self.today = date.today().strftime("%d.%m.%Y")
         self.year = date.today().year # int
         self.month = date.today().month # int
@@ -112,8 +133,19 @@ class Main(MDScreen):
     def btn_wyloguj(self):
         "Возвращает на экран логирования"
         action.logger.info('screens.py: class Main(MDScreen) btn_wyloguj()')
+
+        def remove_remember_me_file():
+            "Если есть файл, то удаляю"
+            action.logger.info('build.py: remove_main_screen() remove_remember_me_file()')
+            if os.path.isfile(self.screen_constructor.path_to_freeze_file):
+                os.remove(self.screen_constructor.path_to_freeze_file)
+
         self.screen_manager.transition.direction = 'right'
         self.screen_constructor.remove_main_screen()
+        self.screen_constructor.remove_calendar_screen()
+
+        if self.screen_constructor.path_to_freeze_file is not None:
+            remove_remember_me_file()
 
     def btn_menu_dodac(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_menu_dodac()')
@@ -140,18 +172,60 @@ class Main(MDScreen):
 
         if self.ids.godziny.text != 'Godziny' and \
             self.ids.obiekt.text != 'Obiekt':
+            
+            date = datetime(datetime.now().year, int(self.ids.date.text.split('.')[1]), int(self.ids.date.text.split('.')[0]))
+            user_hash = hash_to_user_name(f'{self.user_name}{self.user_surname}', config.PORT)
+            # Проверяю на наличие файла с базой данных
+            path = config.PATH_TO_USER_DB + f'/{user_hash}.db'
+            if not os.path.exists(path):
+                ### Отдельным потоком создаю базу данных для нового пользователя
+                wr_to_user_db_thread = threading.Thread(
+                    target = self.logic.create_user_data_base,
+                    name = 'wr_to_user_db_thread',
+                    daemon = True,
+                    kwargs = {
+                        'path': path,
+                        'user_name': self.user_name,
+                        'user_surname': self.user_surname,
+                        'date': date,
+                        'build_object': self.ids.obiekt.text,
+                        'hour': self.ids.godziny.text,
+                    }
+                )
+                wr_to_user_db_thread.start()
+            else:
+                if self.screen_constructor.authorization_screen.remember_me:
+                ### Отдельныйм потоком записываю новые данные в базу данных пользователя
+                    wr_to_user_db_thread = threading.Thread(
+                        target = self.logic.add_to_user_data_base,
+                        name = 'wr_to_user_db_thread',
+                        daemon = True,
+                        kwargs = {
+                            'path': path,
+                            'user_name': self.user_name,
+                            'user_surname': self.user_surname,
+                            'date': date,
+                            'build_object': self.ids.obiekt.text,
+                            'hour': self.ids.godziny.text,
+                        }
+                    )
+                    wr_to_user_db_thread.start()
+                ###
 
             item = TabelItem(
                 text=self.ids.obiekt.text,
                 on_release=self.logic.on_click_table_row,
-                )
-                
+            )
+            
+            self.sum_godziny += int(self.ids.godziny.text)
             item.ids.left_label.text = self.ids.godziny.text
             item.ids.right_button.text = self.ids.date.text
             item.ids.right_button.on_release = lambda widget=item.ids.right_button: self.logic.on_click_table_right_button(widget)
-                
+
+            self.ids.summa.text = f'Masz {self.sum_godziny} godzin'    
             self.ids.scroll.add_widget(item)
             self._refresh_buttons()
+            # wr_to_user_db_thread.join()
         else:
             pass
 

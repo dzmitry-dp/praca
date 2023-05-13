@@ -15,7 +15,6 @@ Example*.py
 *examples/
 */old/*
 *.ssh/
-*.ssl/
 git_token.txt
 
 *.code-workspace
@@ -38,3 +37,5 @@ git_token.txt
 *.apk
 *.ppk
 *.pem
+*.json
+*.crt

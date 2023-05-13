@@ -1,5 +1,7 @@
 import threading
 import json
+import time
+import os
 
 from kivy.clock import mainthread
 
@@ -9,75 +11,31 @@ from kivymd.uix.dialog import MDDialog
 import dev.action as action
 import dev.config as config
 import dev.db.memory as memory
-# import dev.db.queries_struct as queries
-from dev.action.exceptions import DBConnectionErr
+import dev.db.queries_struct as queries
 from dev.view.helpers import AddHoursWidget, WorkObjects
 from dev.client import Client
-
+from dev.action.hash import hash_to_user_name
+from dev.action.purpose import options
+from dev.view.helpers import TabelItem
 
 class VerificationData:
     def __init__(self) -> None:
         action.logger.info('logic.py: class VerificationData __init__()')
 
-        self.query_to_user_base = memory.Query(
-            db_path=config.PATH_TO_USER_DB,
-            )
-        self.query_to_employer_base = memory.Query(
-            db_path=config.PATH_TO_EMPLOYER_DB,
-        )
-
-    def get_permission(self, login, password) -> bool:
+    def get_permission(self, login, password, user_hash) -> bool:
+        """
+        Наличие файла базы данных авторизирует пользователя
+        Если есть файл, то ты авторизирован системе
+        Для авторизации нужно добавит хотябы один рабочий день
+        """
         action.logger.info('logic.py: class VerificationData get_permission()')
 
-        try:
-            # Проверка на то, что пользователь в базе данных
-            action.logger.info(f'DEBUG: try connect to DB')
-            # print(self.query_to_employer_base.show_data_from_table(
-            #     table_name = config.WORKER_TABLE,
-            #     ))
-            
-            # all_data_from_db = query_to_user_base.query_select_user(
-            #     table_name=queries.FIRST_TABLE,
-            #     name=login,
-            #     surname=password,
-            #     )
-
-            # action.logger.info(f'DEBUG: DB answer {all_data_from_db}')
-
-            # if len(all_data_from_db) == 0:
-            #     # если ответ из базы -> []
-            #     query_to_user_base.write_values(data=queries.generate_first_data(self._login, self._password))
-            #     all_data_from_db = query_to_user_base.query_select_user(
-            #         table_name=queries.FIRST_TABLE,
-            #         name=self._login,
-            #         surname=self._password,
-            #         ) # запрашиваем данные у которых логин и пароль\
-            #             # совпадают с данными которые ввел пользователь
-
-        except DBConnectionErr:
-            # Если таблица еще не создана
-            action.logger.error('DEBUG: DB have NOT table')
-            # query_to_user_base.create_table(data=queries.user_table)
-            # query_to_user_base.write_values(data=queries.generate_first_data(self._login, self._password))
-            # all_data_from_db = query_to_user_base.query_select_user(
-            #     table_name=queries.FIRST_TABLE,
-            #     name=self._login,
-            #     surname=self._password,
-            #     ) # запрашиваем данные у которых логин и пароль\
-            #     # совпадают с данными которые ввел пользователь
+        if os.path.exists(config.PATH_TO_USER_DB + f'/{user_hash}.db'):
+            action.logger.info(f'DEBUG: Have {user_hash}.db file')
+            return True
+        else:
+            action.logger.info(f'DEBUG: Have NOT {user_hash}.db file')
             return False
-        
-        # all_data_from_db = ['Что-то из DB',]
-        # if len(all_data_from_db) != 0:
-        #     action.logger.info('DEBUG: class VerificationData get_permission() "Have user data"')
-        #     # если длина сообщения из базы не равна 0
-        #     # составленный запрос нашел данные в базе
-        #     return True
-        # else:
-        #     # если собщение из базы -> []
-        #     action.logger.info('DEBUG: class VerificationData get_permission() "New user"')
-        #     return False
-        return True
 
 
 class AutorizationLogic(VerificationData):
@@ -89,8 +47,7 @@ class AutorizationLogic(VerificationData):
 
         self._login = None
         self._password = None
-
-        self._remember_me = False # checkbox active
+        self.user_hash = None
 
         self.screen_constructor = screen_constructor # ScreensConstructor()
         self.screen_manager = screen_manager # ScreenManager()
@@ -99,7 +56,6 @@ class AutorizationLogic(VerificationData):
         self.search_user_thread = None # поток поиска пользовательских данных
         self.display_main_screen_thread = None # поток отображения главного экрана
         self.handshake_thread = None # поток связи с сервером
-        self.download_thread = None # поток загрузки данных с сервера
         
     @property
     def login(self):
@@ -126,45 +82,72 @@ class AutorizationLogic(VerificationData):
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) _no_password_reaction()')
 
     # функция выполняется в отдельном потоке
-    def _seach_user_in_base(self):
+    def _seach_user_in_base(self, remember_me: bool):
         """# Проверка пользователя в базе данных
         - Если пользователь в базе данных, то вывести его данные
         - Если нельзя найти совпадений по login и password, то заводим нового пользователя
         """
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) seach_user_in_base()')
+        def remove_remember_me_file():
+            "Если есть файл, то удаляю"
+            action.logger.info('logic.py: _seach_user_in_base() remove_remember_me_file()')
+            path_to_json = config.PATH_TO_REMEMBER_ME + f'/{self.user_hash}.json'
+            if os.path.isfile(path_to_json):
+                os.remove(path_to_json)
+        
+        def write_remember_me_file():
+            self.screen_constructor.path_to_freeze_file = config.PATH_TO_REMEMBER_ME + f'/{self.user_hash}.json'
+            with open(self.screen_constructor.path_to_freeze_file, 'w') as file:
+                json.dump(options['remember_me'](self.login, self.password), file)
 
-        if self.get_permission(self.login, self.password): # проверяю пароль
-            # прошли авторизацию
+        def get_data_from_db():
+            "Нахожу данные пользователя"
+            query_to_user_base = memory.Query(
+                    db_path = config.PATH_TO_USER_DB + f'/{self.user_hash}.db',
+                    )
+            self.screen_constructor.user_data_from_db: list = query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
+            
+        if self.get_permission(self.login, self.password, self.user_hash): # проверяю пароль
+            # прошли авторизацию - есть база данных
             self.authorization_obj.user_authorized = True
+
+            if remember_me:
+                # если есть файл с базой данных
+                # и если стоит галочка "запомнить меня"
+                action.logger.info(f'logic.py: _seach_user_in_base() have DB and checkbox')
+                get_data_from_db()
+                # запомнить стартовые данные пользователя
+                write_remember_me_file()
+            else:
+                # если есть файл с базой данных
+                # но нет галочки "запомнить меня"
+                action.logger.info(f'logic.py: _seach_user_in_base() have DB and NOT checkbox')
+                get_data_from_db()
+                remove_remember_me_file()
         else:
             # не зарегистрированный пользователь
             self.authorization_obj.user_authorized = False
             # как вариант можно показать рекламу
-            # ### Отдельным потоком скачиваем актуальные данные
-            # msg_purpose = 1 # putpose.download_employer_database() # загрузка свежей базы данных
-            # self.download_thread = threading.Thread(
-            #     target=Client.start_client_server_dialog, 
-            #     daemon=True,
-            #     name='download_thread',
-            #     kwargs={
-            #         'user_name': self.login,
-            #         'user_surname': self.password,
-            #         'thread': self.handshake_thread,
-            #         'msg_purpose': msg_purpose,
-            #     }
-            # )
-            # self.download_thread.start()
-            ###
-        
-        action.logger.debug(f'-: user_authorized = {self.authorization_obj.user_authorized}')
+            if remember_me:
+                # если нет файла, но
+                # стоит галочка "запомнить меня"
+                action.logger.info(f'logic.py: _seach_user_in_base() have NOT DB and have checkbox')
+                write_remember_me_file()
+            else:
+                # если нет файла базы данных
+                # и не стоит галочка
+                action.logger.info(f'logic.py: _seach_user_in_base() have NOT DB and have NOT checkbox')
+                remove_remember_me_file()
     
-    def _display_main_screen(self, search_user_thread = None):
+        action.logger.info(f'DEBUG: remember_me = {remember_me}, user_authorized = {self.authorization_obj.user_authorized}')
+    
+    @mainthread
+    def _display_main_screen(self, search_user_thread: threading.Thread):
         """Создаю главный экран после авторизации пользователя, если экран еще не создан
         
         self.screen_constructor.popup_screen - подвижная вкладка
         """
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) _display_main_screen()')
-
         if self.screen_manager.has_screen(name='main_screen'):
             action.logger.info(f"DEBUG: Have 'main_screen'")
             self.screen_manager.get_screen('main_screen').user_name = self._login
@@ -182,55 +165,82 @@ class AutorizationLogic(VerificationData):
         self.screen_constructor.popup_screen = self.screen_constructor.main_screen.children[0].ids['_front_layer'].children[0].children[0].children[0]
         self.screen_manager.current = 'main_screen' 
 
-    def _start_logic_logowania(self):
+        if not self.screen_manager.has_screen(name='calendar_screen'):
+            self.screen_constructor.add_calendar_screen_obj()
+
+    def _start_logic_logowania(self, remember_me: bool):
         "Логика того, что происходит после нажатия кнопки Logowanie"
         ### Отдельным потоком отправляемся искать данные о пользователе
         self.search_user_thread = threading.Thread(
             target=self._seach_user_in_base, 
             daemon=True,
-            name='search_user_thread')
+            name='search_user_thread',
+            args=[remember_me, ],
+            )
         self.search_user_thread.start()
         ###
-        self._display_main_screen(self.search_user_thread)
-        Client.start_client_server_dialog(user_name=self.login, user_surname=self.password)
+        ### Отдельным потоком переходим на главный экран
+        self.display_main_screen_thread = threading.Thread(
+            target=self._display_main_screen,
+            daemon=True,
+            name='display_main_screen_thread',
+            args=[self.search_user_thread, ],
+        )
+        self.display_main_screen_thread.start()
+        ###
+        self.search_user_thread.join()
+        # if self.authorization_obj.user_authorized:
+        ### Отдельным потоком проверяю связь с сервером
+        self.handshake_thread = threading.Thread(
+            target=Client.start_client_server_dialog,
+            daemon=True,
+            name='handshake_thread',
+            kwargs={
+                'user_name': self.login,
+                'user_surname': self.password,
+                'remember_me': remember_me,
+                'msg_purpose': 'handshake', # цель обращения - рукопожатие / проверка связи с сервером / получение сертификата для передачи данных
+                }
+        )
+        self.handshake_thread.start()
+        ###
 
     @mainthread    
-    def check_user(self) -> None:
+    def check_user(self, remember_me: bool, login: str = None, password: str = None) -> None:
         """Вызов этой функции происходит по нажатию кнопки авторизации.
         Исходя из того, что написано в полях ввода,
         составляю представление о пользователе"""
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) check_user()')
 
-        _login = self.authorization_obj.user_name.text.replace(' ', '')
-        _password = self.authorization_obj.user_surname.text.replace(' ', '')
+        if login is None and password is None:
+            login = self.authorization_obj.user_name.text.replace(' ', '')
+            password = self.authorization_obj.user_surname.text.replace(' ', '')
 
-        if _login != '' and _password != '':
-            action.logger.info(f"DEBUG: Have Login and Password: '{_login}' '{_password}'")
+        if login != '' and password != '':
+            action.logger.info(f"DEBUG: Have Login and Password: '{login}' '{password}'")
             
-            self.login = _login
-            self.password = _password
+            self.login = login
+            self.password = password
+            self.user_hash = hash_to_user_name(f'{login}{password}', config.PORT)
 
-            self._start_logic_logowania()
+            self._start_logic_logowania(remember_me)
+            self.display_main_screen_thread.join()
+            self.handshake_thread.join()
 
-            # выключаю спинеры
-            self.screen_constructor.authorization_screen.ids.spinner.active = False
-            self.screen_constructor.main_screen.ids.spinner.active = False
+        else:
+            action.logger.warning(f"DEBUG: Have NOT Login and Password: '{login}' '{password}'")
+
+        ### Через секунду остановить спинеры
+        threading.Thread(target=self.spinners_off, daemon=True).start()
+        ###
+    
+    @mainthread
+    def spinners_off(self):
+        time.sleep(1)
+        # выключаю спинеры
+        self.screen_constructor.authorization_screen.ids.spinner.active = False
+        self.screen_constructor.main_screen.ids.spinner.active = False
             
-        else:
-            action.logger.warning(f"DEBUG: Have NOT Login and Password: '{_login}' '{_password}'")
-
- 
-    def on_checkbox_active(self, checkbox, value):
-        action.logger.info('logic.py: class AutorizationLogic(VerificationData) on_checkbox_active()')
-        if value:
-            # print('The checkbox', checkbox, 'is active', 'and', checkbox.state, 'state')
-            self._remember_me = True
-        else:
-            # print('The checkbox', checkbox, 'is inactive', 'and', checkbox.state, 'state')
-            self._remember_me = False
-        
-        action.logger.info(f'DEBUG: self._remember_me = {self._remember_me}')
-
 
 class MainScreenLogic:
     """Логика главного экрана"""
@@ -265,25 +275,34 @@ class MainScreenLogic:
             )
         self.dialog_screen_to_set_godziny.open()
 
-    def _read_user_data_from_json(self) -> json:
-        #
-        return json.dumps({
-            'user_name': 'User',
-            'user_surname': 'Surname',
-        })
+    def _transforming_data_from_database(self, user_data_from_db: list[tuple,]) -> json:
+        if user_data_from_db == []:
+            return None
+        keys = queries.user_table['column_data'].keys()
+        return [dict(zip(keys, values)) for values in user_data_from_db]
 
-    def make_data_table(self, search_user_thread = None):
+    @mainthread
+    def make_data_table(self, user_data_from_db):
         action.logger.info('logic.py: class MainScreenLogic make_data_table()')
 
-        if search_user_thread is not None:
-            search_user_thread.join() # дождался когда закончится сборка данных для конкретного пользователя
-        
-        user_data = self._read_user_data_from_json()
+        user_data: list[tuple,] = self._transforming_data_from_database(user_data_from_db)
 
         if user_data is None:
             action.logger.info(f'DEBUG: Have NOT user_data = {user_data}')
         else:
             action.logger.info(f'DEBUG: Have user_data = {user_data}')
+            for row in user_data:
+                item = TabelItem(
+                    text=row['building'],
+                    on_release=self.on_click_table_row,
+                )
+                self.main_screen.sum_godziny += row['hour']
+                item.ids.left_label.text = str(row['hour'])
+                item.ids.right_button.text = row['date'].strftime('%d.%m')
+                item.ids.right_button.on_release = lambda widget=item.ids.right_button: self.on_click_table_right_button(widget)
+                
+                self.main_screen.ids.scroll.add_widget(item)
+            self.main_screen.ids.summa.text = f'Masz {self.main_screen.sum_godziny} godzin'
 
     def on_click_table_row(self, widget):
         "Функция отрабатывает по клику на строку таблицы"
@@ -322,3 +341,23 @@ class MainScreenLogic:
                 content_cls = self.widgets
             )
         self.dialog_screen_to_set_object.open()
+
+    def create_user_data_base(self, path, user_name, user_surname, date, build_object, hour):
+        "Создаю базу данных для пользователя, если файл еще не создан"
+        query_to_user_base = memory.Query(
+            db_path = path,
+            )
+        query_to_user_base.create_table(data = queries.user_table)
+        query_to_user_base.write_values(
+            data = queries.generate_first_data(user_name, user_surname, date, build_object, hour),
+            )
+        
+    def add_to_user_data_base(self, path, user_name, user_surname, date, build_object, hour):
+        "Добавляю данные в пользовательскую базу данных"
+        query_to_user_base = memory.Query(
+            db_path = path,
+            )
+        query_to_user_base.write_values(
+            data = queries.generate_first_data(user_name, user_surname, date, build_object, hour),
+            )
+        print(query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE))

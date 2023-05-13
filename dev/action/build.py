@@ -1,6 +1,9 @@
 import threading
+import os
+import json
 
 import dev.action as action
+import dev.config as config
 from dev.view.screens import Autorization, Main, Calendar
 
 
@@ -23,16 +26,79 @@ class ScreensConstructor:
         # Мои экраны
         self.authorization_screen = None # authorization_screen
         self.main_screen = None # main_screen
-        self.popup_screen = None # подвижная вкладка MDBackdropFrontLayer
         self.calendar = None # calendar_screen
+        # Отдельные виджеты
+        self.popup_screen = None # подвижная вкладка MDBackdropFrontLayer
+        # Remember me
+        self.freeze_file: json = None
+        self.path_to_freeze_file = None
+        # с потока где считываются данные пользователя из базы данные
+        self.user_data_from_db = None
+
+
+    def _freeze_member(self) -> bool:
+        action.logger.info('build.py: class ScreensConstructor _freeze_member()')
+        # список всех файлов в папке
+        try:
+            files = os.listdir(config.PATH_TO_REMEMBER_ME)
+            # фильтрация файлов по расширению
+            json_files = [file for file in files if file.endswith('.json')]
+            
+            if len(json_files) == 0:
+                action.logger.info(f'DEBUG: Have NOT json files')
+                return False
+            
+            if len(json_files) == 1:
+                action.logger.info(f'DEBUG: Have json file {json_files[0]}')
+                self.path_to_freeze_file = config.PATH_TO_REMEMBER_ME + f'/{json_files[0]}'
+                with open(self.path_to_freeze_file, 'r') as file:
+                    self.freeze_file = json.load(file)
+                return True
+
+            if len(json_files) > 1:
+                action.logger.info(f'DEBUG: Have json files {json_files}')
+                return False # если нет файлов или нужно выбирать
+        except FileNotFoundError:
+            os.makedirs(config.PATH_TO_REMEMBER_ME)
+            
+            try:
+                os.makedirs(config.PATH_TO_EMPLOYER_DB)
+            except FileExistsError:
+                pass
+
+            try:
+                os.makedirs(config.PATH_TO_USER_DB)
+            except FileExistsError:
+                pass
+
+            return False
 
     def start_building(self):
-        "Первый запуск системы"
+        """
+        # Первый запуск системы
+        Последовательность создания экранов так же важена.
+        Вначале создается экран который и будет отображаться, а уже под ним создаются остальные
+        """
         action.logger.info('build.py: class ScreensConstructor start_building()')
-        self.add_authorization_screen_obj()
-        self.screen_manager.current = 'authorization_screen'
-        self.add_calendar_screen_obj()
-        self.add_main_screen_obj(user_name='', user_surname='', search_user_thread=None)
+
+        if self._freeze_member():
+            # если пользователь хочет чтобы приложение помнило его
+            # если в каталоге /db/freeze всего один файл
+            self.add_authorization_screen_obj()
+            self.add_calendar_screen_obj()
+            self.authorization_screen.ids.spinner.active = True
+
+            user_name = self.freeze_file['name']
+            self.authorization_screen.user_name.text = user_name
+            user_surname = self.freeze_file['surname']
+            self.authorization_screen.user_surname.text = user_surname
+
+            self.authorization_screen.logic.check_user(self.authorization_screen.remember_me, user_name, user_surname)
+        else:
+            self.add_authorization_screen_obj()
+            self.add_calendar_screen_obj()
+            self.add_main_screen_obj(user_name='', user_surname='', search_user_thread=None)
+            self.screen_manager.current = 'authorization_screen'
 
     def add_authorization_screen_obj(self):
         "Создаю и добавляю экран авторизации"
@@ -42,6 +108,7 @@ class ScreensConstructor:
                 screen_constructor = self,
                 screen_manager=self.screen_manager
             )
+        self.authorization_screen.build_logic_object()
         self.screen_manager.add_widget(self.authorization_screen)
 
     def add_main_screen_obj( # main_screen
@@ -65,19 +132,20 @@ class ScreensConstructor:
         
         if search_user_thread is not None:
             ### Отдельным потоком создаем таблицу данных
+            search_user_thread.join()
             make_table_thread = threading.Thread(
                 target=self.main_screen.logic.make_data_table,
                 daemon=True,
                 name='make_table_thread',
-                args = [search_user_thread,]
+                args = [self.user_data_from_db]
             )
             make_table_thread.start()
             ###
 
-        
     def remove_main_screen(self) -> None:
         action.logger.info('build.py: class ScreensConstructor remove_main_screen()')
         self.screen_manager.remove_widget(self.main_screen)
+        self.authorization_screen.build_logic_object()
         self.main_screen = None
 
     def add_calendar_screen_obj(self): # calendar_screen

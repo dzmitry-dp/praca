@@ -13,73 +13,74 @@
     user_name: login
     user_surname: password
 
-    MDSpinner:
-        id: spinner
-        size_hint: None, None
-        size: dp(46), dp(46)
-        pos_hint: {'center_x': .5, 'center_y': .5}
-        active: False
+    MDFloatLayout:
+        MDSpinner:
+            id: spinner
+            size_hint: None, None
+            size: dp(46), dp(46)
+            pos_hint: {'center_x': .5, 'center_y': .5}
+            active: False
 
-    MDGridLayout: 
-        cols: 1
-        padding: 50
-        size_hint_x: 1
-        
-        MDLabel:
-
-        MDLabel:
-
-        InputZone:
-            id: login
-            hint_text: 'Imie'
-            max_text_length: 15 
-
-        InputZone:
-            id: password
-            hint_text: 'Nazwisko'
-            max_text_length: 15 
-        
         MDGridLayout: 
-            cols: 3
+            cols: 1
+            padding: 50
             size_hint_x: 1
-
-            MDCheckbox:
-                id: remember_me
-                halign: 'center'
-                size_hint_x: .33
-                active: True
-                on_active:
-                    root.logic.on_checkbox_active(*args)
-
-            MDLabel:
-                text: 'Zapamiętaj mnie'
-                font_size: '16sp'
-                halign: 'center'
-                size_hint_x: .33
-
-            MDLabel:
-                size_hint_x: .33
-
-        MDLabel:
-
-        MDRectangleFlatIconButton:
-            icon: 'account-hard-hat-outline'
-            text: "Logowanie"
-            font_size: '28sp'
-            pos_hint: {"center_x": 0.5, "center_y": 0.5}
-            size_hint_x: 1
-            on_release:
-                spinner.active = True
-                root.manager.transition.direction = 'left'
-                root.manager.transition.duration = 0.2
-                root.btn_logowanie()
             
-        MDLabel:
+            MDLabel:
 
-        MDLabel:
-            text: 'Instalacje elektryczne\nROKBIT sp. Zo.o.'
-            halign: 'center'
-            font_size: '12sp'
+            MDLabel:
+
+            InputZone:
+                id: login
+                hint_text: 'Imie'
+                max_text_length: 15 
+
+            InputZone:
+                id: password
+                hint_text: 'Nazwisko'
+                max_text_length: 15 
+            
+            MDGridLayout: 
+                cols: 3
+                size_hint_x: 1
+
+                MDCheckbox:
+                    id: remember_me
+                    halign: 'center'
+                    size_hint_x: .33
+                    active: True
+                    on_active:
+                        root.checkbox(remember_me.active)
+
+                MDLabel:
+                    text: 'Zapamiętaj mnie'
+                    font_size: '16sp'
+                    halign: 'center'
+                    size_hint_x: .33
+
+                MDLabel:
+                    size_hint_x: .33
+
+            MDLabel:
+
+            MDRectangleFlatIconButton:
+                icon: 'account-hard-hat-outline'
+                text: "Logowanie"
+                font_size: '28sp'
+                pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                size_hint_x: 1
+                on_release:
+                    spinner.active = True
+                    root.manager.transition.direction = 'left'
+                    root.manager.transition.duration = 0.2
+                    root.btn_logowanie()
+                
+            MDLabel:
+
+            MDLabel:
+                text: 'Instalacje elektryczne\nROKBIT sp. Zo.o.'
+                halign: 'center'
+                font_size: '12sp'
 
 ### После авторизации
 <Text@MDLabel>:
@@ -227,17 +228,11 @@
                         size_hint_y: 0.15
 
                         Text:
-                            text: 'Masz 148 godzin'
-                            halign: 'left'
+                            id: summa
+                            halign: 'center'
                             font_size: '24sp'
                             font_style: 'H6'
                             
-                        Text:
-                            text: 'Płatność: 4321'
-                            halign: 'right'
-                            font_size: '24sp'
-                            font_style: 'H6'
-
                     MDRectangleFlatIconButton:
                         text: "Dodać"
                         font_size: '28sp'

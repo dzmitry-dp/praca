@@ -188,8 +188,6 @@ class AutorizationLogic(VerificationData):
         )
         self.display_main_screen_thread.start()
         ###
-        self.search_user_thread.join()
-        # if self.authorization_obj.user_authorized:
         ### Отдельным потоком проверяю связь с сервером
         self.handshake_thread = threading.Thread(
             target=Client.start_client_server_dialog,
@@ -276,16 +274,18 @@ class MainScreenLogic:
         self.dialog_screen_to_set_godziny.open()
 
     def _transforming_data_from_database(self, user_data_from_db: list[tuple,]) -> json:
-        if user_data_from_db == []:
+        if user_data_from_db == [] or user_data_from_db == None:
             return None
         keys = queries.user_table['column_data'].keys()
         return [dict(zip(keys, values)) for values in user_data_from_db]
 
     @mainthread
-    def make_data_table(self, user_data_from_db):
+    def make_data_table(self, user_authorized, user_data_from_db):
         action.logger.info('logic.py: class MainScreenLogic make_data_table()')
-
-        user_data: list[tuple,] = self._transforming_data_from_database(user_data_from_db)
+        if user_authorized:
+            user_data: list[tuple,] = self._transforming_data_from_database(user_data_from_db)
+        else:
+            user_data = None
 
         if user_data is None:
             action.logger.info(f'DEBUG: Have NOT user_data = {user_data}')

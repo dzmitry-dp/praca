@@ -35,43 +35,27 @@ class ScreensConstructor:
         # с потока где считываются данные пользователя из базы данные
         self.user_data_from_db = None
 
-
     def _freeze_member(self) -> bool:
         action.logger.info('build.py: class ScreensConstructor _freeze_member()')
         # список всех файлов в папке
-        try:
-            files = os.listdir(config.PATH_TO_REMEMBER_ME)
-            # фильтрация файлов по расширению
-            json_files = [file for file in files if file.endswith('.json')]
-            
-            if len(json_files) == 0:
-                action.logger.info(f'DEBUG: Have NOT json files')
-                return False
-            
-            if len(json_files) == 1:
-                action.logger.info(f'DEBUG: Have json file {json_files[0]}')
-                self.path_to_freeze_file = config.PATH_TO_REMEMBER_ME + f'/{json_files[0]}'
-                with open(self.path_to_freeze_file, 'r') as file:
-                    self.freeze_file = json.load(file)
-                return True
-
-            if len(json_files) > 1:
-                action.logger.info(f'DEBUG: Have json files {json_files}')
-                return False # если нет файлов или нужно выбирать
-        except FileNotFoundError:
-            os.makedirs(config.PATH_TO_REMEMBER_ME)
-            
-            try:
-                os.makedirs(config.PATH_TO_EMPLOYER_DB)
-            except FileExistsError:
-                pass
-
-            try:
-                os.makedirs(config.PATH_TO_USER_DB)
-            except FileExistsError:
-                pass
-
+        files = os.listdir(config.PATH_TO_REMEMBER_ME)
+        # фильтрация файлов по расширению
+        json_files = [file for file in files if file.endswith('.json')]
+        
+        if len(json_files) == 0:
+            action.logger.info(f'DEBUG: Have NOT json files')
             return False
+        
+        if len(json_files) == 1:
+            action.logger.info(f'DEBUG: Have json file {json_files}')
+            self.path_to_freeze_file = config.PATH_TO_REMEMBER_ME + f'/{json_files[0]}'
+            with open(self.path_to_freeze_file, 'r') as file:
+                self.freeze_file = json.load(file)
+            return True
+
+        if len(json_files) > 1:
+            action.logger.info(f'DEBUG: Have json files {json_files}')
+            return False # если нет файлов или нужно выбирать
 
     def start_building(self):
         """
@@ -93,7 +77,16 @@ class ScreensConstructor:
             user_surname = self.freeze_file['surname']
             self.authorization_screen.user_surname.text = user_surname
 
-            self.authorization_screen.logic.check_user(self.authorization_screen.remember_me, user_name, user_surname)
+            ### Отдельным потоком отправляемся искать данные о пользователе
+            check_user_thread = threading.Thread(
+                target=self.authorization_screen.logic.check_user,
+                daemon=True,
+                name='check_user_thread',
+                args=[self.authorization_screen.remember_me, user_name, user_surname],
+                )
+            check_user_thread.start()
+            ### Отдельный поток позволяет сменить экран до окончания всех расчетов
+            # self.authorization_screen.logic.check_user(self.authorization_screen.remember_me, user_name, user_surname)
         else:
             self.add_authorization_screen_obj()
             self.add_calendar_screen_obj()
@@ -134,10 +127,10 @@ class ScreensConstructor:
             ### Отдельным потоком создаем таблицу данных
             search_user_thread.join()
             make_table_thread = threading.Thread(
-                target=self.main_screen.logic.make_data_table,
-                daemon=True,
-                name='make_table_thread',
-                args = [self.user_data_from_db]
+                target = self.main_screen.logic.make_data_table,
+                daemon = True,
+                name = 'make_table_thread',
+                args = [self.authorization_screen.user_authorized, self.user_data_from_db]
             )
             make_table_thread.start()
             ###

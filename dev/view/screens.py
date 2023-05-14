@@ -10,6 +10,7 @@ from kivymd.uix.screen import MDScreen
 
 import dev.config as config
 import dev.action as action
+import dev.db.memory as memory
 from dev.action.logic import AutorizationLogic, MainScreenLogic
 from dev.view.helpers import TabelItem
 from dev.view.calendar import CalendarLogic
@@ -74,10 +75,6 @@ class Autorization(MDScreen):
             self.remember_me = value
         else:
             self.remember_me = value
-            # user_hash = hash_to_user_name(f'{}')
-            # path = config.PATH_TO_REMEMBER_ME + f'/{user_hash}.json'
-            # if os.path.exists(path):
-            #     os.remove(path)
         
         action.logger.info(f'DEBUG: self._remember_me = {self.remember_me}')
     
@@ -113,6 +110,7 @@ class Main(MDScreen):
         self.user_name = user_name
         self.user_surname = user_surname
         self.user = f'{self.user_name} {self.user_surname}'
+        self.user_hash = hash_to_user_name(f'{self.user_name}{self.user_surname}', config.PORT)
 
         self.sum_godziny = 0 # сумма наработанных часов
 
@@ -172,62 +170,23 @@ class Main(MDScreen):
 
         if self.ids.godziny.text != 'Godziny' and \
             self.ids.obiekt.text != 'Obiekt':
-            
-            date = datetime(datetime.now().year, int(self.ids.date.text.split('.')[1]), int(self.ids.date.text.split('.')[0]))
-            user_hash = hash_to_user_name(f'{self.user_name}{self.user_surname}', config.PORT)
-            # Проверяю на наличие файла с базой данных
-            path = config.PATH_TO_USER_DB + f'/{user_hash}.db'
-            if not os.path.exists(path):
-                ### Отдельным потоком создаю базу данных для нового пользователя
-                wr_to_user_db_thread = threading.Thread(
-                    target = self.logic.create_user_data_base,
-                    name = 'wr_to_user_db_thread',
-                    daemon = True,
-                    kwargs = {
-                        'path': path,
-                        'user_name': self.user_name,
-                        'user_surname': self.user_surname,
-                        'date': date,
-                        'build_object': self.ids.obiekt.text,
-                        'hour': self.ids.godziny.text,
-                    }
-                )
-                wr_to_user_db_thread.start()
-            else:
-                if self.screen_constructor.authorization_screen.remember_me:
-                ### Отдельныйм потоком записываю новые данные в базу данных пользователя
-                    wr_to_user_db_thread = threading.Thread(
-                        target = self.logic.add_to_user_data_base,
-                        name = 'wr_to_user_db_thread',
-                        daemon = True,
-                        kwargs = {
-                            'path': path,
-                            'user_name': self.user_name,
-                            'user_surname': self.user_surname,
-                            'date': date,
-                            'build_object': self.ids.obiekt.text,
-                            'hour': self.ids.godziny.text,
-                        }
-                    )
-                    wr_to_user_db_thread.start()
-                ###
 
-            item = TabelItem(
-                text=self.ids.obiekt.text,
-                on_release=self.logic.on_click_table_row,
-            )
-            
-            self.sum_godziny += int(self.ids.godziny.text)
-            item.ids.left_label.text = self.ids.godziny.text
-            item.ids.right_button.text = self.ids.date.text
-            item.ids.right_button.on_release = lambda widget=item.ids.right_button: self.logic.on_click_table_right_button(widget)
-
-            self.ids.summa.text = f'Masz {self.sum_godziny} godzin'    
-            self.ids.scroll.add_widget(item)
+            self._write_to_user_db()
             self._refresh_buttons()
-            # wr_to_user_db_thread.join()
-        else:
-            pass
+            self.sum_godziny = 0
+            query_to_user_base = memory.Query(
+                    db_path = config.PATH_TO_USER_DB + f'/{self.user_hash}.db',
+                    )
+            user_data_from_db: list[tuple,] = query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
+            ###
+            self.ids.scroll.clear_widgets()
+            make_table_thread = threading.Thread(
+                target = self.logic.make_data_table,
+                daemon = True,
+                name = 'make_table_thread',
+                args = [True, user_data_from_db]
+            )
+            make_table_thread.start()
 
     def btn_godziny(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_godziny()')
@@ -254,6 +213,46 @@ class Main(MDScreen):
         # self.ids.date.icon = 'calendar-range'
         pass
 
+    def _write_to_user_db(self):
+        date = datetime(datetime.now().year, int(self.ids.date.text.split('.')[1]), int(self.ids.date.text.split('.')[0]))
+        # Проверяю на наличие файла с базой данных
+        path = config.PATH_TO_USER_DB + f'/{self.user_hash}.db'
+
+        if self.screen_constructor.authorization_screen.remember_me:
+            if not os.path.exists(path):
+                ### Отдельным потоком создаю базу данных для нового пользователя
+                wr_to_user_db_thread = threading.Thread(
+                    target = self.logic.create_user_data_base,
+                    name = 'wr_to_user_db_thread',
+                    daemon = True,
+                    kwargs = {
+                        'path': path,
+                        'user_name': self.user_name,
+                        'user_surname': self.user_surname,
+                        'date': date,
+                        'build_object': self.ids.obiekt.text,
+                        'hour': self.ids.godziny.text,
+                    }
+                )
+                wr_to_user_db_thread.start()
+            else:
+                ### Отдельныйм потоком записываю новые данные в базу данных пользователя
+                wr_to_user_db_thread = threading.Thread(
+                    target = self.logic.add_to_user_data_base,
+                    name = 'wr_to_user_db_thread',
+                    daemon = True,
+                    kwargs = {
+                        'path': path,
+                        'user_name': self.user_name,
+                        'user_surname': self.user_surname,
+                        'date': date,
+                        'build_object': self.ids.obiekt.text,
+                        'hour': self.ids.godziny.text,
+                    }
+                )
+                wr_to_user_db_thread.start()
+                ###
+            wr_to_user_db_thread.join()
 
 class Calendar(MDScreen):
     def __init__(self, name, screen_manager, screen_constructor, *args, **kwargs):

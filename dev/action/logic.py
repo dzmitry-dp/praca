@@ -2,6 +2,7 @@ import threading
 import json
 import time
 import os
+from datetime import datetime
 
 from kivy.clock import mainthread
 
@@ -105,7 +106,7 @@ class AutorizationLogic(VerificationData):
             query_to_user_base = memory.Query(
                     db_path = config.PATH_TO_USER_DB + f'/{self.user_hash}.db',
                     )
-            self.screen_constructor.user_data_from_db: list = query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
+            self.screen_constructor.user_data_from_db: list[tuple,] = query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
             
         if self.get_permission(self.login, self.password, self.user_hash): # проверяю пароль
             # прошли авторизацию - есть база данных
@@ -257,19 +258,19 @@ class MainScreenLogic:
         
         self.main_screen = main_screen # class Main(MDScreen)
 
-        self.widgets: AddHoursWidget = None
+        self.add_hour_widget: AddHoursWidget = None
         self.dialog_screen_to_set_godziny: MDDialog = None
 
     def select_godziny(self):
         action.logger.info('logic.py: class MainScreenLogic select_godziny()')
         if not self.dialog_screen_to_set_godziny:
-            self.widgets = AddHoursWidget(
+            self.add_hour_widget = AddHoursWidget(
                 main_screen = self.main_screen,
                 main_screen_logic = self,
                 )
             self.dialog_screen_to_set_godziny = MDDialog(
                 type = "custom",
-                content_cls = self.widgets
+                content_cls = self.add_hour_widget
             )
         self.dialog_screen_to_set_godziny.open()
 
@@ -280,7 +281,7 @@ class MainScreenLogic:
         return [dict(zip(keys, values)) for values in user_data_from_db]
 
     @mainthread
-    def make_data_table(self, user_authorized, user_data_from_db):
+    def make_data_table(self, user_authorized: bool, user_data_from_db: list[tuple,]):
         action.logger.info('logic.py: class MainScreenLogic make_data_table()')
         if user_authorized:
             user_data: list[tuple,] = self._transforming_data_from_database(user_data_from_db)
@@ -313,6 +314,16 @@ class MainScreenLogic:
         "Функция отрабатывает по клику на дату"
         action.logger.info('logic.py: class MainScreenLogic on_click_table_right_button()')
         action.logger.info(f'DEBUG: wdiget.text: {widget.text} widget.parent.parent: {widget.parent.parent} widget.parent.parent.text: {widget.parent.parent.text}')
+        date: str = widget.text
+        date_string = f"{datetime.now().year}-{date[-2:]}-{date[:2]}"
+        datetime_obj = datetime.strptime(date_string, "%Y-%m-%d")
+        building_object = widget.parent.parent.text
+        self.main_screen.ids.scroll.remove_widget(widget.parent.parent)
+        self._remove_from_user_data_base(datetime_obj, building_object)
+        # вычисляю часы
+        hours = int(widget.parent.parent.ids.left_label.text)
+        self.main_screen.sum_godziny -= hours
+        self.main_screen.ids.summa.text = f'Masz {self.main_screen.sum_godziny} godzin'
 
     def on_save_calendar(self, value):
         action.logger.info('logic.py: class MainScreenLogic on_save_calendar()')
@@ -332,13 +343,13 @@ class MainScreenLogic:
         action.logger.info('logic.py: class MainScreenLogic open_objects_menu_list()')
 
         if not self.dialog_screen_to_set_object:
-            self.widgets = WorkObjects(
+            self.add_hour_widget = WorkObjects(
                 main_screen = self.main_screen,
                 main_screen_logic = self,
                 )
             self.dialog_screen_to_set_object = MDDialog(
                 type = "custom",
-                content_cls = self.widgets
+                content_cls = self.add_hour_widget
             )
         self.dialog_screen_to_set_object.open()
 
@@ -349,7 +360,7 @@ class MainScreenLogic:
             )
         query_to_user_base.create_table(data = queries.user_table)
         query_to_user_base.write_values(
-            data = queries.generate_first_data(user_name, user_surname, date, build_object, hour),
+            data = queries.generate_data(user_name, user_surname, date, build_object, hour),
             )
         
     def add_to_user_data_base(self, path, user_name, user_surname, date, build_object, hour):
@@ -358,6 +369,14 @@ class MainScreenLogic:
             db_path = path,
             )
         query_to_user_base.write_values(
-            data = queries.generate_first_data(user_name, user_surname, date, build_object, hour),
+            data = queries.generate_data(user_name, user_surname, date, build_object, hour),
             )
-        print(query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE))
+
+    def _remove_from_user_data_base(self, datetime_obj, building_object):
+        path = config.PATH_TO_USER_DB + f'/{self.main_screen.user_hash}.db'
+        query_to_user_base = memory.Query(
+            db_path = path,
+            )
+        query_to_user_base.remove_row(
+            data = queries.get_date_to_remove(datetime_obj=datetime_obj, building_object=building_object)
+        )

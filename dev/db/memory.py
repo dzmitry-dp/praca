@@ -24,12 +24,19 @@ def connection_to_database(create_query_func):
                 values = list(kwargs['data']['column_data'].values())
                 cursor.execute(query, values)
             elif 'SELECT' in query:
+                if 'DELETE' in query:
+                    values = list(kwargs['data']['column_data'].values())
+                    cursor.execute(query, values)
+                    return None
                 cursor.execute(query)
                 record = cursor.fetchall()
                 return record
             elif 'CREATE' in query:
                 values = list(kwargs['data']['column_data'].values())
                 cursor.execute(query)
+            elif 'DELETE' in query:
+                values = list(kwargs['data']['column_data'].values())
+                cursor.execute(query, values)
         except sqlite3.Error as error:
             raise DBConnectionErr(f"Error while connecting to database\n\n{error}")
         finally:
@@ -73,7 +80,7 @@ class Query:
     
     @connection_to_database
     def show_data_from_table(self, table_name: str):
-        return f"SELECT * FROM {table_name};"
+        return f"SELECT * FROM {table_name} ORDER BY date;"
     
     @connection_to_database
     def remove_table(self, table_name: str):
@@ -82,3 +89,8 @@ class Query:
     @connection_to_database
     def query_login_and_password(self, table_name: str, name: str, surname: str):
         return f"SELECT * FROM {table_name} WHERE name = '{name}' AND surname = '{surname}';"
+
+    @connection_to_database
+    def remove_row(self, data: dict):
+        table_name = data['table_name']
+        return f'DELETE FROM {table_name} WHERE id = (SELECT id FROM {table_name} WHERE building = ? AND date = ?);'

@@ -23,19 +23,10 @@ user_table = {
         }
     }
 
-# workers_list = {
-#     'table_name': WORKER_TABLE,
-#     'column_data': {
-#         'id': 'INTEGER PRIMARY KEY AUTOINCREMENT',
-#         'dt': 'TIMESTAMP', # время добавление записи
-#         'name': 'TEXT',
-#         'surname': 'TEXT',
-#     }
-# }
 ###
 # Так выглядят данные на запись
 ###
-def generate_first_data(user_name, user_surname, date, build_object, hour):
+def generate_data(user_name, user_surname, date, build_object, hour):
     return {
         'table_name': FIRST_TABLE,
         'column_data': {
@@ -64,3 +55,16 @@ def generate_first_data(user_name, user_surname, date, build_object, hour):
 #         'id': 4 # последним стоит id т.к. в конце запроса стоит WHERE id = ?
 #         }
 #     }
+
+### 
+# Данные на удаление
+###
+def get_date_to_remove(datetime_obj: datetime, building_object: str):
+    return {
+    'table_name': FIRST_TABLE,
+    'column_data': {
+        'building': building_object,
+        'date': datetime_obj,
+        }
+    }
+###

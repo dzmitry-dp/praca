@@ -13,11 +13,9 @@ class PracaApp(MDApp):
     """
     - self.screen_root = kivy.uix.screenmanager.ScreenManager()
     - self.screen_constructor = dev.view.build.ScreenConstrucrot()
-
-    def build() - возвращает корневой виджет приложения
     """
 
-    def build(self):
+    def build(self) -> ScreenManager:
         self.theme_cls.theme_style = "Dark"
 
         action.logger.info('Start: ------------ PracaApp.build() ------------')

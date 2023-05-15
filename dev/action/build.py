@@ -11,13 +11,29 @@ class ScreensConstructor:
     """
     # Сборщик/Утилизатор рабочих экранов для пользователей
 
-    - self.screen_manager
-    - self.authorization_screen
-    - self.main_screen
+    self.screen_manager: класс который контролирует экраны и память
 
-    def add_authorization_screen_obj()
-    def add_main_screen_obj()
-    def remove_main_screen()
+    self.authorization_screen: экран авторизации
+    
+    self.main_screen: главный экран приложения
+
+    self.calendar: экран приложения
+
+    self.popup_screen: передняя вкладка, которую можно скрыть
+
+    self.freeze_file: json данные сохраняются о пользователе, которого нужно запомнить
+
+    self.path_to_freeze_file: str до файла в котором хранятся данные пользователя
+
+    self.user_data_from_db: list[tuple, ] данные считанные с базы данных
+
+    - def _freeze_member() -> bool:
+    - def start_building() -> None:
+    - def add_authorization_screen_obj() -> None: 
+    - def add_main_screen_obj() -> None:
+    - def remove_main_screen() -> None:
+    - def add_calendar_screen_obj() -> None:
+    - def remove_calendar_screen() -> None:
     """
     def __init__(self, screen_manager) -> None:
         action.logger.info('build.py: class ScreensConstructor __init__()')
@@ -26,14 +42,14 @@ class ScreensConstructor:
         # Мои экраны
         self.authorization_screen = None # authorization_screen
         self.main_screen = None # main_screen
-        self.calendar = None # calendar_screen
+        self.calendar_screen = None # calendar_screen
         # Отдельные виджеты
-        self.popup_screen = None # подвижная вкладка MDBackdropFrontLayer
+        self.popup_widget = None # подвижная вкладка MDBackdropFrontLayer
         # Remember me
         self.freeze_file: json = None
-        self.path_to_freeze_file = None
+        self.path_to_freeze_file: str = None
         # с потока где считываются данные пользователя из базы данные
-        self.user_data_from_db = None
+        self.user_data_from_db: list[tuple,] = None
 
     def _freeze_member(self) -> bool:
         action.logger.info('build.py: class ScreensConstructor _freeze_member()')
@@ -57,7 +73,7 @@ class ScreensConstructor:
             action.logger.info(f'DEBUG: Have json files {json_files}')
             return False # если нет файлов или нужно выбирать
 
-    def start_building(self):
+    def start_building(self) -> None:
         """
         # Первый запуск системы
         Последовательность создания экранов так же важена.
@@ -79,20 +95,21 @@ class ScreensConstructor:
 
             self.add_calendar_screen_obj()
             ### Отдельным потоком отправляемся искать данные о пользователе
-            check_user_thread = threading.Thread(
-                target=self.authorization_screen.logic.check_user,
-                daemon=True,
-                name='check_user_thread',
-                args=[self.authorization_screen.remember_me, user_name, user_surname],
-                )
-            check_user_thread.start()
+            # check_user_thread = threading.Thread(
+            #     target=self.authorization_screen.logic.check_user,
+            #     daemon=True,
+            #     name='check_user_thread',
+            #     args=[self.authorization_screen.remember_me, user_name, user_surname],
+            #     )
+            # check_user_thread.start()
             ### Отдельный поток позволяет сменить экран до окончания всех расчетов
+            self.authorization_screen.logic.check_user(self.authorization_screen.remember_me, user_name, user_surname)
         else:
             self.add_authorization_screen_obj()
             self.add_calendar_screen_obj()
             self.add_main_screen_obj(user_name='', user_surname='', search_user_thread=None)
 
-    def add_authorization_screen_obj(self):
+    def add_authorization_screen_obj(self) -> None:
         "Создаю и добавляю экран авторизации"
         action.logger.info('build.py: class ScreensConstructor add_authorization_screen_obj()')
         self.authorization_screen = Autorization(
@@ -104,12 +121,7 @@ class ScreensConstructor:
         self.screen_manager.add_widget(self.authorization_screen)
         self.screen_manager.current = 'authorization_screen'
 
-    def add_main_screen_obj( # main_screen
-            self,
-            user_name,
-            user_surname,
-            search_user_thread = None, # поток в котором получаем все данные о пользователе
-            ):
+    def add_main_screen_obj(self, user_name, user_surname, search_user_thread = None,) -> None: # main_screen
         "Создаю и добавляю главный экран приложения"
         action.logger.info('build.py: class ScreensConstructor add_main_screen_obj()')
         self.main_screen = Main(
@@ -141,16 +153,16 @@ class ScreensConstructor:
         self.authorization_screen.build_logic_object()
         self.main_screen = None
 
-    def add_calendar_screen_obj(self): # calendar_screen
+    def add_calendar_screen_obj(self) -> None: # calendar_screen
         action.logger.info('build.py: class ScreensConstructor add_calendar_screen_obj()')
-        self.calendar = Calendar(
+        self.calendar_screen = Calendar(
             name = 'calendar_screen',
             screen_manager = self.screen_manager,
             screen_constructor = self,
         )
-        self.screen_manager.add_widget(self.calendar)
+        self.screen_manager.add_widget(self.calendar_screen)
 
-    def remove_calendar_screen(self):
+    def remove_calendar_screen(self) -> None:
         action.logger.info('build.py: class ScreensConstructor remove_calendar_screen()')
-        self.screen_manager.remove_widget(self.calendar)
-        self.calendar = None
+        self.screen_manager.remove_widget(self.calendar_screen)
+        self.calendar_screen = None

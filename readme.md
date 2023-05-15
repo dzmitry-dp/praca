@@ -59,7 +59,7 @@ buildozer android debug
 
 Требования в файле buildozer.spec
 
-	requirements = python3, sqlite3, kivy, kivymd, android, pyjnius
+	requirements = python3, kivy==master, https://github.com/kivymd/KivyMD/archive/master.zip, android, pyjnius, requests, cryptography, urllib3, chardet, idna
 
 android.permissions в файле buildozer.spec
 

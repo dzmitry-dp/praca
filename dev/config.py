@@ -7,6 +7,7 @@ from kivy.core.window import Window
 from kivy.config import Config
 import os
 
+Config.set('graphics', 'maxfps', '120')
 Config.set('kivy', 'log_dir', os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.abspath('./dev/static/logs')))
 
 from os.path import abspath

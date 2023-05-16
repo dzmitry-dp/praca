@@ -56,9 +56,8 @@ class ScreensConstructor(MyScreensObjects):
         """
         action.logger.info('build.py: class ScreensConstructor start_building()')
         freeze_file_data, checkbox_was_active = self.data_from_memory.get_freeze_member()
-        if checkbox_was_active:
-            # если пользователь хотел чтобы приложение помнило его
-            # если в каталоге /db/freeze всего один файл
+        if checkbox_was_active: # если пользователь ранее хотел чтобы приложение помнило его
+            # если в каталоге /db/freeze всего один json файл
             user_name = freeze_file_data['name']
             user_surname = freeze_file_data['surname']
             self.add_authorization_screen_obj()

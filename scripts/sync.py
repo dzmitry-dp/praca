@@ -38,4 +38,3 @@ else:
 
 ###
 os.system(f'move {target_path}\\buildozer.spec {target_path[:-4]}\\buildozer.spec')
-os.system(f'move {target_path}\\scripts\\create_app.py {target_path[:-4]}\\create_app.py')

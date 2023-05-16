@@ -1,8 +1,47 @@
+import os
+import json
 import sqlite3
 
 import dev.action as action
+import dev.config as config
 from dev.action.exceptions import DBConnectionErr
 
+
+class MemporyDataContainer:
+    """
+    # Данные которые помнит приложение
+    ## Получаю постепенно / НЕ сразу, а частями
+    ### По мере использования пользователем приложения, данные перезаписываются в этот объект
+
+    self.path_to_freeze_file: str путь до файла в котором хранятся данные пользователя
+
+    self.user_data_from_db: list[tuple, ] данные считанные с базы данных
+
+    """
+    def __init__(self) -> None:
+        self.path_to_freeze_file: str = None # путь к файлу, который хранит данные о текущем пользователе приложения
+        self.user_data_from_db: list[tuple,] = None ### это поле заполняется с потока где считываются данные пользователя из базы данные
+        
+
+    def get_freeze_member(self) -> tuple[dict, bool]:
+        action.logger.info('memory.py: get_freeze_member()')
+        # список всех файлов в папке
+        files = os.listdir(config.PATH_TO_REMEMBER_ME)
+        # фильтрация файлов по расширению
+        jf = [file for file in files if file.endswith('.json')]
+        
+        if len(jf) == 1: # если в папке всего один json файл
+            action.logger.info(f'DEBUG: Have json file {jf}')
+            checkbox_was_active = True # пользователь хочет чтобы приложение его помнило
+            self.path_to_freeze_file = config.PATH_TO_REMEMBER_ME + f'/{jf[0]}'
+            with open(self.path_to_freeze_file, 'r') as file:
+                freeze_file_data = json.load(file)
+        else: # если нет файлов или нужно выбирать из нескольких
+            action.logger.info(f'DEBUG: Have NOT json files')
+            checkbox_was_active = False
+            freeze_file_data = None
+
+        return freeze_file_data, checkbox_was_active
 
 def connection_to_database(create_query_func):
     def wrapper(self, **kwargs):
@@ -44,7 +83,7 @@ def connection_to_database(create_query_func):
             connection.close()
     return wrapper
 
-class Query:
+class QueryToSQLite3:
     def __init__(self, db_path: str):
         self.db_path = db_path
         self.query = ''

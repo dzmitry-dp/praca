@@ -135,14 +135,14 @@ class Main(MDScreen):
         def remove_remember_me_file():
             "Если есть файл, то удаляю"
             action.logger.info('build.py: remove_main_screen() remove_remember_me_file()')
-            if os.path.isfile(self.screen_constructor.path_to_freeze_file):
-                os.remove(self.screen_constructor.path_to_freeze_file)
+            if os.path.isfile(self.screen_constructor.data_from_memory.path_to_freeze_file):
+                os.remove(self.screen_constructor.data_from_memory.path_to_freeze_file)
 
         self.screen_manager.transition.direction = 'right'
         self.screen_constructor.remove_main_screen()
         self.screen_constructor.remove_calendar_screen()
 
-        if self.screen_constructor.path_to_freeze_file is not None:
+        if self.screen_constructor.data_from_memory.path_to_freeze_file is not None:
             remove_remember_me_file()
 
     def btn_menu_dodac(self):
@@ -174,7 +174,7 @@ class Main(MDScreen):
             self._write_to_user_db()
             self._refresh_buttons()
             self.sum_godziny = 0
-            query_to_user_base = memory.Query(
+            query_to_user_base = memory.QueryToSQLite3(
                     db_path = config.PATH_TO_USER_DB + f'/{self.user_hash}.db',
                     )
             user_data_from_db: list[tuple,] = query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)

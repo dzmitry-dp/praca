@@ -97,13 +97,13 @@ class AutorizationLogic(VerificationData):
                 os.remove(path_to_json)
         
         def write_remember_me_file():
-            self.screen_constructor.path_to_freeze_file = config.PATH_TO_REMEMBER_ME + f'/{self.user_hash}.json'
-            with open(self.screen_constructor.path_to_freeze_file, 'w') as file:
+            self.screen_constructor.data_from_memory.path_to_freeze_file = config.PATH_TO_REMEMBER_ME + f'/{self.user_hash}.json'
+            with open(self.screen_constructor.data_from_memory.path_to_freeze_file, 'w') as file:
                 json.dump(options['remember_me'](self.login, self.password), file)
 
         def get_data_from_db():
             "Нахожу данные пользователя"
-            query_to_user_base = memory.Query(
+            query_to_user_base = memory.QueryToSQLite3(
                     db_path = config.PATH_TO_USER_DB + f'/{self.user_hash}.db',
                     )
             self.screen_constructor.user_data_from_db: list[tuple,] = query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
@@ -355,7 +355,7 @@ class MainScreenLogic:
 
     def create_user_data_base(self, path, user_name, user_surname, date, build_object, hour):
         "Создаю базу данных для пользователя, если файл еще не создан"
-        query_to_user_base = memory.Query(
+        query_to_user_base = memory.QueryToSQLite3(
             db_path = path,
             )
         query_to_user_base.create_table(data = queries.user_table)
@@ -365,7 +365,7 @@ class MainScreenLogic:
         
     def add_to_user_data_base(self, path, user_name, user_surname, date, build_object, hour):
         "Добавляю данные в пользовательскую базу данных"
-        query_to_user_base = memory.Query(
+        query_to_user_base = memory.QueryToSQLite3(
             db_path = path,
             )
         query_to_user_base.write_values(
@@ -374,7 +374,7 @@ class MainScreenLogic:
 
     def _remove_from_user_data_base(self, datetime_obj, building_object):
         path = config.PATH_TO_USER_DB + f'/{self.main_screen.user_hash}.db'
-        query_to_user_base = memory.Query(
+        query_to_user_base = memory.QueryToSQLite3(
             db_path = path,
             )
         query_to_user_base.remove_row(

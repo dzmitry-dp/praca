@@ -106,7 +106,7 @@ class AutorizationLogic(VerificationData):
             query_to_user_base = memory.QueryToSQLite3(
                     db_path = config.PATH_TO_USER_DB + f'/{self.user_hash}.db',
                     )
-            self.screen_constructor.user_data_from_db: list[tuple,] = query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
+            self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
             
         if self.get_permission(self.login, self.password, self.user_hash): # проверяю пароль
             # прошли авторизацию - есть база данных

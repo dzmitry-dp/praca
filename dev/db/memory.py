@@ -7,7 +7,7 @@ import dev.config as config
 from dev.action.exceptions import DBConnectionErr
 
 
-class MemporyDataContainer:
+class MemoryDataContainer:
     """
     # Данные которые помнит приложение
     ## Получаю постепенно / НЕ сразу, а частями

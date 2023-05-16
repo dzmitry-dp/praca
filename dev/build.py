@@ -3,7 +3,7 @@ import threading
 import dev.action as action
 import dev.config as config
 from dev.view.screens import Autorization, Main, Calendar
-from dev.db.memory import MemporyDataContainer
+from dev.db.memory import MemoryDataContainer
 
 
 class MyScreensObjects:
@@ -14,7 +14,7 @@ class MyScreensObjects:
     
     self.main_screen: главный экран где пользователь добавляет часы
 
-    self.calendar: экран календаря
+    self.calendar_screen: экран календаря
 
     """
 
@@ -45,7 +45,7 @@ class ScreensConstructor(MyScreensObjects):
         super().__init__()
         action.logger.info('build.py: class ScreensConstructor __init__()')
         self.screen_manager = screen_manager # ScreenManager() управление экранами и памятью
-        self.data_from_memory = MemporyDataContainer()
+        self.data_from_memory = MemoryDataContainer()
         self.start_building()
 
     def start_building(self) -> None:

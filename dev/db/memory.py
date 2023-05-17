@@ -23,7 +23,7 @@ class MemoryDataContainer:
         self.user_data_from_db: list[tuple,] = None ### это поле заполняется с потока где считываются данные пользователя из базы данные
         
 
-    def get_freeze_member(self) -> tuple[dict, bool]:
+    def get_freeze_member(self) -> dict:
         action.logger.info('memory.py: get_freeze_member()')
         # список всех файлов в папке
         files = os.listdir(config.PATH_TO_REMEMBER_ME)
@@ -32,16 +32,14 @@ class MemoryDataContainer:
         
         if len(jf) == 1: # если в папке всего один json файл
             action.logger.info(f'DEBUG: Have json file {jf}')
-            checkbox_was_active = True # пользователь хочет чтобы приложение его помнило
             self.path_to_freeze_file = config.PATH_TO_REMEMBER_ME + f'/{jf[0]}'
             with open(self.path_to_freeze_file, 'r') as file:
                 freeze_file_data = json.load(file)
         else: # если нет файлов или нужно выбирать из нескольких
             action.logger.info(f'DEBUG: Have NOT json files')
-            checkbox_was_active = False
             freeze_file_data = None
 
-        return freeze_file_data, checkbox_was_active
+        return freeze_file_data
 
 def connection_to_database(create_query_func):
     def wrapper(self, **kwargs):

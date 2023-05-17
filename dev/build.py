@@ -55,29 +55,27 @@ class ScreensConstructor(MyScreensObjects):
         Вначале создается экран который и будет отображаться, а уже под ним создаются остальные
         """
         action.logger.info('build.py: class ScreensConstructor start_building()')
-        freeze_file_data, checkbox_was_active = self.data_from_memory.get_freeze_member()
-        if checkbox_was_active: # если пользователь ранее хотел чтобы приложение помнило его
-            # если в каталоге /db/freeze всего один json файл
-            user_name = freeze_file_data['name']
-            user_surname = freeze_file_data['surname']
-            self.add_authorization_screen_obj()
-            self.authorization_screen.user_name.text = user_name
-            self.authorization_screen.user_surname.text = user_surname
+
+        def _start_with_user_data():
+            self.authorization_screen.user_name.text = freeze_file_data['name']
+            self.authorization_screen.user_surname.text = freeze_file_data['surname']
             self.authorization_screen.ids.spinner.active = True
             ### Отдельным потоком отправляемся искать данные о пользователе
             check_user_thread = threading.Thread(
                 target=self.authorization_screen.logic.check_user,
                 daemon=True,
                 name='check_user_thread',
-                args=[self.authorization_screen.remember_me, user_name, user_surname],
+                args=[self.authorization_screen.remember_me, freeze_file_data['name'], freeze_file_data['surname']],
                 )
             check_user_thread.start()
-            ###
-            self.add_calendar_screen_obj()
-            # self.authorization_screen.logic.check_user(self.authorization_screen.remember_me, user_name, user_surname)
+
+        self.add_authorization_screen_obj()
+        self.add_calendar_screen_obj()
+        freeze_file_data = self.data_from_memory.get_freeze_member()
+
+        if freeze_file_data is not None: # если в каталоге /db/freeze всего один json файл
+            _start_with_user_data()
         else:
-            self.add_authorization_screen_obj()
-            self.add_calendar_screen_obj()
             self.add_main_screen_obj(user_name='', user_surname='', search_user_thread=None)
 
     def add_authorization_screen_obj(self) -> None:
@@ -137,4 +135,3 @@ class ScreensConstructor(MyScreensObjects):
         action.logger.info('build.py: class ScreensConstructor remove_calendar_screen()')
         self.screen_manager.remove_widget(self.calendar_screen)
         self.calendar_screen = None
-

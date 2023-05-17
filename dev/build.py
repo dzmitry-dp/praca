@@ -19,7 +19,7 @@ class MyScreensObjects:
     """
 
     def __init__(self) -> None:
-        super().__init__()
+        action.logger.info('build.py: class MyScreensObjects __init__()')
         self.authorization_screen = None # authorization_screen
         self.main_screen = None # main_screen
         self.calendar_screen = None # calendar_screen
@@ -76,7 +76,7 @@ class ScreensConstructor(MyScreensObjects):
         if freeze_file_data is not None: # если в каталоге /db/freeze всего один json файл
             _start_with_user_data()
         else:
-            self.add_main_screen_obj(user_name='', user_surname='', search_user_thread=None)
+            self.add_main_screen_obj(user_name = '', user_surname = '', search_user_thread = None)
 
     def add_authorization_screen_obj(self) -> None:
         "Создаю и добавляю экран авторизации"
@@ -86,9 +86,8 @@ class ScreensConstructor(MyScreensObjects):
                 screen_constructor = self,
                 screen_manager=self.screen_manager
             )
-        self.authorization_screen.build_logic_object()
+        self.authorization_screen.refresh_internal_logic_object()
         self.screen_manager.add_widget(self.authorization_screen)
-        self.screen_manager.current = 'authorization_screen'
 
     def add_main_screen_obj(self, user_name, user_surname, search_user_thread = None,) -> None: # main_screen
         "Создаю и добавляю главный экран приложения"
@@ -105,13 +104,16 @@ class ScreensConstructor(MyScreensObjects):
         self.screen_manager.add_widget(self.main_screen)
         
         if search_user_thread is not None:
-            ### Отдельным потоком создаем таблицу данных
             search_user_thread.join()
+            ### Отдельным потоком создаем таблицу данных
             make_table_thread = threading.Thread(
                 target = self.main_screen.logic.make_data_table,
                 daemon = True,
                 name = 'make_table_thread',
-                args = [self.authorization_screen.user_authorized, self.data_from_memory.user_data_from_db]
+                args = [
+                    self.authorization_screen.user_authorized,
+                    self.data_from_memory.user_data_from_db,
+                    ]
             )
             make_table_thread.start()
             ###
@@ -119,7 +121,6 @@ class ScreensConstructor(MyScreensObjects):
     def remove_main_screen(self) -> None:
         action.logger.info('build.py: class ScreensConstructor remove_main_screen()')
         self.screen_manager.remove_widget(self.main_screen)
-        self.authorization_screen.build_logic_object()
         self.main_screen = None
 
     def add_calendar_screen_obj(self) -> None: # calendar_screen

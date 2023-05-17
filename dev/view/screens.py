@@ -19,16 +19,20 @@ from dev.action.hash import hash_to_user_name
 
 class Autorization(MDScreen):
     """
-    Виджет авторизации на котором просят ввести Имя и Фимилию.
+    # Виджет авторизации на котором просят ввести Имя и Фимилию.
     Если пользователь не зарегистрирован,
     то заводим пользователя с чистыми данными
 
     self.name = 'authorization_screen'
+
     self.user_name.text - текст который был введен пользователем в строку Imie
+
     self.user_surname.text - Nazwisko
+
     self.user_authorized: bool - пользователь авторизирован (True/False)
 
     self.logic = AutorizationLogic()
+
     self.logic.seach_user_in_base() - логика принятия решений при нажатии кнопки 'Logowanie'
 
     """
@@ -45,9 +49,9 @@ class Autorization(MDScreen):
         self._screen_manager: ScreenManager = screen_manager # class ScreenManager
 
         self.remember_me = True # изначально стоит галочка Remember me
-        self.logic = None
+        self.logic: AutorizationLogic = None
 
-    def build_logic_object(self):
+    def refresh_internal_logic_object(self) -> None:
         self.logic = AutorizationLogic(
                 screen_constructor = self.screen_constructor,
                 screen_manager=self.screen_manager,
@@ -141,6 +145,7 @@ class Main(MDScreen):
         self.screen_manager.transition.direction = 'right'
         self.screen_constructor.remove_main_screen()
         self.screen_constructor.remove_calendar_screen()
+        self.screen_constructor.authorization_screen.refresh_internal_logic_object()
 
         if self.screen_constructor.data_from_memory.path_to_freeze_file is not None:
             remove_remember_me_file()

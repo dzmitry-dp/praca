@@ -30,8 +30,8 @@ class ScreensConstructor(MyScreensObjects):
     # Сборщик/Утилизатор рабочих экранов для пользователя
 
     self.screen_manager: объект kivy.uix.screenmanager.ScreenManager() который контролирует экраны и память
-    self.data_from_memory: контейнер для данных которые нужно помнить
 
+    self.data_from_memory: контейнер для данных которые нужно помнить
 
     - def start_building() -> None:
     - def add_authorization_screen_obj() -> None: 
@@ -86,7 +86,6 @@ class ScreensConstructor(MyScreensObjects):
                 screen_constructor = self,
                 screen_manager=self.screen_manager
             )
-        self.authorization_screen.refresh_internal_logic_object()
         self.screen_manager.add_widget(self.authorization_screen)
 
     def add_main_screen_obj(self, user_name, user_surname, search_user_thread = None,) -> None: # main_screen
@@ -111,7 +110,7 @@ class ScreensConstructor(MyScreensObjects):
                 daemon = True,
                 name = 'make_table_thread',
                 args = [
-                    self.authorization_screen.user_authorized,
+                    self.authorization_screen.logic.user_authorized,
                     self.data_from_memory.user_data_from_db,
                     ]
             )

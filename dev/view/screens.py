@@ -12,7 +12,7 @@ import dev.config as config
 import dev.action as action
 import dev.db.memory as memory
 from dev.action.logic import AutorizationLogic, MainScreenLogic
-from dev.view.helpers import TabelItem
+# from dev.view.helpers import TabelItem
 from dev.view.calendar import CalendarLogic
 from dev.action.hash import hash_to_user_name
 
@@ -20,26 +20,22 @@ from dev.action.hash import hash_to_user_name
 class Autorization(MDScreen):
     """
     # Виджет авторизации на котором просят ввести Имя и Фимилию.
-    Если пользователь не зарегистрирован,
-    то заводим пользователя с чистыми данными
-
-    self.name = 'authorization_screen'
+    Если пользователь не зарегистрирован, то заводим пользователя со стандартыми начальными данными
 
     self.user_name.text - текст который был введен пользователем в строку Imie
 
-    self.user_surname.text - Nazwisko
+    self.user_surname.text - текст который был введен пользователем в строку Nazwisko
 
-    self.user_authorized: bool - пользователь авторизирован (True/False)
+
+    self.screen_constructor: объект dev.build.ScreensConstructor()для сборки и удаления экранов приложения
+
+    self.screen_manager: объект kivy.uix.screenmanager.ScreenManager() который контролирует экраны и память
 
     self.logic = AutorizationLogic()
-
-    self.logic.seach_user_in_base() - логика принятия решений при нажатии кнопки 'Logowanie'
-
     """
 
     user_name = ObjectProperty()
     user_surname = ObjectProperty()
-    user_authorized: bool = False # set in seach_user_in_base()
 
     def __init__(self, screen_constructor, screen_manager: ScreenManager, **kw):
         super().__init__(**kw)
@@ -47,16 +43,9 @@ class Autorization(MDScreen):
 
         self._screen_constructor = screen_constructor # class ScreensConstructor
         self._screen_manager: ScreenManager = screen_manager # class ScreenManager
+        self._logic: AutorizationLogic = None # class AutorizationLogic
 
         self.remember_me = True # изначально стоит галочка Remember me
-        self.logic: AutorizationLogic = None
-
-    def refresh_internal_logic_object(self) -> None:
-        self.logic = AutorizationLogic(
-                screen_constructor = self.screen_constructor,
-                screen_manager=self.screen_manager,
-                authorization_obj = self,
-                )
 
     @property
     def screen_constructor(self):
@@ -74,21 +63,35 @@ class Autorization(MDScreen):
     def screen_manager(self, value: ScreenManager):
         self._screen_manager = value
         
-    def checkbox(self, value):
-        if value:
-            self.remember_me = value
-        else:
-            self.remember_me = value
-        
+    @property
+    def logic(self) -> AutorizationLogic:
+        if self._logic is None:
+            self._logic = AutorizationLogic(
+                screen_constructor = self.screen_constructor,
+                screen_manager=self.screen_manager,
+                authorization_obj = self,
+                )
+        return self._logic
+    
+    @logic.setter
+    def logic(self, value: AutorizationLogic):
+        self._logic = value
+
+    def checkbox_remember_me(self, value) -> None:
+        "Галочка 'запомнить меня'"
+        action.logger.info('screens.py: class Autorization(MDScreen) checkbox_remember_me()')
+        self.remember_me = value
         action.logger.info(f'DEBUG: self._remember_me = {self.remember_me}')
     
-    def btn_logowanie(self):
+    def btn_logowanie(self) -> None:
+        "Кнопка 'Logowanie'"
+        action.logger.info('screens.py: class Autorization(MDScreen) btn_logowanie()')
         ### Отдельным потоком отправляемся искать данные о пользователе
         set_user_thread = threading.Thread(
-            target=self.logic.check_user,
-            daemon=True,
             name='set_user_thread',
+            target=self.logic.check_user,
             args=[self.remember_me, ],
+            daemon=True,
             )
         set_user_thread.start()
         ### Отдельный поток позволяет сменить экран до окончания всех расчетов
@@ -123,14 +126,30 @@ class Main(MDScreen):
         self.month = date.today().month # int
         self.day = date.today().day # int
 
-        self.screen_constructor = screen_constructor
-        self.screen_manager = screen_manager
+        self._screen_constructor = screen_constructor
+        self._screen_manager = screen_manager
 
         self.logic = MainScreenLogic(
             screen_constructor=self.screen_constructor,
             screen_manager=self.screen_manager,
             main_screen=self,
         )
+
+    @property
+    def screen_constructor(self):
+        return self._screen_constructor
+    
+    @screen_constructor.setter
+    def screen_constructor(self, value):
+        self._screen_constructor = value
+
+    @property
+    def screen_manager(self) -> ScreenManager:
+        return self._screen_manager
+    
+    @screen_manager.setter
+    def screen_manager(self, value: ScreenManager):
+        self._screen_manager = value
 
     def btn_wyloguj(self):
         "Возвращает на экран логирования"
@@ -145,7 +164,8 @@ class Main(MDScreen):
         self.screen_manager.transition.direction = 'right'
         self.screen_constructor.remove_main_screen()
         self.screen_constructor.remove_calendar_screen()
-        self.screen_constructor.authorization_screen.refresh_internal_logic_object()
+        self.screen_constructor.authorization_screen.logic = None # обновляю объект логики для экрана авторизации
+        action.logger.info("DEBUG: Update 'logic' object in 'authorization_screen'")
 
         if self.screen_constructor.data_from_memory.path_to_freeze_file is not None:
             remove_remember_me_file()
@@ -258,6 +278,7 @@ class Main(MDScreen):
                 wr_to_user_db_thread.start()
                 ###
             wr_to_user_db_thread.join()
+
 
 class Calendar(MDScreen):
     def __init__(self, name, screen_manager, screen_constructor, *args, **kwargs):

@@ -101,7 +101,11 @@ class Main(MDScreen):
     '''
     # Главный экран на котором расположен интерфейс пользователя.
     
-    Через этот интерфейс можно управлять приложением
+    ## Через этот интерфейс можно управлять приложением
+
+    user: str - имя и фамилия пользователя
+
+    today: str - текущая дата
     '''
 
     user = StringProperty()
@@ -212,66 +216,13 @@ class Main(MDScreen):
         self.screen_manager.transition.direction = 'left'
         self.screen_manager.current = 'calendar_screen'
 
-    def _refresh_buttons(self):
-        # self.ids.godziny.text = 'Godziny'
-        # self.ids.godziny.icon = 'hours-24'
-
-        # self.ids.obiekt.text = 'Obiekt'
-        # self.ids.obiekt.icon = 'home-lightning-bolt'
-
-        # self.ids.date.text = 'Data'
-        # self.ids.date.icon = 'calendar-range'
-        pass
-
-    def _write_to_user_db(self):
-        date = datetime(datetime.now().year, int(self.ids.date.text.split('.')[1]), int(self.ids.date.text.split('.')[0]))
-        # Проверяю на наличие файла с базой данных
-        path = config.PATH_TO_USER_DB + f'/{self.user_hash}.db'
-
-        if self.screen_constructor.authorization_screen.remember_me:
-            if not os.path.exists(path):
-                ### Отдельным потоком создаю базу данных для нового пользователя
-                wr_to_user_db_thread = threading.Thread(
-                    target = self.logic.create_user_data_base,
-                    name = 'wr_to_user_db_thread',
-                    daemon = True,
-                    kwargs = {
-                        'path': path,
-                        'user_name': self.user_name,
-                        'user_surname': self.user_surname,
-                        'date': date,
-                        'build_object': self.ids.obiekt.text,
-                        'hour': self.ids.godziny.text,
-                    }
-                )
-                wr_to_user_db_thread.start()
-            else:
-                ### Отдельныйм потоком записываю новые данные в базу данных пользователя
-                wr_to_user_db_thread = threading.Thread(
-                    target = self.logic.add_to_user_data_base,
-                    name = 'wr_to_user_db_thread',
-                    daemon = True,
-                    kwargs = {
-                        'path': path,
-                        'user_name': self.user_name,
-                        'user_surname': self.user_surname,
-                        'date': date,
-                        'build_object': self.ids.obiekt.text,
-                        'hour': self.ids.godziny.text,
-                    }
-                )
-                wr_to_user_db_thread.start()
-                ###
-            wr_to_user_db_thread.join()
-
     def btn_dodac(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_dodac()')
 
         if self.ids.godziny.text != 'Godziny' and \
             self.ids.obiekt.text != 'Obiekt':
 
-            self._write_to_user_db()
-            self._refresh_buttons()
+            self.logic.write_to_user_db()
             self.sum_godziny = 0
             query_to_user_base = memory.QueryToSQLite3(
                     db_path = config.PATH_TO_USER_DB + f'/{self.user_hash}.db',

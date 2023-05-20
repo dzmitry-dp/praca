@@ -22,7 +22,6 @@ class MemoryDataContainer:
         self.path_to_freeze_file: str = None # путь к файлу, который хранит данные о текущем пользователе приложения
         self.user_data_from_db: list[tuple,] = None ### это поле заполняется с потока где считываются данные пользователя из базы данные
         
-
     def get_freeze_member(self) -> dict:
         action.logger.info('memory.py: get_freeze_member()')
         # список всех файлов в папке

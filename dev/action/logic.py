@@ -13,11 +13,10 @@ import dev.action as action
 import dev.config as config
 import dev.db.memory as memory
 import dev.db.queries_struct as queries
-from dev.view.helpers import AddHoursWidget, WorkObjects
+from dev.view.my_widgets import AddHoursWidget, WorkObjects, TabelItem
 from dev.client import start_client_server_dialog
 from dev.action.hash import hash_to_user_name
 from dev.action.purpose import options
-from dev.view.helpers import TabelItem
 
 class VerificationData:
     def __init__(self) -> None:
@@ -258,13 +257,29 @@ class MainScreenLogic:
                  main_screen: MDScreen,
                  ) -> None:
         action.logger.info('logic.py: class MainScreenLogic __init__()')
-        self.screen_manager = screen_manager
-        self.screen_constructor = screen_constructor # ScreensConstructor()
+        self._screen_manager = screen_manager
+        self._screen_constructor = screen_constructor # ScreensConstructor()
         
         self.main_screen = main_screen # class Main(MDScreen)
 
         self.add_hour_widget: AddHoursWidget = None
         self.dialog_screen_to_set_godziny: MDDialog = None
+
+    @property
+    def screen_constructor(self):
+        return self._screen_constructor
+    
+    @screen_constructor.setter
+    def screen_constructor(self, value):
+        self._screen_constructor = value
+
+    @property
+    def screen_manager(self):
+        return self._screen_manager
+    
+    @screen_manager.setter
+    def screen_manager(self, value):
+        self._screen_manager = value
 
     def select_godziny(self):
         action.logger.info('logic.py: class MainScreenLogic select_godziny()')
@@ -385,3 +400,33 @@ class MainScreenLogic:
         query_to_user_base.remove_row(
             data = queries.get_date_to_remove(datetime_obj=datetime_obj, building_object=building_object)
         )
+
+    def write_to_user_db(self):
+        date = datetime(datetime.now().year, int(self.main_screen.ids.date.text.split('.')[1]), int(self.main_screen.ids.date.text.split('.')[0]))
+        # Проверяю на наличие файла с базой данных
+        path = config.PATH_TO_USER_DB + f'/{self.main_screen.user_hash}.db'
+
+        if self.screen_constructor.authorization_screen.remember_me:
+            if not os.path.exists(path):
+                function = self.create_user_data_base
+                ### Отдельным потоком создаю базу данных для нового пользователя
+                
+            else:
+                function = self.add_to_user_data_base
+                ### Отдельныйм потоком записываю новые данные в базу данных пользователя
+                
+            wr_to_user_db_thread = threading.Thread(
+                target = function,
+                name = 'wr_to_user_db_thread',
+                daemon = True,
+                kwargs = {
+                    'path': path,
+                    'user_name': self.main_screen.user_name,
+                    'user_surname': self.main_screen.user_surname,
+                    'date': date,
+                    'build_object': self.main_screen.ids.obiekt.text,
+                    'hour': self.main_screen.ids.godziny.text,
+                    }
+                )
+            wr_to_user_db_thread.start()
+            wr_to_user_db_thread.join()

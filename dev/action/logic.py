@@ -14,7 +14,7 @@ import dev.config as config
 import dev.db.memory as memory
 import dev.db.queries_struct as queries
 from dev.view.helpers import AddHoursWidget, WorkObjects
-from dev.client import Client
+from dev.client import start_client_server_dialog
 from dev.action.hash import hash_to_user_name
 from dev.action.purpose import options
 from dev.view.helpers import TabelItem
@@ -149,8 +149,6 @@ class AutorizationLogic(VerificationData):
     def _display_main_screen(self, search_user_thread: threading.Thread):
         """
         Создаю главный экран после авторизации пользователя, если экран еще не создан
-        
-        self.screen_constructor.popup_screen - подвижная вкладка
         """
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) _display_main_screen()')
         if self.screen_manager.has_screen(name='main_screen'):
@@ -191,7 +189,7 @@ class AutorizationLogic(VerificationData):
         ###
         ### Отдельным потоком проверяю связь с сервером
         self.handshake_thread = threading.Thread(
-            target = Client.start_client_server_dialog,
+            target = start_client_server_dialog,
             daemon = True,
             name = 'handshake_thread',
             kwargs = {
@@ -239,6 +237,7 @@ class AutorizationLogic(VerificationData):
         threading.Thread(target=self._spinners_off, daemon=True).start()
         ###
     
+    @mainthread
     def _spinners_off(self):
         time.sleep(1)
         self.display_main_screen_thread.join() # убедиться что экран main создан

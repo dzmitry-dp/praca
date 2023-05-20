@@ -17,9 +17,9 @@ def connect_to_ftp(purpose: str, port: int, login: str, password: str, cert: str
     def _send_cmd_to_ftp_server():
         action.logger.info(f"ftp_client.py: _send_cmd_to_ftp_server()")
         if purpose == 'update':
-            # Скачивание файла с сервера
+            # Скачивание базы данных работодателя с сервера
             with open(f'{config.PATH_TO_EMPLOYER_DB}/rockbit.db', 'wb') as f:
-                ftp.retrbinary(f'RETR ./employer_base/rockbit.db', f.write)
+                ftp.retrbinary(f'RETR {path_to_employer_base}', f.write)
     
     ftp = FTP_TLS()
     ftp.certfile = _check_public_key(cert)

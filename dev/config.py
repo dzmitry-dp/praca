@@ -1,8 +1,11 @@
 from kivy.core.window import Window
 
-# Window.top = 75
-# Window.left = 75
-# Window.size = (405, 810)
+from kivy.utils import platform
+
+if platform != 'android':
+    Window.top = 75
+    Window.left = 75
+    Window.size = (405, 810)
 
 from kivy.config import Config
 import os
@@ -44,4 +47,4 @@ if not os.path.exists(abspath('./static/.ssl')):
     os.makedirs(abspath('./static/.ssl'))
 
 CERTFILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                        "./static/.ssl/public.crt"))
+                                        abspath("./static/.ssl/public.crt")))

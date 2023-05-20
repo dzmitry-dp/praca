@@ -83,29 +83,31 @@ def _forever_listen_server(client_socket: socket.socket, key: bytes):
     """
     action.logger.info('client.py: _forever_listen_server()')
 
-    def _select_client_reaction(decode_data: dict):
+    def _select_client_reaction(decode_data: str):
         action.logger.info('client.py: select_client_reaction()')
         if decode_data == '':
             action.logger.info(f"DEBUG: decode_data == ''")
             client_socket.close()
+            return None
+        
         else:
-            action.logger.info(f"DEBUG: ---------------")
-            decode_data = json.loads(decode_data)
+            action.logger.info(f"DEBUG: ")
+            decode_data: dict = json.loads(decode_data)
 
-        if decode_data['header']['title'] == 'send_ssl_port':
-            action.logger.info(f"DEBUG: decode_data['header']['title'] == 'send_ssl_port'")
-            pass
+            if decode_data['header']['title'] == 'send_ssl_port':
+                action.logger.info(f"DEBUG: decode_data['header']['title'] == 'send_ssl_port'")
+                pass
 
-        if decode_data['signature']['update']: # если сервер предлагает обновить базы данных
-            action.logger.info(f"DEBUG: Download from FTP")
-            connect_to_ftp(
-                purpose = 'update', # цель соединения с ftp сервером
-                port = decode_data['payload']['ftp_port'],
-                login  = decode_data['header']['name'],
-                password = decode_data['header']['surname'],
-                cert = decode_data['payload']['cert'],
-                path_to_employer_base = decode_data['payload']['employer_base'],
-                )
+            if decode_data['signature']['update']: # если сервер предлагает обновить базы данных
+                action.logger.info(f"DEBUG: Download from FTP")
+                connect_to_ftp(
+                    purpose = 'update', # цель соединения с ftp сервером
+                    port = decode_data['payload']['ftp_port'],
+                    login  = decode_data['header']['name'],
+                    password = decode_data['header']['surname'],
+                    cert = decode_data['payload']['cert'],
+                    path_to_employer_base = decode_data['payload']['employer_base'],
+                    )
 
     while True:
         try:
@@ -119,7 +121,7 @@ def _forever_listen_server(client_socket: socket.socket, key: bytes):
                 # Расшифровываем данные
                 f = Fernet(key)
                 decrypted_data = f.decrypt(data_from_server)
-                decode_data: dict = json.loads(decrypted_data.decode('utf-8'))
+                decode_data: str = json.loads(decrypted_data.decode('utf-8'))
 
                 action.logger.info(f"DEBUG: decode_data = {decode_data}")
                 _select_client_reaction(decode_data)

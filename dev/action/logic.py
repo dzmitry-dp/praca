@@ -214,6 +214,14 @@ class AutorizationLogic(VerificationData):
 
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) check_user()')
 
+        def _spinners_off():
+            action.logger.info('logic.py: class AutorizationLogic(VerificationData) _spinners_off()')
+            time.sleep(2)
+            self.display_main_screen_thread.join() # убедиться что экран main создан
+            # выключаю спинеры
+            self.screen_constructor.authorization_screen.ids.spinner.active = False
+            self.screen_constructor.main_screen.ids.spinner.active = False
+
         if login is None and password is None: # btn_logowanie()
             self.login = self.authorization_obj.user_name.text.replace(' ', '')
             self.password = self.authorization_obj.user_surname.text.replace(' ', '')
@@ -234,17 +242,9 @@ class AutorizationLogic(VerificationData):
         self._start_logic_logowania(remember_me)
 
         ### Через секунду остановить спинеры
-        threading.Thread(target=self._spinners_off, daemon=True).start()
+        threading.Thread(target = _spinners_off, daemon = True).start()
         ###
     
-    @mainthread
-    def _spinners_off(self):
-        time.sleep(1)
-        self.display_main_screen_thread.join() # убедиться что экран main создан
-        # выключаю спинеры
-        self.screen_constructor.authorization_screen.ids.spinner.active = False
-        self.screen_constructor.main_screen.ids.spinner.active = False
-            
 
 class MainScreenLogic:
     """Логика главного экрана"""

@@ -98,42 +98,36 @@ class Autorization(MDScreen):
 
 
 class Main(MDScreen):
-    '''Главный экран данных на котором расположен интерфейс пользователя.
+    '''
+    # Главный экран на котором расположен интерфейс пользователя.
+    
     Через этот интерфейс можно управлять приложением
     '''
+
     user = StringProperty()
     today = StringProperty()
 
-    def __init__(
-            self,
-            user_name: str,
-            user_surname: str,
-            screen_constructor, # class ScreensConstructor
-            screen_manager: ScreenManager,
-            **kw):
+    def __init__(self, user_name: str, user_surname: str, screen_constructor, screen_manager: ScreenManager, **kw):
         action.logger.info("screens.py: class Main(MDScreen) __init__() name = 'main_screen'")
         super().__init__(**kw)
 
+        self._screen_constructor = screen_constructor
+        self._screen_manager = screen_manager
+        self._logic: MainScreenLogic = None
+
         self.user_name = user_name
         self.user_surname = user_surname
-        self.user = f'{self.user_name} {self.user_surname}'
         self.user_hash = hash_to_user_name(f'{self.user_name}{self.user_surname}', config.PORT)
 
-        self.sum_godziny = 0 # сумма наработанных часов
-
+        self.user = f'{self.user_name} {self.user_surname}'
         self.today = date.today().strftime("%d.%m.%Y")
+
+        self.sum_godziny = 0 # Начальная сумма наработанных часов
+
         self.year = date.today().year # int
         self.month = date.today().month # int
         self.day = date.today().day # int
 
-        self._screen_constructor = screen_constructor
-        self._screen_manager = screen_manager
-
-        self.logic = MainScreenLogic(
-            screen_constructor=self.screen_constructor,
-            screen_manager=self.screen_manager,
-            main_screen=self,
-        )
 
     @property
     def screen_constructor(self):
@@ -150,6 +144,20 @@ class Main(MDScreen):
     @screen_manager.setter
     def screen_manager(self, value: ScreenManager):
         self._screen_manager = value
+
+    @property
+    def logic(self) -> MainScreenLogic:
+        if self._logic is None:
+            self._logic = MainScreenLogic(
+                screen_constructor=self.screen_constructor,
+                screen_manager=self.screen_manager,
+                main_screen=self,
+            )
+        return self._logic
+    
+    @logic.setter
+    def logic(self, value: MainScreenLogic):
+        self._logic = value
 
     def btn_wyloguj(self):
         "Возвращает на экран логирования"
@@ -189,29 +197,6 @@ class Main(MDScreen):
     def btn_menu_zadania(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_menu_zadania()')
         pass
-
-    def btn_dodac(self):
-        action.logger.info('screens.py: class Main(MDScreen) btn_dodac()')
-
-        if self.ids.godziny.text != 'Godziny' and \
-            self.ids.obiekt.text != 'Obiekt':
-
-            self._write_to_user_db()
-            self._refresh_buttons()
-            self.sum_godziny = 0
-            query_to_user_base = memory.QueryToSQLite3(
-                    db_path = config.PATH_TO_USER_DB + f'/{self.user_hash}.db',
-                    )
-            user_data_from_db: list[tuple,] = query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
-            ###
-            self.ids.scroll.clear_widgets()
-            make_table_thread = threading.Thread(
-                target = self.logic.make_data_table,
-                daemon = True,
-                name = 'make_table_thread',
-                args = [True, user_data_from_db]
-            )
-            make_table_thread.start()
 
     def btn_godziny(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_godziny()')
@@ -278,6 +263,29 @@ class Main(MDScreen):
                 wr_to_user_db_thread.start()
                 ###
             wr_to_user_db_thread.join()
+
+    def btn_dodac(self):
+        action.logger.info('screens.py: class Main(MDScreen) btn_dodac()')
+
+        if self.ids.godziny.text != 'Godziny' and \
+            self.ids.obiekt.text != 'Obiekt':
+
+            self._write_to_user_db()
+            self._refresh_buttons()
+            self.sum_godziny = 0
+            query_to_user_base = memory.QueryToSQLite3(
+                    db_path = config.PATH_TO_USER_DB + f'/{self.user_hash}.db',
+                    )
+            user_data_from_db: list[tuple,] = query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
+            ###
+            self.ids.scroll.clear_widgets()
+            make_table_thread = threading.Thread(
+                target = self.logic.make_data_table,
+                daemon = True,
+                name = 'make_table_thread',
+                args = [True, user_data_from_db]
+            )
+            make_table_thread.start()
 
 
 class Calendar(MDScreen):

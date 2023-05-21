@@ -2,14 +2,31 @@ from datetime import date, timedelta
 
 from kivy.event import EventDispatcher
 from kivy.metrics import dp
+from kivy.properties import StringProperty, ListProperty
+from kivy.uix.behaviors import ToggleButtonBehavior
 
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.behaviors import CommonElevationBehavior
+from kivymd.uix.card import MDCard
 
 import dev.action as action
-from dev.view.helpers import DateButton
+
+
+class DateButton(MDCard, CommonElevationBehavior, ToggleButtonBehavior):
+    text_color = ListProperty([1, 1, 1, 1])
+    text = StringProperty("")
+
+    def on_state(self, widget, value):
+        action.logger.info('helper.py: class DateButton on_state()')
+        if value == 'down':
+            self.md_bg_color = self.theme_cls.primary_color
+            self.text_color = [1, 1, 1, 1]
+        else:
+            self.md_bg_color = [0.12941176470588237, 0.12941176470588237, 0.12941176470588237, 1.0]
+            self.text_color = [1, 1, 1, 1]
 
 
 class DatePicker(BoxLayout, EventDispatcher):

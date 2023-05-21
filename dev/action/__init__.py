@@ -15,13 +15,3 @@ if platform == 'android':
 
     # Отправляю СМС
     # SmsManager = autoclass('android.telephony.SmsManager')
-
-### Пример использования logger
-# logger.info('title: ++++++++++++++.')
-# try:
-#     raise Exception('Ошибка')
-# except Exception:
-#     logger.exception('!!!!!!!!!!!!!!!!!!')
-
-
-

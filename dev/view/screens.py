@@ -11,30 +11,29 @@ from kivymd.uix.screen import MDScreen
 import dev.config as config
 import dev.action as action
 from dev.action.logic import AutorizationLogic, MainScreenLogic
-from dev.view.helpers import TabelItem
 from dev.view.calendar import CalendarLogic
-from dev.action.hash import hash_to_user_name
+from dev.view.my_widgets import TabelItem
 
 
 class Autorization(MDScreen):
     """
-    Виджет авторизации на котором просят ввести Имя и Фимилию.
-    Если пользователь не зарегистрирован,
-    то заводим пользователя с новыми данными
+    # Виджет авторизации на котором просят ввести Имя и Фимилию.
+    Если пользователь не зарегистрирован, то заводим пользователя со стандартыми начальными данными
 
-    self.name = 'authorization_screen'
     self.user_name.text - текст который был введен пользователем в строку Imie
-    self.user_surname.text - Nazwisko
-    self.user_authorized: bool - пользователь авторизирован (True/False)
+
+    self.user_surname.text - текст который был введен пользователем в строку Nazwisko
+
+
+    self.screen_constructor: объект dev.build.ScreensConstructor()для сборки и удаления экранов приложения
+
+    self.screen_manager: объект kivy.uix.screenmanager.ScreenManager() который контролирует экраны и память
 
     self.logic = AutorizationLogic()
-    self.logic.seach_user_in_base() - логика принятия решений при нажатии кнопки 'Logowanie'
-
     """
 
     user_name = ObjectProperty()
     user_surname = ObjectProperty()
-    user_authorized: bool = False # set in seach_user_in_base()
 
     def __init__(self, screen_constructor, screen_manager: ScreenManager, **kw):
         super().__init__(**kw)
@@ -42,16 +41,9 @@ class Autorization(MDScreen):
 
         self._screen_constructor = screen_constructor # class ScreensConstructor
         self._screen_manager: ScreenManager = screen_manager # class ScreenManager
+        self._logic: AutorizationLogic = None # class AutorizationLogic
 
         self.remember_me = True # изначально стоит галочка Remember me
-        self.logic = None
-
-    def build_logic_object(self):
-        self.logic = AutorizationLogic(
-                screen_constructor = self.screen_constructor,
-                screen_manager=self.screen_manager,
-                authorization_obj = self,
-                )
 
     @property
     def screen_constructor(self):
@@ -69,83 +61,124 @@ class Autorization(MDScreen):
     def screen_manager(self, value: ScreenManager):
         self._screen_manager = value
         
-    def checkbox(self, value):
-        if value:
-            self.remember_me = value
-        else:
-            self.remember_me = value
-            # user_hash = hash_to_user_name(f'{}')
-            # path = config.PATH_TO_REMEMBER_ME + f'/{user_hash}.json'
-            # if os.path.exists(path):
-            #     os.remove(path)
-        
+    @property
+    def logic(self) -> AutorizationLogic:
+        if self._logic is None:
+            self._logic = AutorizationLogic(
+                screen_constructor = self.screen_constructor,
+                screen_manager=self.screen_manager,
+                authorization_obj = self,
+                )
+        return self._logic
+    
+    @logic.setter
+    def logic(self, value: AutorizationLogic):
+        self._logic = value
+
+    def checkbox_remember_me(self, value) -> None:
+        "Галочка 'запомнить меня'"
+        action.logger.info('screens.py: class Autorization(MDScreen) checkbox_remember_me()')
+        self.remember_me = value
         action.logger.info(f'DEBUG: self._remember_me = {self.remember_me}')
     
-    def btn_logowanie(self):
+    def btn_logowanie(self) -> None:
+        "Кнопка 'Logowanie'"
+        action.logger.info('screens.py: class Autorization(MDScreen) btn_logowanie()')
         ### Отдельным потоком отправляемся искать данные о пользователе
         set_user_thread = threading.Thread(
-            target=self.logic.check_user,
-            daemon=True,
             name='set_user_thread',
+            target=self.logic.check_user,
             args=[self.remember_me, ],
+            daemon=True,
             )
         set_user_thread.start()
         ### Отдельный поток позволяет сменить экран до окончания всех расчетов
 
 
 class Main(MDScreen):
-    '''Главный экран данных на котором расположен интерфейс пользователя.
-    Через этот интерфейс можно управлять приложением
     '''
+    # Главный экран на котором расположен интерфейс пользователя.
+    
+    ## Через этот интерфейс можно управлять приложением
+
+    user: str - имя и фамилия пользователя
+
+    today: str - текущая дата
+    '''
+
     user = StringProperty()
     today = StringProperty()
 
-    def __init__(
-            self,
-            user_name: str,
-            user_surname: str,
-            screen_constructor, # class ScreensConstructor
-            screen_manager: ScreenManager,
-            **kw):
+    def __init__(self, screen_constructor, screen_manager: ScreenManager, **kw):
         action.logger.info("screens.py: class Main(MDScreen) __init__() name = 'main_screen'")
         super().__init__(**kw)
 
-        self.user_name = user_name
-        self.user_surname = user_surname
+        self._screen_constructor = screen_constructor
+        self._screen_manager = screen_manager
+        self._logic: MainScreenLogic = None
+
+        self.user_name = self._screen_constructor.authorization_screen.logic.login
+        self.user_surname = self._screen_constructor.authorization_screen.logic.password
+        self.user_hash = self._screen_constructor.authorization_screen.logic.user_hash
+
         self.user = f'{self.user_name} {self.user_surname}'
-
-        self.sum_godziny = 0 # сумма наработанных часов
-
         self.today = date.today().strftime("%d.%m.%Y")
+
+        self.sum_godziny = 0 # Начальная сумма наработанных часов
+
         self.year = date.today().year # int
         self.month = date.today().month # int
         self.day = date.today().day # int
 
-        self.screen_constructor = screen_constructor
-        self.screen_manager = screen_manager
 
-        self.logic = MainScreenLogic(
-            screen_constructor=self.screen_constructor,
-            screen_manager=self.screen_manager,
-            main_screen=self,
-        )
+    @property
+    def screen_constructor(self):
+        return self._screen_constructor
+    
+    @screen_constructor.setter
+    def screen_constructor(self, value):
+        self._screen_constructor = value
+
+    @property
+    def screen_manager(self) -> ScreenManager:
+        return self._screen_manager
+    
+    @screen_manager.setter
+    def screen_manager(self, value: ScreenManager):
+        self._screen_manager = value
+
+    @property
+    def logic(self) -> MainScreenLogic:
+        if self._logic is None:
+            self._logic = MainScreenLogic(
+                screen_constructor=self.screen_constructor,
+                screen_manager=self.screen_manager,
+                main_screen=self,
+            )
+        return self._logic
+    
+    @logic.setter
+    def logic(self, value: MainScreenLogic):
+        self._logic = value
 
     def btn_wyloguj(self):
         "Возвращает на экран логирования"
         action.logger.info('screens.py: class Main(MDScreen) btn_wyloguj()')
 
-        def remove_remember_me_file():
+        def _remove_remember_me_file():
             "Если есть файл, то удаляю"
             action.logger.info('build.py: remove_main_screen() remove_remember_me_file()')
-            if os.path.isfile(self.screen_constructor.path_to_freeze_file):
-                os.remove(self.screen_constructor.path_to_freeze_file)
+            if self.screen_constructor.data_from_memory.path_to_freeze_file is not None:
+                if os.path.isfile(self.screen_constructor.data_from_memory.path_to_freeze_file):
+                    os.remove(self.screen_constructor.data_from_memory.path_to_freeze_file)
 
         self.screen_manager.transition.direction = 'right'
         self.screen_constructor.remove_main_screen()
         self.screen_constructor.remove_calendar_screen()
+        self.screen_constructor.authorization_screen.logic = None # обновляю объект логики для экрана авторизации
+        action.logger.info("DEBUG: Update 'logic' object in 'authorization_screen'")
 
-        if self.screen_constructor.path_to_freeze_file is not None:
-            remove_remember_me_file()
+        _remove_remember_me_file()
 
     def btn_menu_dodac(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_menu_dodac()')
@@ -167,68 +200,6 @@ class Main(MDScreen):
         action.logger.info('screens.py: class Main(MDScreen) btn_menu_zadania()')
         pass
 
-    def btn_dodac(self):
-        action.logger.info('screens.py: class Main(MDScreen) btn_dodac()')
-
-        if self.ids.godziny.text != 'Godziny' and \
-            self.ids.obiekt.text != 'Obiekt':
-            
-            date = datetime(datetime.now().year, int(self.ids.date.text.split('.')[1]), int(self.ids.date.text.split('.')[0]))
-            user_hash = hash_to_user_name(f'{self.user_name}{self.user_surname}', config.PORT)
-            # Проверяю на наличие файла с базой данных
-            path = config.PATH_TO_USER_DB + f'/{user_hash}.db'
-            if not os.path.exists(path):
-                ### Отдельным потоком создаю базу данных для нового пользователя
-                wr_to_user_db_thread = threading.Thread(
-                    target = self.logic.create_user_data_base,
-                    name = 'wr_to_user_db_thread',
-                    daemon = True,
-                    kwargs = {
-                        'path': path,
-                        'user_name': self.user_name,
-                        'user_surname': self.user_surname,
-                        'date': date,
-                        'build_object': self.ids.obiekt.text,
-                        'hour': self.ids.godziny.text,
-                    }
-                )
-                wr_to_user_db_thread.start()
-            else:
-                if self.screen_constructor.authorization_screen.remember_me:
-                ### Отдельныйм потоком записываю новые данные в базу данных пользователя
-                    wr_to_user_db_thread = threading.Thread(
-                        target = self.logic.add_to_user_data_base,
-                        name = 'wr_to_user_db_thread',
-                        daemon = True,
-                        kwargs = {
-                            'path': path,
-                            'user_name': self.user_name,
-                            'user_surname': self.user_surname,
-                            'date': date,
-                            'build_object': self.ids.obiekt.text,
-                            'hour': self.ids.godziny.text,
-                        }
-                    )
-                    wr_to_user_db_thread.start()
-                ###
-
-            item = TabelItem(
-                text=self.ids.obiekt.text,
-                on_release=self.logic.on_click_table_row,
-            )
-            
-            self.sum_godziny += int(self.ids.godziny.text)
-            item.ids.left_label.text = self.ids.godziny.text
-            item.ids.right_button.text = self.ids.date.text
-            item.ids.right_button.on_release = lambda widget=item.ids.right_button: self.logic.on_click_table_right_button(widget)
-
-            self.ids.summa.text = f'Masz {self.sum_godziny} godzin'    
-            self.ids.scroll.add_widget(item)
-            self._refresh_buttons()
-            # wr_to_user_db_thread.join()
-        else:
-            pass
-
     def btn_godziny(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_godziny()')
         self.logic.select_godziny()
@@ -243,16 +214,38 @@ class Main(MDScreen):
         self.screen_manager.transition.direction = 'left'
         self.screen_manager.current = 'calendar_screen'
 
-    def _refresh_buttons(self):
-        # self.ids.godziny.text = 'Godziny'
-        # self.ids.godziny.icon = 'hours-24'
+    def btn_dodac(self):
+        action.logger.info('screens.py: class Main(MDScreen) btn_dodac()')
 
-        # self.ids.obiekt.text = 'Obiekt'
-        # self.ids.obiekt.icon = 'home-lightning-bolt'
+        if self.ids.godziny.text != 'Godziny' and \
+            self.ids.obiekt.text != 'Obiekt':
 
-        # self.ids.date.text = 'Data'
-        # self.ids.date.icon = 'calendar-range'
-        pass
+
+            if self.screen_constructor.authorization_screen.remember_me:
+                self.sum_godziny = 0
+                self.logic.write_to_user_db()
+                self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.logic.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
+                self.ids.scroll.clear_widgets() # удаляем таблицу данных о часах
+                ### Отдельным потоком пересоздаем таблицу
+                make_table_thread = threading.Thread(
+                    target = self.logic.make_data_table,
+                    daemon = True,
+                    name = 'make_table_thread',
+                    args = [True, self.screen_constructor.data_from_memory.user_data_from_db]
+                )
+                make_table_thread.start()
+            else:
+                item = TabelItem(
+                    text = self.ids.obiekt.text,
+                    on_release=self.logic.on_click_table_row,
+                )
+                self.sum_godziny += int(self.ids.godziny.text)
+                item.ids.left_label.text = self.ids.godziny.text
+                item.ids.right_button.text = self.ids.date.text
+                item.ids.right_button.on_release = lambda widget=item.ids.right_button: self.logic.on_click_table_right_button(widget)
+                
+                self.ids.scroll.add_widget(item)
+                self.ids.summa.text = f'Masz {self.sum_godziny} godzin'
 
 
 class Calendar(MDScreen):

@@ -39,7 +39,7 @@ class VerificationData:
         """
         action.logger.info('logic.py: class VerificationData get_permission()')
 
-        if os.path.exists(config.PATH_TO_USER_DB + f'/{self.user_hash}.db'):
+        if os.path.exists(os.path.join(config.PATH_TO_USER_DB, f'{self.user_hash}.db')):
             action.logger.info(f'DEBUG: Have {self.user_hash}.db file')
             user_authorized = True
         else:
@@ -121,7 +121,7 @@ class AutorizationLogic(VerificationData):
     def query_to_user_base(self):
         if self._query_to_user_base is None:
             self._query_to_user_base = memory.QueryToSQLite3(
-                db_path = config.PATH_TO_USER_DB + f'\{self.user_hash}.db',
+                db_path = os.path.join(config.PATH_TO_USER_DB, f'{self.user_hash}.db'),
                 )
         return self._query_to_user_base
 
@@ -134,7 +134,7 @@ class AutorizationLogic(VerificationData):
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) seach_user_in_base()')
         
         def _write_freeze_file():
-            self.screen_constructor.data_from_memory.path_to_freeze_file = config.PATH_TO_REMEMBER_ME + f'/{self.user_hash}.json'
+            self.screen_constructor.data_from_memory.path_to_freeze_file = os.path.join(config.PATH_TO_REMEMBER_ME, f'{self.user_hash}.json')
             with open(self.screen_constructor.data_from_memory.path_to_freeze_file, 'w') as file:
                 json.dump(options['remember_me'](self.login, self.password), file)
 
@@ -160,7 +160,7 @@ class AutorizationLogic(VerificationData):
         action.logger.info(f'DEBUG: remember_me = {remember_me}, user_authorized = {self.user_authorized}')
     
     @mainthread
-    def _display_main_screen(self, search_user_thread: threading.Thread):
+    def _display_main_screen(self):
         """
         Создаю главный экран после авторизации пользователя, если экран еще не создан
         """
@@ -170,23 +170,13 @@ class AutorizationLogic(VerificationData):
             self.screen_manager.get_screen('main_screen').user_name = self.login
             self.screen_manager.get_screen('main_screen').user_surname = self.password
 
-            ### Отдельным потоком создаем таблицу данных
-            search_user_thread.join()
-            make_table_thread = threading.Thread(
-                target = self.screen_constructor.main_screen.logic.make_data_table,
-                daemon = True,
-                name = 'make_table_thread',
-                args = [
-                    self.user_authorized,
-                    self.screen_constructor.data_from_memory.user_data_from_db,
-                    ]
-            )
-            make_table_thread.start()
-            ###
+            ### создаем таблицу данных
+            self.search_user_thread.join()
+            self.screen_constructor.main_screen.logic.make_data_table(self.user_authorized, self.screen_constructor.data_from_memory.user_data_from_db)
         else:
             action.logger.info(f"DEBUG: Don't have 'main_screen'")
             self.screen_constructor.add_main_screen_obj(
-                search_user_thread = search_user_thread,
+                search_user_thread = self.search_user_thread,
                 )
 
         self.screen_constructor.main_screen.ids.backdrop.title = f'{self.screen_constructor.main_screen.user_name} {self.screen_constructor.main_screen.user_surname}'
@@ -208,7 +198,6 @@ class AutorizationLogic(VerificationData):
             target = self._display_main_screen,
             daemon = True,
             name = 'display_main_screen_thread',
-            args = [self.search_user_thread, ],
             )
         self.display_main_screen_thread.start()
         ###
@@ -250,16 +239,15 @@ class AutorizationLogic(VerificationData):
         if login is None and password is None: # btn_logowanie()
             self.login = self.authorization_obj.user_name.text
             self.password = self.authorization_obj.user_surname.text
-
-            if self.login == '' or self.password == '':
-                action.logger.warning(f"DEBUG: Have NOT Login and Password: '{self.login}' '{self.password}'")
-                self.login = None
-                self.password = None
-                return None
-                
         else: # start_with_user_data() from freeze_file
             self.login = login
             self.password = password
+
+        if self.login == '' or self.password == '':
+            action.logger.warning(f"DEBUG: Have NOT Login and Password: '{self.login}' '{self.password}'")
+            self.login = None
+            self.password = None
+            return None
 
         action.logger.info(f"DEBUG: Have Login and Password: '{self.login}' '{self.password}'")
         self._start_logic_logowania(remember_me)

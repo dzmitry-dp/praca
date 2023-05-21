@@ -39,7 +39,7 @@ class MemoryDataContainer:
         
         if len(jf) == 1: # если в папке всего один json файл
             action.logger.info(f'DEBUG: Have json file {jf}')
-            self.path_to_freeze_file = config.PATH_TO_REMEMBER_ME + f'/{jf[0]}'
+            self.path_to_freeze_file = os.path.join(config.PATH_TO_REMEMBER_ME, f'{jf[0]}')
             with open(self.path_to_freeze_file, 'r') as file:
                 freeze_file_data = json.load(file)
         else: # если нет файлов или нужно выбирать из нескольких

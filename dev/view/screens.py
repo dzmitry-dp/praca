@@ -120,7 +120,7 @@ class Main(MDScreen):
         self.user_name = self._screen_constructor.authorization_screen.logic.login
         self.user_surname = self._screen_constructor.authorization_screen.logic.password
         self.user_hash = self._screen_constructor.authorization_screen.logic.user_hash
-
+        
         self.user = f'{self.user_name} {self.user_surname}'
         self.today = date.today().strftime("%d.%m.%Y")
 
@@ -220,7 +220,6 @@ class Main(MDScreen):
         if self.ids.godziny.text != 'Godziny' and \
             self.ids.obiekt.text != 'Obiekt':
 
-
             if self.screen_constructor.authorization_screen.remember_me:
                 self.sum_godziny = 0
                 self.logic.write_to_user_db()
@@ -249,18 +248,42 @@ class Main(MDScreen):
 
 
 class Calendar(MDScreen):
-    def __init__(self, name, screen_manager, screen_constructor, *args, **kwargs):
+    def __init__(self, screen_manager, screen_constructor, *args, **kwargs):
         super().__init__(*args, **kwargs)
         action.logger.info("screens.py: class Calendar(MDScreen) __init__() name = 'calendar_screen'")
-        self.name = name
-        self.screen_manager = screen_manager
-        self.screen_constructor = screen_constructor
 
-        self.logic = CalendarLogic(
-            screen_manager = screen_manager,
-            screen_constructor = screen_constructor
-        )
+        self._screen_manager = screen_manager
+        self._screen_constructor = screen_constructor
+        self._logic = None
 
+    @property
+    def screen_constructor(self):
+        return self._screen_constructor
+    
+    @screen_constructor.setter
+    def screen_constructor(self, value):
+        self._screen_constructor = value
+
+    @property
+    def screen_manager(self) -> ScreenManager:
+        return self._screen_manager
+    
+    @screen_manager.setter
+    def screen_manager(self, value: ScreenManager):
+        self._screen_manager = value
+
+    @property
+    def logic(self) -> MainScreenLogic:
+        if self._logic is None:
+            self._logic = CalendarLogic(
+                screen_manager = self.screen_manager,
+                screen_constructor = self.screen_constructor
+                )
+        return self._logic
+    
+    @logic.setter
+    def logic(self, value: MainScreenLogic):
+        self._logic = value
 
 
 # def send_sms(phone_number, message):

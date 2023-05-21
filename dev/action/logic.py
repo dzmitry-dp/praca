@@ -21,9 +21,15 @@ from dev.action.purpose import options
 class VerificationData:
     def __init__(self) -> None:
         action.logger.info('logic.py: class VerificationData __init__()')
-        self.user_authorized: bool = None
+        self._user_authorized: bool = None
 
-    def get_permission(self, user_hash) -> bool:
+    @property
+    def user_authorized(self) -> bool:
+        if self._user_authorized is None:
+            self._user_authorized = self.get_permission()
+        return self._user_authorized
+
+    def get_permission(self) -> bool:
         """
         Наличие файла базы данных авторизирует пользователя
 
@@ -33,14 +39,14 @@ class VerificationData:
         """
         action.logger.info('logic.py: class VerificationData get_permission()')
 
-        if os.path.exists(config.PATH_TO_USER_DB + f'/{user_hash}.db'):
-            action.logger.info(f'DEBUG: Have {user_hash}.db file')
-            self.user_authorized = True
+        if os.path.exists(config.PATH_TO_USER_DB + f'/{self.user_hash}.db'):
+            action.logger.info(f'DEBUG: Have {self.user_hash}.db file')
+            user_authorized = True
         else:
-            action.logger.info(f'DEBUG: Have NOT {user_hash}.db file')
-            self.user_authorized = False
+            action.logger.info(f'DEBUG: Have NOT {self.user_hash}.db file')
+            user_authorized = False
         
-        return self.user_authorized
+        return user_authorized
 
 
 class AutorizationLogic(VerificationData):
@@ -62,6 +68,8 @@ class AutorizationLogic(VerificationData):
         self.search_user_thread = None # поток поиска пользовательских данных
         self.display_main_screen_thread = None # поток отображения главного экрана
         self.handshake_thread = None # поток связи с сервером
+
+        self._query_to_user_base = None # подключенпие к DB
         
     @property
     def login(self):
@@ -85,8 +93,8 @@ class AutorizationLogic(VerificationData):
 
     @property
     def user_hash(self):
-        if self._user_hash is None:
-            pass
+        if self._user_hash is None and self.login is not None and self.password is not None:
+            self._user_hash = hash_to_user_name(f'{self.login}{self.password}', config.PORT)
         return self._user_hash
 
     @user_hash.setter
@@ -109,6 +117,14 @@ class AutorizationLogic(VerificationData):
     def screen_manager(self, value):
         self._screen_manager = value
 
+    @property
+    def query_to_user_base(self):
+        if self._query_to_user_base is None:
+            self._query_to_user_base = memory.QueryToSQLite3(
+                db_path = config.PATH_TO_USER_DB + f'\{self.user_hash}.db',
+                )
+        return self._query_to_user_base
+
     def _seach_user_in_base(self, remember_me: bool):
         """
         # Проверка пользователя в базе данных
@@ -117,28 +133,27 @@ class AutorizationLogic(VerificationData):
         """
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) seach_user_in_base()')
         
-        def _write_remember_me_file():
+        def _write_freeze_file():
             self.screen_constructor.data_from_memory.path_to_freeze_file = config.PATH_TO_REMEMBER_ME + f'/{self.user_hash}.json'
             with open(self.screen_constructor.data_from_memory.path_to_freeze_file, 'w') as file:
                 json.dump(options['remember_me'](self.login, self.password), file)
 
         def _get_data_from_db():
             "Нахожу данные пользователя"
-            query_to_user_base = memory.QueryToSQLite3(db_path = config.PATH_TO_USER_DB + f'/{self.user_hash}.db',)
-            self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
+            self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
             
-        if self.get_permission(self.user_hash): # если есть файл с базой данных
+        if self.user_authorized: # если есть файл с базой данных
             if remember_me: # и если стоит галочка "запомнить меня"
                 action.logger.info(f'logic.py: _seach_user_in_base() have DB and checkbox')
                 _get_data_from_db()
-                _write_remember_me_file() # сохраняем данные пользователя
+                _write_freeze_file() # сохраняем данные пользователя
             else:
                 action.logger.info(f'logic.py: _seach_user_in_base() have DB and NOT checkbox')
                 _get_data_from_db()
         else: # если нет файла базы данных
             if remember_me:
                 action.logger.info(f'logic.py: _seach_user_in_base() have NOT DB and have checkbox')
-                _write_remember_me_file()
+                _write_freeze_file()
             else:
                 action.logger.info(f'logic.py: _seach_user_in_base() have NOT DB and have NOT checkbox')
     
@@ -154,12 +169,23 @@ class AutorizationLogic(VerificationData):
             action.logger.info(f"DEBUG: Have 'main_screen'")
             self.screen_manager.get_screen('main_screen').user_name = self.login
             self.screen_manager.get_screen('main_screen').user_surname = self.password
-            
+
+            ### Отдельным потоком создаем таблицу данных
+            search_user_thread.join()
+            make_table_thread = threading.Thread(
+                target = self.screen_constructor.main_screen.logic.make_data_table,
+                daemon = True,
+                name = 'make_table_thread',
+                args = [
+                    self.user_authorized,
+                    self.screen_constructor.data_from_memory.user_data_from_db,
+                    ]
+            )
+            make_table_thread.start()
+            ###
         else:
             action.logger.info(f"DEBUG: Don't have 'main_screen'")
             self.screen_constructor.add_main_screen_obj(
-                user_name = self.login,
-                user_surname = self.password,
                 search_user_thread = search_user_thread,
                 )
 
@@ -222,13 +248,11 @@ class AutorizationLogic(VerificationData):
             self.screen_constructor.main_screen.ids.spinner.active = False
 
         if login is None and password is None: # btn_logowanie()
-            self.login = self.authorization_obj.user_name.text.replace(' ', '')
-            self.password = self.authorization_obj.user_surname.text.replace(' ', '')
+            self.login = self.authorization_obj.user_name.text
+            self.password = self.authorization_obj.user_surname.text
 
-            action.logger.info(f"DEBUG: Have Login and Password: '{login}' '{password}'")
-            
-            if login == '' or password == '':
-                action.logger.warning(f"DEBUG: Have NOT Login and Password: '{login}' '{password}'")
+            if self.login == '' or self.password == '':
+                action.logger.warning(f"DEBUG: Have NOT Login and Password: '{self.login}' '{self.password}'")
                 self.login = None
                 self.password = None
                 return None
@@ -237,7 +261,7 @@ class AutorizationLogic(VerificationData):
             self.login = login
             self.password = password
 
-        self.user_hash = hash_to_user_name(f'{self.login}{self.password}', config.PORT)
+        action.logger.info(f"DEBUG: Have Login and Password: '{self.login}' '{self.password}'")
         self._start_logic_logowania(remember_me)
 
         ### Через секунду остановить спинеры
@@ -264,6 +288,8 @@ class MainScreenLogic:
 
         self.add_hour_widget: AddHoursWidget = None
         self.dialog_screen_to_set_godziny: MDDialog = None
+
+        self.query_to_user_base = self._screen_constructor.authorization_screen.logic.query_to_user_base
 
     @property
     def screen_constructor(self):
@@ -294,17 +320,18 @@ class MainScreenLogic:
             )
         self.dialog_screen_to_set_godziny.open()
 
-    def _transforming_data_from_database(self, user_data_from_db: list[tuple,]) -> json:
-        if user_data_from_db == [] or user_data_from_db == None:
-            return None
-        keys = queries.user_table['column_data'].keys()
-        return [dict(zip(keys, values)) for values in user_data_from_db]
-
     @mainthread
     def make_data_table(self, user_authorized: bool, user_data_from_db: list[tuple,]):
         action.logger.info('logic.py: class MainScreenLogic make_data_table()')
+
+        def _transforming_data_from_database(user_data_from_db: list[tuple,]) -> json:
+            if user_data_from_db == [] or user_data_from_db == None:
+                return None
+            keys = queries.user_table['column_data'].keys()
+            return [dict(zip(keys, values)) for values in user_data_from_db]
+        
         if user_authorized:
-            user_data: list[tuple,] = self._transforming_data_from_database(user_data_from_db)
+            user_data: list[tuple,] = _transforming_data_from_database(user_data_from_db)
         else:
             user_data = None
 
@@ -373,60 +400,50 @@ class MainScreenLogic:
             )
         self.dialog_screen_to_set_object.open()
 
-    def create_user_data_base(self, path, user_name, user_surname, date, build_object, hour):
+    def create_user_data_base(self, user_name, user_surname, date, build_object, hour):
         "Создаю базу данных для пользователя, если файл еще не создан"
-        query_to_user_base = memory.QueryToSQLite3(
-            db_path = path,
-            )
-        query_to_user_base.create_table(data = queries.user_table)
-        query_to_user_base.write_values(
+        action.logger.info(f"logic.py: class MainScreenLogic() create_user_data_base()")
+        self.query_to_user_base.create_table(data = queries.user_table)
+        self.query_to_user_base.write_values(
             data = queries.generate_data(user_name, user_surname, date, build_object, hour),
             )
         
-    def add_to_user_data_base(self, path, user_name, user_surname, date, build_object, hour):
+    def add_to_user_data_base(self, user_name, user_surname, date, build_object, hour):
         "Добавляю данные в пользовательскую базу данных"
-        query_to_user_base = memory.QueryToSQLite3(
-            db_path = path,
-            )
-        query_to_user_base.write_values(
+        action.logger.info(f"logic.py: class MainScreenLogic() add_to_user_data_base()")
+        self.query_to_user_base.write_values(
             data = queries.generate_data(user_name, user_surname, date, build_object, hour),
             )
 
     def _remove_from_user_data_base(self, datetime_obj, building_object):
-        path = config.PATH_TO_USER_DB + f'/{self.main_screen.user_hash}.db'
-        query_to_user_base = memory.QueryToSQLite3(
-            db_path = path,
+        if self.screen_constructor.authorization_screen.remember_me:
+            self.query_to_user_base.remove_row(
+                data = queries.get_date_to_remove(datetime_obj=datetime_obj, building_object=building_object)
             )
-        query_to_user_base.remove_row(
-            data = queries.get_date_to_remove(datetime_obj=datetime_obj, building_object=building_object)
-        )
 
     def write_to_user_db(self):
-        date = datetime(datetime.now().year, int(self.main_screen.ids.date.text.split('.')[1]), int(self.main_screen.ids.date.text.split('.')[0]))
+        action.logger.info(f"logic.py: class MainScreenLogic() write_to_user_db()")
+        # Перевожу дату, указанную пользователем в формат datetime
+        user_date: datetime = datetime(datetime.now().year, int(self.main_screen.ids.date.text.split('.')[1]), int(self.main_screen.ids.date.text.split('.')[0]))
         # Проверяю на наличие файла с базой данных
-        path = config.PATH_TO_USER_DB + f'/{self.main_screen.user_hash}.db'
+        if not self.screen_constructor.authorization_screen.logic.user_authorized:
+            function = self.create_user_data_base
+            ### Отдельным потоком создаю базу данных для нового пользователя
+        else:
+            function = self.add_to_user_data_base
+            ### Отдельныйм потоком записываю новые данные в существующую базу данных пользователя
 
-        if self.screen_constructor.authorization_screen.remember_me:
-            if not os.path.exists(path):
-                function = self.create_user_data_base
-                ### Отдельным потоком создаю базу данных для нового пользователя
-                
-            else:
-                function = self.add_to_user_data_base
-                ### Отдельныйм потоком записываю новые данные в базу данных пользователя
-                
-            wr_to_user_db_thread = threading.Thread(
-                target = function,
-                name = 'wr_to_user_db_thread',
-                daemon = True,
-                kwargs = {
-                    'path': path,
-                    'user_name': self.main_screen.user_name,
-                    'user_surname': self.main_screen.user_surname,
-                    'date': date,
-                    'build_object': self.main_screen.ids.obiekt.text,
-                    'hour': self.main_screen.ids.godziny.text,
-                    }
-                )
-            wr_to_user_db_thread.start()
-            wr_to_user_db_thread.join()
+        wr_to_user_db_thread = threading.Thread(
+            target = function,
+            name = 'wr_to_user_db_thread',
+            daemon = True,
+            kwargs = {
+                'user_name': self.main_screen.user_name,
+                'user_surname': self.main_screen.user_surname,
+                'date': user_date,
+                'build_object': self.main_screen.ids.obiekt.text,
+                'hour': self.main_screen.ids.godziny.text,
+                }
+            )
+        wr_to_user_db_thread.start()
+        wr_to_user_db_thread.join()

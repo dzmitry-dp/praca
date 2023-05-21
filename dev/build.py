@@ -1,7 +1,6 @@
 import threading
 
 import dev.action as action
-import dev.config as config
 from dev.view.screens import Autorization, Main, Calendar
 from dev.db.memory import MemoryDataContainer
 
@@ -56,27 +55,31 @@ class ScreensConstructor(MyScreensObjects):
         """
         action.logger.info('build.py: class ScreensConstructor start_building()')
 
-        def _start_with_user_data():
-            self.authorization_screen.user_name.text = freeze_file_data['name']
-            self.authorization_screen.user_surname.text = freeze_file_data['surname']
+        def _start_with_user_data(user_name: str, user_surname: str):
+            self.authorization_screen.user_name.text = user_name
+            self.authorization_screen.logic.login = user_name
+            self.authorization_screen.user_surname.text = user_surname
+            self.authorization_screen.logic.password = user_surname
             self.authorization_screen.ids.spinner.active = True
             ### Отдельным потоком отправляемся искать данные о пользователе
             check_user_thread = threading.Thread(
                 target=self.authorization_screen.logic.check_user,
                 daemon=True,
                 name='check_user_thread',
-                args=[self.authorization_screen.remember_me, freeze_file_data['name'], freeze_file_data['surname']],
+                args=[self.authorization_screen.remember_me, user_name, user_surname,],
                 )
             check_user_thread.start()
 
         self.add_authorization_screen_obj()
         self.add_calendar_screen_obj()
-        freeze_file_data = self.data_from_memory.get_freeze_member()
 
-        if freeze_file_data is not None: # если в каталоге /db/freeze всего один json файл
-            _start_with_user_data()
+        if self.data_from_memory.freeze_file_data is not None: # если в каталоге /db/freeze всего один json файл
+            _start_with_user_data(
+                user_name = self.data_from_memory.freeze_file_data['name'],
+                user_surname = self.data_from_memory.freeze_file_data['surname'],
+                )
         else:
-            self.add_main_screen_obj(user_name = '', user_surname = '', search_user_thread = None)
+            self.add_main_screen_obj(search_user_thread = None)
 
     def add_authorization_screen_obj(self) -> None:
         "Создаю и добавляю экран авторизации"
@@ -88,13 +91,11 @@ class ScreensConstructor(MyScreensObjects):
             )
         self.screen_manager.add_widget(self.authorization_screen)
 
-    def add_main_screen_obj(self, user_name, user_surname, search_user_thread = None,) -> None: # main_screen
+    def add_main_screen_obj(self, search_user_thread = None,) -> None: # main_screen
         "Создаю и добавляю главный экран приложения"
         action.logger.info('build.py: class ScreensConstructor add_main_screen_obj()')
         self.main_screen = Main(
                 name = 'main_screen',
-                user_name = user_name,
-                user_surname = user_surname,
                 screen_constructor = self,
                 screen_manager = self.screen_manager,
             )

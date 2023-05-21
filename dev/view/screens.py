@@ -12,9 +12,8 @@ import dev.config as config
 import dev.action as action
 import dev.db.memory as memory
 from dev.action.logic import AutorizationLogic, MainScreenLogic
-# from dev.view.helpers import TabelItem
 from dev.view.calendar import CalendarLogic
-from dev.action.hash import hash_to_user_name
+from dev.view.my_widgets import TabelItem
 
 
 class Autorization(MDScreen):
@@ -111,7 +110,7 @@ class Main(MDScreen):
     user = StringProperty()
     today = StringProperty()
 
-    def __init__(self, user_name: str, user_surname: str, screen_constructor, screen_manager: ScreenManager, **kw):
+    def __init__(self, screen_constructor, screen_manager: ScreenManager, **kw):
         action.logger.info("screens.py: class Main(MDScreen) __init__() name = 'main_screen'")
         super().__init__(**kw)
 
@@ -119,9 +118,9 @@ class Main(MDScreen):
         self._screen_manager = screen_manager
         self._logic: MainScreenLogic = None
 
-        self.user_name = user_name
-        self.user_surname = user_surname
-        self.user_hash = hash_to_user_name(f'{self.user_name}{self.user_surname}', config.PORT)
+        self.user_name = self._screen_constructor.authorization_screen.logic.login
+        self.user_surname = self._screen_constructor.authorization_screen.logic.password
+        self.user_hash = self._screen_constructor.authorization_screen.logic.user_hash
 
         self.user = f'{self.user_name} {self.user_surname}'
         self.today = date.today().strftime("%d.%m.%Y")
@@ -167,11 +166,12 @@ class Main(MDScreen):
         "Возвращает на экран логирования"
         action.logger.info('screens.py: class Main(MDScreen) btn_wyloguj()')
 
-        def remove_remember_me_file():
+        def _remove_remember_me_file():
             "Если есть файл, то удаляю"
             action.logger.info('build.py: remove_main_screen() remove_remember_me_file()')
-            if os.path.isfile(self.screen_constructor.data_from_memory.path_to_freeze_file):
-                os.remove(self.screen_constructor.data_from_memory.path_to_freeze_file)
+            if self.screen_constructor.data_from_memory.path_to_freeze_file is not None:
+                if os.path.isfile(self.screen_constructor.data_from_memory.path_to_freeze_file):
+                    os.remove(self.screen_constructor.data_from_memory.path_to_freeze_file)
 
         self.screen_manager.transition.direction = 'right'
         self.screen_constructor.remove_main_screen()
@@ -179,8 +179,7 @@ class Main(MDScreen):
         self.screen_constructor.authorization_screen.logic = None # обновляю объект логики для экрана авторизации
         action.logger.info("DEBUG: Update 'logic' object in 'authorization_screen'")
 
-        if self.screen_constructor.data_from_memory.path_to_freeze_file is not None:
-            remove_remember_me_file()
+        _remove_remember_me_file()
 
     def btn_menu_dodac(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_menu_dodac()')
@@ -222,21 +221,32 @@ class Main(MDScreen):
         if self.ids.godziny.text != 'Godziny' and \
             self.ids.obiekt.text != 'Obiekt':
 
-            self.logic.write_to_user_db()
-            self.sum_godziny = 0
-            query_to_user_base = memory.QueryToSQLite3(
-                    db_path = config.PATH_TO_USER_DB + f'/{self.user_hash}.db',
-                    )
-            user_data_from_db: list[tuple,] = query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
-            ###
-            self.ids.scroll.clear_widgets()
-            make_table_thread = threading.Thread(
-                target = self.logic.make_data_table,
-                daemon = True,
-                name = 'make_table_thread',
-                args = [True, user_data_from_db]
-            )
-            make_table_thread.start()
+
+            if self.screen_constructor.authorization_screen.remember_me:
+                self.sum_godziny = 0
+                self.logic.write_to_user_db()
+                self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.logic.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
+                self.ids.scroll.clear_widgets() # удаляем таблицу данных о часах
+                ### Отдельным потоком пересоздаем таблицу
+                make_table_thread = threading.Thread(
+                    target = self.logic.make_data_table,
+                    daemon = True,
+                    name = 'make_table_thread',
+                    args = [True, self.screen_constructor.data_from_memory.user_data_from_db]
+                )
+                make_table_thread.start()
+            else:
+                item = TabelItem(
+                    text = self.ids.obiekt.text,
+                    on_release=self.logic.on_click_table_row,
+                )
+                self.sum_godziny += int(self.ids.godziny.text)
+                item.ids.left_label.text = self.ids.godziny.text
+                item.ids.right_button.text = self.ids.date.text
+                item.ids.right_button.on_release = lambda widget=item.ids.right_button: self.logic.on_click_table_right_button(widget)
+                
+                self.ids.scroll.add_widget(item)
+                self.ids.summa.text = f'Masz {self.sum_godziny} godzin'
 
 
 class Calendar(MDScreen):

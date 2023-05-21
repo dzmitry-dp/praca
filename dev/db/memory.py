@@ -19,9 +19,17 @@ class MemoryDataContainer:
 
     """
     def __init__(self) -> None:
+        action.logger.info(f"memory.py: class MemoryDataContainer def __init__()")
         self.path_to_freeze_file: str = None # путь к файлу, который хранит данные о текущем пользователе приложения
+        self._freeze_file_data: dict = None
         self.user_data_from_db: list[tuple,] = None ### это поле заполняется с потока где считываются данные пользователя из базы данные
-        
+
+    @property
+    def freeze_file_data(self) -> dict:
+        if self._freeze_file_data is None:
+            self._freeze_file_data = self.get_freeze_member()
+        return self._freeze_file_data
+  
     def get_freeze_member(self) -> dict:
         action.logger.info('memory.py: get_freeze_member()')
         # список всех файлов в папке
@@ -41,7 +49,9 @@ class MemoryDataContainer:
         return freeze_file_data
 
 def connection_to_database(create_query_func):
+    action.logger.info(f"memory.py: @connection_to_database")
     def wrapper(self, **kwargs):
+        action.logger.info(f"memory.py: @connection_to_database -> wrapper()")
         try:
             connection = sqlite3.connect(
                 self.db_path,
@@ -82,6 +92,7 @@ def connection_to_database(create_query_func):
 
 class QueryToSQLite3:
     def __init__(self, db_path: str):
+        action.logger.info(f"memory.py: class QueryToSQLite3 def __init__() path: {db_path}")
         self.db_path = db_path
         self.query = ''
     

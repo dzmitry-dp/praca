@@ -10,7 +10,6 @@ from kivymd.uix.screen import MDScreen
 
 import dev.config as config
 import dev.action as action
-import dev.db.memory as memory
 from dev.action.logic import AutorizationLogic, MainScreenLogic
 from dev.view.calendar import CalendarLogic
 from dev.view.my_widgets import TabelItem

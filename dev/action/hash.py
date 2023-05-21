@@ -17,10 +17,6 @@ def hash_raw(input_str: str, _salt: int) -> bytes:
 def hash_to_user_name(input_str: str, _salt: int) -> str:
     # input_str = f"{self.login}{self.password}"
     # salt = port
-    print('---')
-    print(type(input_str))
-    print(input_str)
-    print('---')
     salt = hex(_salt)
     _str = re.sub(r'[^a-zA-Zа-яА-Я]', '', input_str)
     mix_variable = salt.encode() + _str.encode()

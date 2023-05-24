@@ -52,7 +52,7 @@ class VerificationData:
 class AutorizationLogic(VerificationData):
     """Вся логика авторизации пользователя
     """
-    def __init__(self, screen_constructor, screen_manager, authorization_obj: MDScreen) -> None:
+    def __init__(self, screen_constructor, screen_manager, authorization_screen: MDScreen) -> None:
         super().__init__()
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) __init__()')
 
@@ -63,7 +63,7 @@ class AutorizationLogic(VerificationData):
         self._screen_constructor = screen_constructor # ScreensConstructor()
         self._screen_manager = screen_manager # ScreenManager()
 
-        self.authorization_obj = authorization_obj # Autorization(MDScreen)
+        self.authorization_screen = authorization_screen # Autorization(MDScreen)
 
         self.search_user_thread = None # поток поиска пользовательских данных
         self.display_main_screen_thread = None # поток отображения главного экрана
@@ -133,27 +133,31 @@ class AutorizationLogic(VerificationData):
         """
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) seach_user_in_base()')
         
+        self.screen_constructor.data_from_memory.path_to_freeze_file = os.path.join(config.PATH_TO_REMEMBER_ME, f'{self.user_hash}.json')
+        
         def _write_freeze_file():
-            self.screen_constructor.data_from_memory.path_to_freeze_file = os.path.join(config.PATH_TO_REMEMBER_ME, f'{self.user_hash}.json')
+            action.logger.info(f"logic.py: class AutorizationLogic(VerificationData) seach_user_in_base() _write_freeze_file()")
             with open(self.screen_constructor.data_from_memory.path_to_freeze_file, 'w') as file:
-                json.dump(options['remember_me'](self.login, self.password), file)
+                json.dump(options['remember_me'](self.login, self.password, config.payment_day), file)
 
         def _get_data_from_db():
             "Нахожу данные пользователя"
-            self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
+            self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE, payment_day = self.screen_constructor.data_from_memory.freeze_file_data['payment_day'])
             
         if self.user_authorized: # если есть файл с базой данных
             if remember_me: # и если стоит галочка "запомнить меня"
                 action.logger.info(f'logic.py: _seach_user_in_base() have DB and checkbox')
                 _get_data_from_db()
-                _write_freeze_file() # сохраняем данные пользователя
+                if not self.screen_constructor.data_from_memory.freeze_file_data:
+                    _write_freeze_file() # сохраняем данные пользователя
             else:
                 action.logger.info(f'logic.py: _seach_user_in_base() have DB and NOT checkbox')
                 _get_data_from_db()
         else: # если нет файла базы данных
             if remember_me:
                 action.logger.info(f'logic.py: _seach_user_in_base() have NOT DB and have checkbox')
-                _write_freeze_file()
+                if not self.screen_constructor.data_from_memory.freeze_file_data:
+                    _write_freeze_file()
             else:
                 action.logger.info(f'logic.py: _seach_user_in_base() have NOT DB and have NOT checkbox')
     
@@ -172,7 +176,7 @@ class AutorizationLogic(VerificationData):
 
             ### создаем таблицу данных
             self.search_user_thread.join()
-            self.screen_constructor.main_screen.logic.make_data_table(self.user_authorized, self.screen_constructor.data_from_memory.user_data_from_db)
+            self.screen_constructor.main_screen.logic.make_data_table(self.screen_constructor.data_from_memory.user_data_from_db)
         else:
             action.logger.info(f"DEBUG: Don't have 'main_screen'")
             self.screen_constructor.add_main_screen_obj(
@@ -237,8 +241,8 @@ class AutorizationLogic(VerificationData):
             self.screen_constructor.main_screen.ids.spinner.active = False
 
         if login is None and password is None: # btn_logowanie()
-            self.login = self.authorization_obj.user_name.text
-            self.password = self.authorization_obj.user_surname.text
+            self.login = self.authorization_screen.user_name.text
+            self.password = self.authorization_screen.user_surname.text
         else: # start_with_user_data() from freeze_file
             self.login = login
             self.password = password
@@ -263,20 +267,20 @@ class MainScreenLogic:
     dialog_screen_to_set_godziny = None
     dialog_screen_to_set_object = None
 
-    def __init__(self,
-                 screen_constructor,
-                 screen_manager,
-                 main_screen: MDScreen,
-                 ) -> None:
+    def __init__(self, screen_constructor, screen_manager, main_screen: MDScreen) -> None:
         action.logger.info('logic.py: class MainScreenLogic __init__()')
         self._screen_manager = screen_manager
         self._screen_constructor = screen_constructor # ScreensConstructor()
         
         self.main_screen = main_screen # class Main(MDScreen)
 
+        # всплывающие виджеты
         self.add_hour_widget: AddHoursWidget = None
         self.dialog_screen_to_set_godziny: MDDialog = None
 
+        self.choice_builder_objects: WorkObjects = None
+        self.dialog_screen_to_set_object: MDDialog = None
+        # подключение к sqlite3
         self.query_to_user_base = self._screen_constructor.authorization_screen.logic.query_to_user_base
 
     @property
@@ -295,21 +299,8 @@ class MainScreenLogic:
     def screen_manager(self, value):
         self._screen_manager = value
 
-    def select_godziny(self):
-        action.logger.info('logic.py: class MainScreenLogic select_godziny()')
-        if not self.dialog_screen_to_set_godziny:
-            self.add_hour_widget = AddHoursWidget(
-                main_screen = self.main_screen,
-                main_screen_logic = self,
-                )
-            self.dialog_screen_to_set_godziny = MDDialog(
-                type = "custom",
-                content_cls = self.add_hour_widget
-            )
-        self.dialog_screen_to_set_godziny.open()
-
     @mainthread
-    def make_data_table(self, user_authorized: bool, user_data_from_db: list[tuple,]):
+    def make_data_table(self, user_data_from_db: list[tuple,]) -> None:
         action.logger.info('logic.py: class MainScreenLogic make_data_table()')
 
         def _transforming_data_from_database(user_data_from_db: list[tuple,]) -> json:
@@ -318,14 +309,10 @@ class MainScreenLogic:
             keys = queries.user_table['column_data'].keys()
             return [dict(zip(keys, values)) for values in user_data_from_db]
         
+        user_authorized: bool = self.screen_constructor.authorization_screen.logic.get_permission()
+
         if user_authorized:
             user_data: list[tuple,] = _transforming_data_from_database(user_data_from_db)
-        else:
-            user_data = None
-
-        if user_data is None:
-            action.logger.info(f'DEBUG: Have NOT user_data = {user_data}')
-        else:
             action.logger.info(f'DEBUG: Have user_data = {user_data}')
             for row in user_data:
                 item = TabelItem(
@@ -339,6 +326,8 @@ class MainScreenLogic:
                 
                 self.main_screen.ids.scroll.add_widget(item)
             self.main_screen.ids.summa.text = f'Masz {self.main_screen.sum_godziny} godzin'
+        else:
+            action.logger.info(f'DEBUG: Have NOT user_data')
 
     def on_click_table_row(self, widget):
         "Функция отрабатывает по клику на строку таблицы"
@@ -349,12 +338,19 @@ class MainScreenLogic:
         "Функция отрабатывает по клику на дату"
         action.logger.info('logic.py: class MainScreenLogic on_click_table_right_button()')
         action.logger.info(f'DEBUG: wdiget.text: {widget.text} widget.parent.parent: {widget.parent.parent} widget.parent.parent.text: {widget.parent.parent.text}')
+
+        def _remove_from_user_data_base(datetime_obj, building_object):
+            if self.screen_constructor.authorization_screen.remember_me:
+                self.query_to_user_base.remove_row(
+                    data = queries.get_date_to_remove(datetime_obj=datetime_obj, building_object=building_object)
+                )
+                
         date: str = widget.text
         date_string = f"{datetime.now().year}-{date[-2:]}-{date[:2]}"
         datetime_obj = datetime.strptime(date_string, "%Y-%m-%d")
         building_object = widget.parent.parent.text
         self.main_screen.ids.scroll.remove_widget(widget.parent.parent)
-        self._remove_from_user_data_base(datetime_obj, building_object)
+        _remove_from_user_data_base(datetime_obj, building_object)
         # вычисляю часы
         hours = int(widget.parent.parent.ids.left_label.text)
         self.main_screen.sum_godziny -= hours
@@ -374,51 +370,57 @@ class MainScreenLogic:
 
         self.main_screen.ids.date.text = f"{day}.{month}"
 
-    def open_objects_menu_list(self):
+    def select_godziny_widget(self):
+        action.logger.info('logic.py: class MainScreenLogic select_godziny()')
+        if self.dialog_screen_to_set_godziny is None:
+            self.add_hour_widget = AddHoursWidget(
+                main_screen = self.main_screen,
+                main_screen_logic = self,
+                )
+            self.dialog_screen_to_set_godziny = MDDialog(
+                type = "custom",
+                content_cls = self.add_hour_widget
+            )
+        self.dialog_screen_to_set_godziny.open()
+
+    def open_objects_widget(self):
         action.logger.info('logic.py: class MainScreenLogic open_objects_menu_list()')
 
-        if not self.dialog_screen_to_set_object:
-            self.add_hour_widget = WorkObjects(
+        if self.dialog_screen_to_set_object is None:
+            self.choice_builder_objects = WorkObjects(
                 main_screen = self.main_screen,
                 main_screen_logic = self,
                 )
             self.dialog_screen_to_set_object = MDDialog(
                 type = "custom",
-                content_cls = self.add_hour_widget
+                content_cls = self.choice_builder_objects
             )
         self.dialog_screen_to_set_object.open()
 
-    def create_user_data_base(self, user_name, user_surname, date, build_object, hour):
-        "Создаю базу данных для пользователя, если файл еще не создан"
-        action.logger.info(f"logic.py: class MainScreenLogic() create_user_data_base()")
-        self.query_to_user_base.create_table(data = queries.user_table)
-        self.query_to_user_base.write_values(
-            data = queries.generate_data(user_name, user_surname, date, build_object, hour),
-            )
-        
-    def add_to_user_data_base(self, user_name, user_surname, date, build_object, hour):
-        "Добавляю данные в пользовательскую базу данных"
-        action.logger.info(f"logic.py: class MainScreenLogic() add_to_user_data_base()")
-        self.query_to_user_base.write_values(
-            data = queries.generate_data(user_name, user_surname, date, build_object, hour),
-            )
-
-    def _remove_from_user_data_base(self, datetime_obj, building_object):
-        if self.screen_constructor.authorization_screen.remember_me:
-            self.query_to_user_base.remove_row(
-                data = queries.get_date_to_remove(datetime_obj=datetime_obj, building_object=building_object)
-            )
-
     def write_to_user_db(self):
         action.logger.info(f"logic.py: class MainScreenLogic() write_to_user_db()")
+        def _create_user_data_base(user_name, user_surname, date, build_object, hour):
+            "Создаю базу данных для пользователя, если файл еще не создан"
+            action.logger.info(f"logic.py: class MainScreenLogic() create_user_data_base()")
+            self.query_to_user_base.create_table(data = queries.user_table)
+            self.query_to_user_base.write_values(
+                data = queries.generate_data(user_name, user_surname, date, build_object, hour),
+                )
+            
+        def _add_to_user_data_base(user_name, user_surname, date, build_object, hour):
+            "Добавляю данные в пользовательскую базу данных"
+            action.logger.info(f"logic.py: class MainScreenLogic() add_to_user_data_base()")
+            self.query_to_user_base.write_values(
+                data = queries.generate_data(user_name, user_surname, date, build_object, hour),
+                )
         # Перевожу дату, указанную пользователем в формат datetime
         user_date: datetime = datetime(datetime.now().year, int(self.main_screen.ids.date.text.split('.')[1]), int(self.main_screen.ids.date.text.split('.')[0]))
         # Проверяю на наличие файла с базой данных
         if not self.screen_constructor.authorization_screen.logic.user_authorized:
-            function = self.create_user_data_base
+            function = _create_user_data_base
             ### Отдельным потоком создаю базу данных для нового пользователя
         else:
-            function = self.add_to_user_data_base
+            function = _add_to_user_data_base
             ### Отдельныйм потоком записываю новые данные в существующую базу данных пользователя
 
         wr_to_user_db_thread = threading.Thread(

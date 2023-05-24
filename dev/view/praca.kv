@@ -119,36 +119,68 @@
                     padding: 50
                     adaptive_size: True
                     size_hint_x: 1
-                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                    pos_hint: {"center_x": 0.5, "center_y": 0.55}
+
+                    MDBoxLayout:
+                        Text:
+                            text: 'Dzień wypłaty:  '
+                            halign: 'right'
+                            font_size: '20sp'
+                            size_hint_x: 0.5
+
+                        MDTextFieldRect:
+                            id: payment_day
+                            text: root.payment_day
+                            multiline: False
+                            halign: 'center'
+                            font_size: '20sp'
+                            max_text_length: 2
+                            size_hint: None, None
+                            size: dp(32), dp(32)
+                            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                            on_focus:
+                                root.select_payment_day()
+
+                        Text:
+                            text: ' .06'
+                            halign: 'left'
+                            font_size: '20sp'
+                            size_hint_x: 0.25
+
+                    MDBoxLayout:
+                        MDLabel
+
+                    MDBoxLayout:
+                        MDLabel
 
                     MDRectangleFlatIconButton:
                         icon: 'timer-plus-outline'
-                        text: "Dodać"
-                        font_size: '28sp'
+                        text: "Dodać godziny"
+                        font_size: '24sp'
                         size_hint_x: 1
                         on_release:
                             root.btn_menu_dodac()
 
                     MDRectangleFlatIconButton:
                         icon: 'message-processing'
-                        text: "Wyślij"
-                        font_size: '28sp'
+                        text: "Wyślij SMS"
+                        font_size: '24sp'
                         size_hint_x: 1
                         on_release:
                             root.btn_menu_wyslij()
 
                     MDRectangleFlatIconButton:
                         icon: 'table-arrow-up'
-                        text: "Tabela"
-                        font_size: '28sp'
+                        text: "Tabela Excel"
+                        font_size: '24sp'
                         size_hint_x: 1
                         on_release:
                             root.btn_memu_tabela()
 
                     MDRectangleFlatIconButton:
                         icon: 'frequently-asked-questions'
-                        text: "Pytać"
-                        font_size: '28sp'
+                        text: "Zapytaj dokumenty"
+                        font_size: '24sp'
                         size_hint_x: 1
                         on_release:
                             root.btn_menu_pytac()
@@ -156,7 +188,7 @@
                     MDRectangleFlatIconButton:
                         icon: 'format-list-checks'
                         text: "Zadania"
-                        font_size: '28sp'
+                        font_size: '24sp'
                         size_hint_x: 1
                         on_release:
                             root.btn_menu_zadania()
@@ -222,17 +254,16 @@
                         MDList: 
                             id: scroll
                     
-                    MDGridLayout: 
-                        cols: 2
+                    MDBoxLayout:
+                        padding: 0, 0, 0, 30
                         size_hint_x: 1
                         size_hint_y: 0.15
 
                         Text:
                             id: summa
                             halign: 'center'
-                            font_size: '24sp'
-                            font_style: 'H6'
-                            
+                            font_size: '20sp'
+                          
                     MDRectangleFlatIconButton:
                         text: "Dodać"
                         font_size: '28sp'

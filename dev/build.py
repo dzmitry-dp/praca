@@ -111,7 +111,6 @@ class ScreensConstructor(MyScreensObjects):
                 daemon = True,
                 name = 'make_table_thread',
                 args = [
-                    self.authorization_screen.logic.user_authorized,
                     self.data_from_memory.user_data_from_db,
                     ]
             )

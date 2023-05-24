@@ -1,6 +1,7 @@
 import os
 import json
 import sqlite3
+from datetime import datetime, timedelta
 
 import dev.action as action
 import dev.config as config
@@ -74,6 +75,13 @@ def connection_to_database(create_query_func):
                     values = list(kwargs['data']['column_data'].values())
                     cursor.execute(query, values)
                     return None
+                if 'payment_day' in kwargs.keys():
+                    current_date = datetime.now().date()
+                    start_date = datetime(current_date.year, current_date.month, kwargs['payment_day'])
+                    end_date = start_date.replace(day=kwargs['payment_day']) + timedelta(days=31)
+                    cursor.execute(query, (start_date, end_date))
+                    record = cursor.fetchall()
+                    return record
                 cursor.execute(query)
                 record = cursor.fetchall()
                 return record
@@ -126,8 +134,8 @@ class QueryToSQLite3:
         return """SELECT name FROM sqlite_master WHERE type='table';"""
     
     @connection_to_database
-    def show_data_from_table(self, table_name: str):
-        return f"SELECT * FROM {table_name} ORDER BY date;"
+    def show_data_from_table(self, table_name: str, payment_day: int):
+        return f"SELECT * FROM {table_name} WHERE date >= ? AND date <= ? ORDER BY date;"
     
     @connection_to_database
     def remove_table(self, table_name: str):

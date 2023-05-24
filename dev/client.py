@@ -32,7 +32,12 @@ def start_client_server_dialog(user_name: str, user_surname: str, remember_me: b
     action.logger.info('client.py: start_client_server_dialog()')
 
     client_name: str = f'{user_name} {user_surname}'
-    client_ip = requests.get("http://ifconfig.me/ip").text
+
+    try:
+        client_ip = requests.get("http://ifconfig.me/ip").text
+    except requests.exceptions.ConnectionError:
+        return None
+
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     key: bytes = hash_raw(client_ip, config.PORT)
 
@@ -52,6 +57,9 @@ def _connect_to_server(client_socket: socket.socket, key: bytes) -> bool:
         return False
     except TimeoutError:
         action.logger.error('client.py: TimeoutError - Not connections')
+        return False
+    except OSError:
+        action.logger.error('client.py: OSError - Not connections')
         return False
     else:
         action.logger.info(f'DEBUG: Connected to {config.SERVER}:{config.PORT}')

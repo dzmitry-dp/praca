@@ -1,6 +1,6 @@
 from datetime import date, datetime
 import threading
-import os
+import os, json
 
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.screenmanager import ScreenManager
@@ -13,7 +13,7 @@ import dev.action as action
 from dev.action.logic import AutorizationLogic, MainScreenLogic
 from dev.view.calendar import CalendarLogic
 from dev.view.my_widgets import TabelItem
-
+from dev.action.purpose import options
 
 class Autorization(MDScreen):
     """
@@ -67,7 +67,7 @@ class Autorization(MDScreen):
             self._logic = AutorizationLogic(
                 screen_constructor = self.screen_constructor,
                 screen_manager=self.screen_manager,
-                authorization_obj = self,
+                authorization_screen = self,
                 )
         return self._logic
     
@@ -108,6 +108,7 @@ class Main(MDScreen):
 
     user = StringProperty()
     today = StringProperty()
+    payment_day = StringProperty()
 
     def __init__(self, screen_constructor, screen_manager: ScreenManager, **kw):
         action.logger.info("screens.py: class Main(MDScreen) __init__() name = 'main_screen'")
@@ -125,10 +126,16 @@ class Main(MDScreen):
         self.today = date.today().strftime("%d.%m.%Y")
 
         self.sum_godziny = 0 # Начальная сумма наработанных часов
+        if self.screen_constructor.data_from_memory.freeze_file_data:
+            self.payment_day = str(self.screen_constructor.data_from_memory.freeze_file_data['payment_day'])
+        else:
+            self.payment_day = str(config.payment_day)
 
         self.year = date.today().year # int
         self.month = date.today().month # int
         self.day = date.today().day # int
+
+        self._focus_on_payment_day: bool = False # фокус на поле ввода даты, когда будет отсчитываться зарплата
 
 
     @property
@@ -202,11 +209,11 @@ class Main(MDScreen):
 
     def btn_godziny(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_godziny()')
-        self.logic.select_godziny()
+        self.logic.select_godziny_widget()
 
     def btn_obiekt(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_obiekt()')
-        self.logic.open_objects_menu_list()
+        self.logic.open_objects_widget()
 
     def btn_show_calendar(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_show_calendar()')
@@ -223,14 +230,14 @@ class Main(MDScreen):
             if self.screen_constructor.authorization_screen.remember_me:
                 self.sum_godziny = 0
                 self.logic.write_to_user_db()
-                self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.logic.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
+                self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.logic.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE, payment_day = self.screen_constructor.data_from_memory.freeze_file_data['payment_day'])
                 self.ids.scroll.clear_widgets() # удаляем таблицу данных о часах
                 ### Отдельным потоком пересоздаем таблицу
                 make_table_thread = threading.Thread(
                     target = self.logic.make_data_table,
                     daemon = True,
                     name = 'make_table_thread',
-                    args = [True, self.screen_constructor.data_from_memory.user_data_from_db]
+                    args = [self.screen_constructor.data_from_memory.user_data_from_db]
                 )
                 make_table_thread.start()
             else:
@@ -245,6 +252,38 @@ class Main(MDScreen):
                 
                 self.ids.scroll.add_widget(item)
                 self.ids.summa.text = f'Masz {self.sum_godziny} godzin'
+
+    def select_payment_day(self):
+        action.logger.info('screens.py: class Main(MDScreen) select_payment_day()')
+
+        if not self._focus_on_payment_day:
+            self._focus_on_payment_day = True
+            action.logger.info(f'DEBUG: self._focus_on_payment_day = {self._focus_on_payment_day}')
+            return None
+        
+        if self._focus_on_payment_day:
+            self._focus_on_payment_day = False
+            if self.ids.payment_day.text.isdigit():
+                if int(self.ids.payment_day.text) < 31 and int(self.ids.payment_day.text) > 0:
+                    self.screen_constructor.data_from_memory.freeze_file_data['payment_day'] = int(self.ids.payment_day.text)
+                    with open(self.screen_constructor.data_from_memory.path_to_freeze_file, 'w') as file:
+                        json.dump(self.screen_constructor.data_from_memory.freeze_file_data, file)
+
+                    # пересобираю таблицу
+                    self.sum_godziny = 0
+                    self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.logic.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE, payment_day = self.screen_constructor.data_from_memory.freeze_file_data['payment_day'])
+                    self.ids.scroll.clear_widgets() # удаляем таблицу данных о часах
+                    ### Отдельным потоком пересоздаем таблицу
+                    make_table_thread = threading.Thread(
+                        target = self.logic.make_data_table,
+                        daemon = True,
+                        name = 'make_table_thread',
+                        args = [self.screen_constructor.data_from_memory.user_data_from_db]
+                    )
+                    make_table_thread.start()
+                    return None
+            
+            self.ids.payment_day.text = str(self.screen_constructor.data_from_memory.freeze_file_data['payment_day'])
 
 
 class Calendar(MDScreen):

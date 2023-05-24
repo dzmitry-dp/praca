@@ -59,15 +59,6 @@ class ObjectsActions:
         self.widget = widget
         self.main_screen = main_screen
 
-    def _change_obj_btn(self, value):
-        action.logger.info('my_widgets.py: class ObjectsActions _change_obj_btn()')
-        if value != '':
-            self.main_screen.ids.obiekt.icon = ''
-            if len(value) > 10:
-                value = value[:10]
-
-            self.main_screen.ids.obiekt.text = value       
-    
     def reaction_on_renoma(self):
         action.logger.info('my_widgets.py: class ObjectsActions reaction_on_renoma()')
         if self.widget.ids.current_object_value.text != '':
@@ -90,6 +81,15 @@ class ObjectsActions:
         self.widget.ids.current_object_value.hint_text = 'Rędzin'
     
     def press_ok(self):
+        def _change_obj_btn(value):
+            action.logger.info('my_widgets.py: class ObjectsActions _change_obj_btn()')
+            if value != '':
+                self.main_screen.ids.obiekt.icon = ''
+                if len(value) > 10:
+                    value = value[:10]
+
+                self.main_screen.ids.obiekt.text = value 
+
         action.logger.info('my_widgets.py: class ObjectsActions press_ok()')
         if self.widget.ids.current_object_value.text == '':
             obj_name = self.widget.ids.current_object_value.hint_text
@@ -98,7 +98,7 @@ class ObjectsActions:
             self.widget.ids.current_object_value.hint_text = obj_name
             self.widget.ids.current_object_value.text = ''
         
-        self._change_obj_btn(obj_name)
+        _change_obj_btn(obj_name)
 
 
 class WorkObjects(MDBoxLayout):
@@ -117,10 +117,11 @@ class WorkObjects(MDBoxLayout):
 
     @property
     def objects(self):
-        self._objects = ObjectsActions(
-            widget = self,
-            main_screen = self.main_screen,
-        )
+        if self._objects is None:
+            self._objects = ObjectsActions(
+                widget = self,
+                main_screen = self.main_screen,
+            )
         return self._objects
 
 

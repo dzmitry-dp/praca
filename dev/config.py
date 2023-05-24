@@ -5,7 +5,6 @@ from kivy.core.window import Window
 from kivy.config import Config
 from kivy.utils import platform
 
-
 if platform != 'android':
     Window.top = 75
     Window.left = 75
@@ -13,6 +12,8 @@ if platform != 'android':
 
 Config.set('graphics', 'maxfps', '120')
 Config.set('kivy', 'log_dir', os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.abspath('./dev/static/logs')))
+
+payment_day = 15 # день зарплаты
 
 PATH_TO_KV_FILE = abspath('./dev/view/praca.kv')
 

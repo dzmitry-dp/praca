@@ -14,11 +14,12 @@ def get_handshake(client_name: str, remember: bool) -> dict:
         }
     }
 
-def to_freeze_file(name, surname, payment_day) -> dict:
+def to_freeze_file(name, surname, payment_day, work_places = []) -> dict:
     return {
         'name': name,
         'surname': surname,
         'payment_day': payment_day,
+        'work_places': work_places,
     }
 
 options = {

@@ -125,7 +125,7 @@
                         Text:
                             text: 'Dzień wypłaty:  '
                             halign: 'right'
-                            font_size: '20sp'
+                            font_size: '24sp'
                             size_hint_x: 0.5
 
                         MDTextFieldRect:
@@ -319,23 +319,39 @@
     size_hint:(None, None)
     height: int(self.widget_height)
     width: int(self.widget_width)
-    pos_hint: {'center_x': .5, 'center_y': .5}
+    pos_hint: {'center_x': .5, 'center_y': .6}
     size_hint_x: 1
     padding: 30
 
     MDLabel:
-        id: current_hours_value
-        halign: 'center'
-        pos_hint: {'center_x': .5, 'center_y': .5}
-        font_size: '52sp'
-        text: '0'
+
+    MDGridLayout:
+        cols: 3
+
+        MDIconButton:
+            icon: "arrow-left-bold"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            on_release:
+                root.hour_reaction.press_left()
+
+        MDLabel:
+            id: current_hours_value
+            halign: 'center'
+            pos_hint: {'center_x': .5, 'center_y': .5}
+            font_size: '52sp'
+            text: '0'
+
+        MDIconButton:
+            icon: "arrow-right-bold"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            on_release:
+                root.hour_reaction.press_right()
 
     MDLabel:
     
     MDLabel:
         halign: 'center'
         font_size: '24sp'
-        font_style: 'H6'
         text: 'Ustaw godzinę'
 
     MDLabel:
@@ -346,7 +362,6 @@
         max: 24
         on_active:
             root.hour_reaction.set_current_value(hours_line_data.value)
-            print(hours_line_data.value)
     
     MDLabel:
 
@@ -394,6 +409,8 @@
     
     MDLabel:
 
+    MDLabel:
+
     MDRectangleFlatIconButton:
         pos_hint: {'center_x': .5, 'center_y': .5}
         text: "Ok"
@@ -402,7 +419,6 @@
         on_release:
             root.hour_reaction.press_ok(hours_line_data.value)
     
-    MDLabel:
 
 ### Всплывающее окно выбора объекта на котором работаешь
 <WorkObjects>:
@@ -410,63 +426,30 @@
     size_hint:(None, None)
     height: int(self.widget_height)
     width: int(self.widget_width)
-    pos_hint: {'center_x': .5, 'center_y': .5}
+    pos_hint: {'center_x': .5, 'center_y': .6}
     size_hint_x: 1
     padding: 30
-
-    MDTextFieldRect:
-        id: current_object_value
-
-        size_hint_y: 0.8
-        hint_text: 'Renoma'
-        mode: "fill"
-        max_text_length: 10 
-        halign: 'center'
-        pos_hint: {'center_x': .5, 'center_y': .5}
-        font_size: '52sp'
 
     MDLabel:
         halign: 'center'
         font_size: '24sp'
-        font_style: 'H6'
         text: 'Zaznaczanie obiektu'
 
+    MDTextField:
+        id: current_object_value
+        hint_text: 'Miejsce pracy'
+        mode: "rectangle"
+        multiline: False
+        max_text_length: 10 
+        halign: 'center'
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        font_size: '32sp'
 
     MDScrollView:
         size_hint_y: 1.5
+
         MDList:
-            OneLineAvatarIconListItem:
-                MDRectangleFlatButton:
-                    text: "Renoma"
-                    halign: "center" 
-                    font_size: '28sp'
-                    pos_hint: {'center_x': .5, 'center_y': .5}
-                    size_hint_x: 0.9
-                    on_release:
-                        root.objects.reaction_on_renoma()
-
-            OneLineAvatarIconListItem:    
-                MDRectangleFlatButton:
-                    text: "Żarów"
-                    halign: "center" 
-                    font_size: '28sp'
-                    pos_hint: {'center_x': .5, 'center_y': .5}
-                    size_hint_x: 0.9
-                    on_release:
-                        root.objects.reaction_on_zarow()
-
-            OneLineAvatarIconListItem:
-                MDRectangleFlatButton:
-                    text: "Rędzin"
-                    halign: "center" 
-                    font_size: '28sp'
-                    pos_hint: {'center_x': .5, 'center_y': .5}
-                    size_hint_x: 0.9
-                    on_release:
-                        root.objects.reaction_on_redzin()
-
-    MDLabel:
-        size_hint_y: 0.2
+            id: objects_list
 
     MDRectangleFlatIconButton:
         pos_hint: {'center_x': .5, 'center_y': .5}

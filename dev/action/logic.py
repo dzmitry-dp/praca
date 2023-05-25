@@ -8,6 +8,8 @@ from kivy.clock import mainthread
 
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.dialog import MDDialog
+from kivymd.uix.list import OneLineAvatarIconListItem, IconLeftWidget, IconRightWidget
+from kivymd.uix.button import MDRectangleFlatButton
 
 import dev.action as action
 import dev.config as config
@@ -388,9 +390,31 @@ class MainScreenLogic:
 
         if self.dialog_screen_to_set_object is None:
             self.choice_builder_objects = WorkObjects(
+                screen_constructor = self.screen_constructor,
                 main_screen = self.main_screen,
                 main_screen_logic = self,
                 )
+            
+            for work_place in self.screen_constructor.data_from_memory.freeze_file_data['work_places']:
+                item = OneLineAvatarIconListItem(
+                            MDRectangleFlatButton(
+                                text = work_place,
+                                halign = 'center',
+                                font_size = '24sp',
+                                pos_hint = {'center_x': .5, 'center_y': .5},
+                                size_hint_x = 0.9,
+                                on_release = self.choice_builder_objects.objects.select_worker_object,
+                                )
+                            )
+
+                item.add_widget(
+                    IconLeftWidget(
+                        icon = "close"
+                        )
+                )
+
+                self.choice_builder_objects.ids.objects_list.add_widget(item)
+
             self.dialog_screen_to_set_object = MDDialog(
                 type = "custom",
                 content_cls = self.choice_builder_objects

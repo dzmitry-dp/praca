@@ -135,7 +135,7 @@ class QueryToSQLite3:
     
     @connection_to_database
     def show_data_from_table(self, table_name: str, payment_day: int):
-        return f"SELECT * FROM {table_name} WHERE date >= ? AND date <= ? ORDER BY date;"
+        return f"SELECT * FROM {table_name} WHERE date >= ? AND date <= ? ORDER BY date DESC;"
     
     @connection_to_database
     def remove_table(self, table_name: str):

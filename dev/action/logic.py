@@ -185,6 +185,19 @@ class AutorizationLogic(VerificationData):
                 search_user_thread = self.search_user_thread,
                 )
 
+        current_date = datetime.now().date()
+        if current_date.day < self.screen_constructor.data_from_memory.freeze_file_data['payment_day']:
+            if current_date.month <= 9:
+                text = f' .0{current_date.month}'
+            else:
+                text = f' .{current_date.month}'
+        else:
+            if current_date.month <= 9:
+                text = f' .0{current_date.month + 1}'
+            else:
+                text = f' .{current_date.month + 1}'
+        
+        self.screen_constructor.main_screen.ids.payment_month.text = text
         self.screen_constructor.main_screen.ids.backdrop.title = f'{self.screen_constructor.main_screen.user_name} {self.screen_constructor.main_screen.user_surname}'
         self.screen_manager.current = 'main_screen' 
 
@@ -400,8 +413,8 @@ class MainScreenLogic:
                             MDRectangleFlatButton(
                                 text = work_place,
                                 halign = 'center',
-                                font_size = '24sp',
-                                pos_hint = {'center_x': .5, 'center_y': .5},
+                                font_size = '16sp',
+                                pos_hint = {'center_x': .65, 'center_y': .5},
                                 size_hint_x = 0.9,
                                 on_release = self.choice_builder_objects.objects.select_worker_object,
                                 )
@@ -409,7 +422,9 @@ class MainScreenLogic:
 
                 item.add_widget(
                     IconLeftWidget(
-                        icon = "close"
+                        icon = "close",
+                        text = work_place,
+                        on_release = self.choice_builder_objects.objects.remove_obj_from_list
                         )
                 )
 

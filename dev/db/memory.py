@@ -1,7 +1,7 @@
 import os
 import json
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import dev.action as action
 import dev.config as config
@@ -78,7 +78,7 @@ def connection_to_database(create_query_func):
                 if 'payment_day' in kwargs.keys():
                     current_date = datetime.now().date()
                     start_date = datetime(current_date.year, current_date.month, kwargs['payment_day'])
-                    end_date = start_date.replace(day=kwargs['payment_day']) + timedelta(days=31)
+                    end_date = start_date.replace(month=current_date.month + 1)
                     cursor.execute(query, (start_date, end_date))
                     record = cursor.fetchall()
                     return record

@@ -142,7 +142,7 @@
                                 root.select_payment_day()
 
                         Text:
-                            text: ' .06'
+                            id: payment_month
                             halign: 'left'
                             font_size: '20sp'
                             size_hint_x: 0.25
@@ -219,7 +219,6 @@
                         MDRectangleFlatIconButton:
                             id: godziny
                             icon: 'hours-24'
-                            pos_hint: {'center_x': .5, 'center_y': .5}
                             text: 'Godziny'
                             size_hint_x: 1
                             font_size: '16sp'
@@ -229,7 +228,6 @@
                         MDRectangleFlatIconButton:
                             id: obiekt
                             icon: 'home-lightning-bolt'
-                            pos_hint: {'center_x': .5, 'center_y': .5}
                             text: 'Obiekt'
                             size_hint_x: 1
                             font_size: '16sp'
@@ -241,7 +239,6 @@
                             icon: 'calendar-range'
                             text: root.today[:-5]
                             font_size: '16sp'
-                            pos_hint: {"center_x": 0.5, "center_y": 0.5}
                             size_hint_x: 1
                             on_release: 
                                 root.btn_show_calendar()

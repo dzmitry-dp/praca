@@ -69,12 +69,26 @@ class AddHoursActions:
             self.widget.ids.hours_line_data.value = _
             self.widget.ids.current_hours_value.text = str(_)
 
+
 class ObjectsActions:
     def __init__(self, widget, main_screen, screen_constructor) -> None:
         action.logger.info('my_widgets.py: class ObjectsActions __init__()')
         self.widget = widget
         self.main_screen = main_screen
         self.screen_constructor = screen_constructor
+
+    def _write_freeze_file(self):
+        action.logger.info(f"my_widgets.py: class ObjectsActions _add_objects_in_list() _write_freeze_file()")
+        with open(self.screen_constructor.data_from_memory.path_to_freeze_file, 'w') as file:
+            json.dump(self.screen_constructor.data_from_memory.freeze_file_data, file)
+    
+    def remove_obj_from_list(self, value = None):
+        for item in self.widget.ids.objects_list.children:
+            if item.children[0].text == value.text:
+                self.widget.ids.objects_list.remove_widget(item)
+
+                self.screen_constructor.data_from_memory.freeze_file_data['work_places'].remove(value.text)
+                self._write_freeze_file()
 
     def select_worker_object(self, value = None):
         obj_name = value.text
@@ -83,30 +97,28 @@ class ObjectsActions:
     
     def _add_objects_in_list(self, obj_name):
         action.logger.info('my_widgets.py: class ObjectsActions _add_objects_in_list()')
-        def _write_freeze_file():
-            action.logger.info(f"my_widgets.py: class ObjectsActions _add_objects_in_list() _write_freeze_file()")
-            with open(self.screen_constructor.data_from_memory.path_to_freeze_file, 'w') as file:
-                json.dump(self.screen_constructor.data_from_memory.freeze_file_data, file)
-
+        
         if obj_name not in self.screen_constructor.data_from_memory.freeze_file_data['work_places']:
             item = OneLineAvatarIconListItem(
                         MDRectangleFlatButton(
                             text = obj_name,
                             halign = 'center',
-                            font_size = '24sp',
-                            pos_hint = {'center_x': .5, 'center_y': .5},
+                            font_size = '16sp',
+                            pos_hint = {'center_x': .65, 'center_y': .5},
                             size_hint_x = 0.9,
                             on_release = self.select_worker_object,
                             )
                         )
             item.add_widget(
                 IconLeftWidget(
-                    icon = "close"
+                    icon = "close",
+                    text = obj_name,
+                    on_release = self.remove_obj_from_list,
                     )
                 )
             self.widget.ids.objects_list.add_widget(item)
             self.screen_constructor.data_from_memory.freeze_file_data['work_places'].append(obj_name)
-            _write_freeze_file()
+            self._write_freeze_file()
 
     def _change_obj_btn(self, value):
         action.logger.info('my_widgets.py: class ObjectsActions _change_obj_btn()')
@@ -122,13 +134,15 @@ class ObjectsActions:
         action.logger.info('my_widgets.py: class ObjectsActions press_ok()')
         if self.widget.ids.current_object_value.text == '':
             obj_name = self.widget.ids.current_object_value.hint_text
+            if obj_name == 'Miejsce pracy':
+                return None
         else:
             obj_name = self.widget.ids.current_object_value.text
+            
             self.widget.ids.current_object_value.hint_text = obj_name
             self.widget.ids.current_object_value.text = ''
 
         self._change_obj_btn(obj_name)
-
 
 
 class WorkObjects(MDBoxLayout):

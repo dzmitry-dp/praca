@@ -178,7 +178,8 @@ class Main(MDScreen):
             if self.screen_constructor.data_from_memory.path_to_freeze_file is not None:
                 if os.path.isfile(self.screen_constructor.data_from_memory.path_to_freeze_file):
                     os.remove(self.screen_constructor.data_from_memory.path_to_freeze_file)
-
+        self.screen_constructor.authorization_screen.ids.login.text = ''
+        self.screen_constructor.authorization_screen.ids.password.text = ''
         self.screen_manager.transition.direction = 'right'
         self.screen_constructor.remove_main_screen()
         self.screen_constructor.remove_calendar_screen()

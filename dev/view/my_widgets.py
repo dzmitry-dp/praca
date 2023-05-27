@@ -120,15 +120,15 @@ class ObjectsActions:
             self.screen_constructor.data_from_memory.freeze_file_data['work_places'].append(obj_name)
             self._write_freeze_file()
 
-    def _change_obj_btn(self, value):
+    def _change_obj_btn(self, obj_name):
         action.logger.info('my_widgets.py: class ObjectsActions _change_obj_btn()')
-        if value != '':
-            self.main_screen.ids.obiekt.icon = ''
-            if len(value) > 10:
-                value = value[:10]
+        self.main_screen.ids.obiekt.icon = ''  
+        self._add_objects_in_list(obj_name)
 
-            self.main_screen.ids.obiekt.text = value
-            self._add_objects_in_list(value)
+        if len(obj_name) > 6:
+            obj_name = obj_name[:5] + '...'
+
+        self.main_screen.ids.obiekt.text = obj_name
 
     def press_ok(self):
         action.logger.info('my_widgets.py: class ObjectsActions press_ok()')
@@ -138,7 +138,6 @@ class ObjectsActions:
                 return None
         else:
             obj_name = self.widget.ids.current_object_value.text
-            
             self.widget.ids.current_object_value.hint_text = obj_name
             self.widget.ids.current_object_value.text = ''
 

@@ -144,7 +144,12 @@ class AutorizationLogic(VerificationData):
 
         def _get_data_from_db():
             "Нахожу данные пользователя"
-            self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE, payment_day = self.screen_constructor.data_from_memory.freeze_file_data['payment_day'])
+            if self.screen_constructor.data_from_memory.freeze_file_data:
+                payment_day = self.screen_constructor.data_from_memory.freeze_file_data['payment_day']
+            else:
+                payment_day = config.payment_day
+
+            self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE, payment_day = payment_day)
             
         if self.user_authorized: # если есть файл с базой данных
             if remember_me: # и если стоит галочка "запомнить меня"
@@ -185,8 +190,15 @@ class AutorizationLogic(VerificationData):
                 search_user_thread = self.search_user_thread,
                 )
 
+        # Вычисляю месяц следующей зарплаты
         current_date = datetime.now().date()
-        if current_date.day < self.screen_constructor.data_from_memory.freeze_file_data['payment_day']:
+
+        if self.screen_constructor.data_from_memory.freeze_file_data:
+            payment_day = self.screen_constructor.data_from_memory.freeze_file_data['payment_day']
+        else:
+            payment_day = config.payment_day
+
+        if current_date.day < payment_day:
             if current_date.month <= 9:
                 text = f' .0{current_date.month}'
             else:

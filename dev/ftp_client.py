@@ -20,7 +20,7 @@ def connect_to_ftp(purpose: str, port: int, login: str, password: str, cert: str
             # Скачивание базы данных работодателя с сервера
             with open(os.path.join(config.PATH_TO_EMPLOYER_DB, 'rockbit.db'), 'wb') as f:
                 ftp.retrbinary(f'RETR {path_to_employer_base}', f.write)
-    
+
     ftp = FTP_TLS()
     ftp.certfile = _check_public_key(cert)
     action.logger.info(f"DEBUG: FTP connect IP: {config.SERVER} PORT: {port}")
@@ -30,4 +30,3 @@ def connect_to_ftp(purpose: str, port: int, login: str, password: str, cert: str
 
     _send_cmd_to_ftp_server()
     ftp.quit()
-    

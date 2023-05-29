@@ -1,4 +1,5 @@
 import threading
+import multiprocessing
 import json
 import time
 import os
@@ -233,7 +234,7 @@ class AutorizationLogic(VerificationData):
         self.display_main_screen_thread.start()
         ###
         ### Отдельным потоком проверяю связь с сервером
-        self.handshake_thread = threading.Thread(
+        self.handshake_thread = multiprocessing.Process(
             target = start_client_server_dialog,
             daemon = True,
             name = 'handshake_thread',

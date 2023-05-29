@@ -11,16 +11,16 @@ from dev.ftp_client import connect_to_ftp
 import dev.config as config
 
 
-def thread_control(function):
-    action.logger.info('client.py: thread_control()')
-    def wrapper(**kwargs):
-        action.logger.info('client.py: @thread_control')
-        if kwargs['msg_purpose'] == 'handshake':
-            # первый запуск после логирования / handshake
-            function(**kwargs)
-    return wrapper
+# def thread_control(function):
+#     action.logger.info('client.py: thread_control()')
+#     def wrapper(**kwargs):
+#         action.logger.info('client.py: @thread_control')
+#         if kwargs['msg_purpose'] == 'handshake':
+#             # первый запуск после логирования / handshake
+#             function(**kwargs)
+#     return wrapper
 
-@thread_control
+# @thread_control
 def start_client_server_dialog(user_name: str, user_surname: str, remember_me: bool, msg_purpose: str):
     """
     # Начинаем диалог с сервером

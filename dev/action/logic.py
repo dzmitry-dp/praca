@@ -1,5 +1,4 @@
 import threading
-import multiprocessing
 import json
 import time
 import os
@@ -192,7 +191,7 @@ class AutorizationLogic(VerificationData):
                 )
 
         # Вычисляю месяц следующей зарплаты
-        current_date = datetime.now().date()
+        current_date = self.screen_constructor.calendar_screen.current_date
 
         if self.screen_constructor.data_from_memory.freeze_file_data:
             payment_day = self.screen_constructor.data_from_memory.freeze_file_data['payment_day']
@@ -234,7 +233,7 @@ class AutorizationLogic(VerificationData):
         self.display_main_screen_thread.start()
         ###
         ### Отдельным потоком проверяю связь с сервером
-        self.handshake_thread = multiprocessing.Process(
+        self.handshake_thread = threading.Thread(
             target = start_client_server_dialog,
             daemon = True,
             name = 'handshake_thread',
@@ -338,7 +337,7 @@ class MainScreenLogic:
             return [dict(zip(keys, values)) for values in user_data_from_db]
         
         user_authorized: bool = self.screen_constructor.authorization_screen.logic.get_permission()
-
+        self.screen_constructor.data_from_memory.work_day_from_table = []
         if user_authorized:
             user_data: list[tuple,] = _transforming_data_from_database(user_data_from_db)
             action.logger.info(f'DEBUG: Have user_data = {user_data}')
@@ -351,8 +350,8 @@ class MainScreenLogic:
                 item.ids.left_label.text = str(row['hour'])
                 item.ids.right_button.text = row['date'].strftime('%d.%m')
                 item.ids.right_button.on_release = lambda widget=item.ids.right_button: self.on_click_table_right_button(widget)
-                
                 self.main_screen.ids.scroll.add_widget(item)
+                self.screen_constructor.data_from_memory.work_day_from_table.append(row['date'].day)
             self.main_screen.ids.summa.text = f'Masz {self.main_screen.sum_godziny} godzin'
         else:
             action.logger.info(f'DEBUG: Have NOT user_data')

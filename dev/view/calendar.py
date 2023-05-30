@@ -2,7 +2,7 @@ from datetime import date, timedelta
 
 from kivy.event import EventDispatcher
 from kivy.metrics import dp
-from kivy.properties import StringProperty, ListProperty
+from kivy.properties import StringProperty, ListProperty, ObjectProperty
 from kivy.uix.behaviors import ToggleButtonBehavior
 
 from kivy.uix.gridlayout import GridLayout
@@ -19,10 +19,14 @@ class DateButton(MDCard, CommonElevationBehavior, ToggleButtonBehavior):
     text_color = ListProperty([1, 1, 1, 1])
     text = StringProperty("")
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.primary_color = self.theme_cls.primary_color
+
     def on_state(self, widget, value):
         action.logger.info('helper.py: class DateButton on_state()')
         if value == 'down':
-            self.md_bg_color = self.theme_cls.primary_color
+            self.md_bg_color = [0.18, 0.298, 0.506, 1.0]
             self.text_color = [1, 1, 1, 1]
         else:
             self.md_bg_color = [0.12941176470588237, 0.12941176470588237, 0.12941176470588237, 1.0]
@@ -63,12 +67,13 @@ class DatePicker(BoxLayout, EventDispatcher):
             self.month_names = kwargs['month_names']
         self.header = BoxLayout(orientation='horizontal',
                                 size_hint=(1, 0.2))
-        self.body = GridLayout(cols=7, spacing=dp(20))
+        self.body = GridLayout(cols=7, spacing=dp(10))
         self.add_widget(self.header)
         self.add_widget(self.body)
 
         self.populate_body()
         self.populate_header()
+
 
     def populate_header(self, *args, **kwargs):
         action.logger.info('calendar.py: class DatePicker populate_header()')
@@ -97,12 +102,13 @@ class DatePicker(BoxLayout, EventDispatcher):
         while date_cursor.month == self.date.month:
             date_label = DateButton(text=str(date_cursor.day), group="date")
             date_label.bind(
-                on_release=lambda x, _date=int(date_label.text): self.set_date(
-                    day=date(self.date.year, self.date.month, _date)
+                on_release=lambda x, _date = int(date_label.text): self.set_date(
+                    day = date(self.date.year, self.date.month, _date),
                 )
             )
             if self.date.day == date_cursor.day:
                 date_label.state = "down"
+
             self.body.add_widget(date_label)
             date_cursor += timedelta(days=1)
 
@@ -113,6 +119,14 @@ class DatePicker(BoxLayout, EventDispatcher):
 
     def on_select(self, day):
         action.logger.info('calendar.py: class DatePicker on_select()')
+
+    def set_work_days(self, list_of_days):
+        action.logger.info('calendar.py: class DatePicker set_work_days()')
+
+        for x in self.body.children:
+            if isinstance(x, DateButton):
+                if int(x.ids.date_style.text) in list_of_days:
+                    x.ids.date_style.color = x.primary_color
 
     def move_next_month(self, *args, **kwargs):
         action.logger.info('calendar.py: class DatePicker move_next_month()')
@@ -132,6 +146,8 @@ class DatePicker(BoxLayout, EventDispatcher):
         self.populate_header()
         self.populate_body()
 
+    def get_date_list(self, date_list):
+        print(date_list)
 
 class CalendarLogic:
     def __init__(self, screen_manager, screen_constructor) -> None:

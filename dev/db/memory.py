@@ -24,6 +24,7 @@ class MemoryDataContainer:
         self.path_to_freeze_file: str = None # путь к файлу, который хранит данные о текущем пользователе приложения
         self._freeze_file_data: dict = None
         self.user_data_from_db: list[tuple,] = None ### это поле заполняется с потока где считываются данные пользователя из базы данные
+        self.work_day_from_table: list = None # список дней которые в таблице
 
     @property
     def freeze_file_data(self) -> dict:

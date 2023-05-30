@@ -218,7 +218,7 @@ class Main(MDScreen):
 
     def btn_show_calendar(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_show_calendar()')
-        # self.screen_constructor.add_calendar_screen_obj()
+        self.screen_constructor.calendar_screen.ids.date_picker.set_work_days(self.screen_constructor.data_from_memory.work_day_from_table)
         self.screen_manager.transition.direction = 'left'
         self.screen_manager.current = 'calendar_screen'
 
@@ -295,6 +295,8 @@ class Calendar(MDScreen):
         self._screen_manager = screen_manager
         self._screen_constructor = screen_constructor
         self._logic = None
+
+        self.current_date: datetime = datetime.now()
 
     @property
     def screen_constructor(self):

@@ -341,18 +341,19 @@ class MainScreenLogic:
         if user_authorized:
             user_data: list[tuple,] = _transforming_data_from_database(user_data_from_db)
             action.logger.info(f'DEBUG: Have user_data = {user_data}')
-            for row in user_data:
-                item = TabelItem(
-                    text=row['building'],
-                    on_release=self.on_click_table_row,
-                )
-                self.main_screen.sum_godziny += row['hour']
-                item.ids.left_label.text = str(row['hour'])
-                item.ids.right_button.text = row['date'].strftime('%d.%m')
-                item.ids.right_button.on_release = lambda widget=item.ids.right_button: self.on_click_table_right_button(widget)
-                self.main_screen.ids.scroll.add_widget(item)
-                self.screen_constructor.data_from_memory.work_day_from_table.append(row['date'].day)
-            self.main_screen.ids.summa.text = f'Masz {self.main_screen.sum_godziny} godzin'
+            if user_data is not None:
+                for row in user_data:
+                    item = TabelItem(
+                        text=row['building'],
+                        on_release=self.on_click_table_row,
+                    )
+                    self.main_screen.sum_godziny += row['hour']
+                    item.ids.left_label.text = str(row['hour'])
+                    item.ids.right_button.text = row['date'].strftime('%d.%m')
+                    item.ids.right_button.on_release = lambda widget=item.ids.right_button: self.on_click_table_right_button(widget)
+                    self.main_screen.ids.scroll.add_widget(item)
+                    self.screen_constructor.data_from_memory.work_day_from_table.append(row['date'].day)
+                self.main_screen.ids.summa.text = f'Masz {self.main_screen.sum_godziny} godzin'
         else:
             action.logger.info(f'DEBUG: Have NOT user_data')
 

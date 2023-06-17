@@ -98,27 +98,28 @@ class ObjectsActions:
     def _add_objects_in_list(self, obj_name):
         action.logger.info('my_widgets.py: class ObjectsActions _add_objects_in_list()')
         
-        if obj_name not in self.screen_constructor.data_from_memory.freeze_file_data['work_places']:
-            item = OneLineAvatarIconListItem(
-                        MDRectangleFlatButton(
-                            text = obj_name,
-                            halign = 'center',
-                            font_size = '16sp',
-                            pos_hint = {'center_x': .65, 'center_y': .5},
-                            size_hint_x = 0.9,
-                            on_release = self.select_worker_object,
+        if self.screen_constructor.data_from_memory.freeze_file_data is not None:
+            if obj_name not in self.screen_constructor.data_from_memory.freeze_file_data['work_places']:
+                item = OneLineAvatarIconListItem(
+                            MDRectangleFlatButton(
+                                text = obj_name,
+                                halign = 'center',
+                                font_size = '16sp',
+                                pos_hint = {'center_x': .65, 'center_y': .5},
+                                size_hint_x = 0.9,
+                                on_release = self.select_worker_object,
+                                )
                             )
+                item.add_widget(
+                    IconLeftWidget(
+                        icon = "close",
+                        text = obj_name,
+                        on_release = self.remove_obj_from_list,
                         )
-            item.add_widget(
-                IconLeftWidget(
-                    icon = "close",
-                    text = obj_name,
-                    on_release = self.remove_obj_from_list,
                     )
-                )
-            self.widget.ids.objects_list.add_widget(item)
-            self.screen_constructor.data_from_memory.freeze_file_data['work_places'].append(obj_name)
-            self._write_freeze_file()
+                self.widget.ids.objects_list.add_widget(item)
+                self.screen_constructor.data_from_memory.freeze_file_data['work_places'].append(obj_name)
+                self._write_freeze_file()
 
     def _change_obj_btn(self, obj_name):
         action.logger.info('my_widgets.py: class ObjectsActions _change_obj_btn()')

@@ -70,7 +70,6 @@
                 pos_hint: {"center_x": 0.5, "center_y": 0.5}
                 size_hint_x: 1
                 on_release:
-                    spinner.active = True
                     root.manager.transition.direction = 'left'
                     root.manager.transition.duration = 0.2
                     root.btn_logowanie()
@@ -78,9 +77,11 @@
             MDLabel:
 
             MDLabel:
-                text: 'Instalacje elektryczne\nROKBIT sp. Zo.o.'
+                text: '[ref=https://dzmitry-dp.slack.com/][u]Slack Workspace[/u][/ref]'
                 halign: 'center'
                 font_size: '12sp'
+                markup: True
+                on_ref_press: root.go_to_slack('https://dzmitry-dp.slack.com/')
 
 ### После авторизации
 <Text@MDLabel>:
@@ -153,46 +154,47 @@
                     MDBoxLayout:
                         MDLabel
 
-                    MDRectangleFlatIconButton:
-                        icon: 'timer-plus-outline'
-                        text: "Dodać godziny"
-                        font_size: '24sp'
-                        size_hint_x: 1
-                        on_release:
-                            root.btn_menu_dodac()
+                    # MDRectangleFlatIconButton:
+                    #     icon: 'timer-plus-outline'
+                    #     text: "Dodać godziny"
+                    #     font_size: '24sp'
+                    #     size_hint_x: 1
+                    #     on_release:
+                    #         root.btn_menu_dodac()
 
-                    MDRectangleFlatIconButton:
-                        icon: 'message-processing'
-                        text: "Wyślij SMS"
-                        font_size: '24sp'
-                        size_hint_x: 1
-                        on_release:
-                            root.btn_menu_wyslij()
+                    # MDRectangleFlatIconButton:
+                    #     icon: 'message-processing'
+                    #     text: "Wyślij SMS"
+                    #     font_size: '24sp'
+                    #     size_hint_x: 1
+                    #     on_release:
+                    #         root.btn_menu_wyslij()
 
-                    MDRectangleFlatIconButton:
-                        icon: 'table-arrow-up'
-                        text: "Tabela Excel"
-                        font_size: '24sp'
-                        size_hint_x: 1
-                        on_release:
-                            root.btn_memu_tabela()
+                    # MDRectangleFlatIconButton:
+                    #     icon: 'table-arrow-up'
+                    #     text: "Tabela Excel"
+                    #     font_size: '24sp'
+                    #     size_hint_x: 1
+                    #     on_release:
+                    #         root.btn_memu_tabela()
 
-                    MDRectangleFlatIconButton:
-                        icon: 'frequently-asked-questions'
-                        text: "Zapytaj dokumenty"
-                        font_size: '24sp'
-                        size_hint_x: 1
-                        on_release:
-                            root.btn_menu_pytac()
+                    # MDRectangleFlatIconButton:
+                    #     icon: 'frequently-asked-questions'
+                    #     text: "Zapytaj dokumenty"
+                    #     font_size: '24sp'
+                    #     size_hint_x: 1
+                    #     on_release:
+                    #         root.btn_menu_pytac()
 
-                    MDRectangleFlatIconButton:
-                        icon: 'format-list-checks'
-                        text: "Zadania"
-                        font_size: '24sp'
-                        size_hint_x: 1
-                        on_release:
-                            root.btn_menu_zadania()
+                    # MDRectangleFlatIconButton:
+                    #     icon: 'format-list-checks'
+                    #     text: "Zadania"
+                    #     font_size: '24sp'
+                    #     size_hint_x: 1
+                    #     on_release:
+                    #         root.btn_menu_zadania()
 
+        
         MDBackdropFrontLayer:
             id: front
 

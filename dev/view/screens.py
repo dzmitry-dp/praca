@@ -1,6 +1,7 @@
 from datetime import date, datetime
 import threading
 import os, json
+import webbrowser
 
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.screenmanager import ScreenManager
@@ -85,6 +86,7 @@ class Autorization(MDScreen):
         "Кнопка 'Logowanie'"
         action.logger.info('screens.py: class Autorization(MDScreen) btn_logowanie()')
         ### Отдельным потоком отправляемся искать данные о пользователе
+        self.screen_constructor.authorization_screen.ids.spinner.active = True
         set_user_thread = threading.Thread(
             name='set_user_thread',
             target=self.logic.check_user,
@@ -93,6 +95,10 @@ class Autorization(MDScreen):
             )
         set_user_thread.start()
         ### Отдельный поток позволяет сменить экран до окончания всех расчетов
+
+    def go_to_slack(self, url) -> None:
+        action.logger.info('screens.py: class Autorization(MDScreen) go_to_slack()')
+        webbrowser.open(url)
 
 
 class Main(MDScreen):
@@ -175,15 +181,18 @@ class Main(MDScreen):
         def _remove_remember_me_file():
             "Если есть файл, то удаляю"
             action.logger.info('build.py: remove_main_screen() remove_remember_me_file()')
-            if self.screen_constructor.data_from_memory.path_to_freeze_file is not None:
-                if os.path.isfile(self.screen_constructor.data_from_memory.path_to_freeze_file):
-                    os.remove(self.screen_constructor.data_from_memory.path_to_freeze_file)
+            if os.path.isfile(self.screen_constructor.data_from_memory.freeze_file_data['path_to_file']):
+                os.remove(self.screen_constructor.data_from_memory.freeze_file_data['path_to_file'])
+        
+        self.screen_manager.transition.direction = 'right'
+        
         self.screen_constructor.authorization_screen.ids.login.text = ''
         self.screen_constructor.authorization_screen.ids.password.text = ''
-        self.screen_manager.transition.direction = 'right'
-        self.screen_constructor.remove_main_screen()
-        self.screen_constructor.remove_calendar_screen()
+
+        self.screen_constructor.data_from_memory = None
         self.screen_constructor.authorization_screen.logic = None # обновляю объект логики для экрана авторизации
+        self.screen_constructor.remove_calendar_screen()
+        self.screen_constructor.remove_main_screen()
         action.logger.info("DEBUG: Update 'logic' object in 'authorization_screen'")
 
         _remove_remember_me_file()
@@ -231,16 +240,19 @@ class Main(MDScreen):
             if self.screen_constructor.authorization_screen.remember_me:
                 self.sum_godziny = 0
                 self.logic.write_to_user_db()
-                self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.logic.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE, payment_day = self.screen_constructor.data_from_memory.freeze_file_data['payment_day'])
+                payment_day = self.screen_constructor.data_from_memory.freeze_file_data['payment_day']
+                self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.logic.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE, payment_day = payment_day)
                 self.ids.scroll.clear_widgets() # удаляем таблицу данных о часах
-                ### Отдельным потоком пересоздаем таблицу
-                make_table_thread = threading.Thread(
-                    target = self.logic.make_data_table,
-                    daemon = True,
-                    name = 'make_table_thread',
-                    args = [self.screen_constructor.data_from_memory.user_data_from_db]
-                )
-                make_table_thread.start()
+                
+                if self.screen_constructor.data_from_memory.user_data_from_db:
+                    ### Отдельным потоком пересоздаем таблицу
+                    make_table_thread = threading.Thread(
+                        target = self.logic.make_data_table,
+                        daemon = True,
+                        name = 'make_table_thread',
+                        args = [self.screen_constructor.data_from_memory.user_data_from_db]
+                    )
+                    make_table_thread.start()
             else:
                 item = TabelItem(
                     text = self.ids.obiekt.text,

@@ -140,10 +140,11 @@ class AutorizationLogic(VerificationData):
         def _write_freeze_file():
             action.logger.info(f"logic.py: class AutorizationLogic(VerificationData) seach_user_in_base() _write_freeze_file()")
             with open(self.screen_constructor.data_from_memory.path_to_freeze_file, 'w') as file:
-                json.dump(options['remember_me'](self.login, self.password, config.payment_day), file)
+                json.dump(options['remember_me'](self.login, self.password, config.payment_day, self.screen_constructor.data_from_memory.path_to_freeze_file), file)
 
         def _get_data_from_db():
             "Нахожу данные пользователя"
+            action.logger.info(f"logic.py: class AutorizationLogic(VerificationData) seach_user_in_base() _get_data_from_db()")
             if self.screen_constructor.data_from_memory.freeze_file_data:
                 payment_day = self.screen_constructor.data_from_memory.freeze_file_data['payment_day']
             else:
@@ -155,16 +156,14 @@ class AutorizationLogic(VerificationData):
             if remember_me: # и если стоит галочка "запомнить меня"
                 action.logger.info(f'logic.py: _seach_user_in_base() have DB and checkbox')
                 _get_data_from_db()
-                if not self.screen_constructor.data_from_memory.freeze_file_data:
-                    _write_freeze_file() # сохраняем данные пользователя
+                _write_freeze_file() # сохраняем данные пользователя
             else:
                 action.logger.info(f'logic.py: _seach_user_in_base() have DB and NOT checkbox')
                 _get_data_from_db()
         else: # если нет файла базы данных
             if remember_me:
                 action.logger.info(f'logic.py: _seach_user_in_base() have NOT DB and have checkbox')
-                if not self.screen_constructor.data_from_memory.freeze_file_data:
-                    _write_freeze_file()
+                _write_freeze_file()
             else:
                 action.logger.info(f'logic.py: _seach_user_in_base() have NOT DB and have NOT checkbox')
     
@@ -176,6 +175,7 @@ class AutorizationLogic(VerificationData):
         Создаю главный экран после авторизации пользователя, если экран еще не создан
         """
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) _display_main_screen()')
+
         if self.screen_manager.has_screen(name='main_screen'):
             action.logger.info(f"DEBUG: Have 'main_screen'")
             self.screen_manager.get_screen('main_screen').user_name = self.login
@@ -189,7 +189,6 @@ class AutorizationLogic(VerificationData):
             self.screen_constructor.add_main_screen_obj(
                 search_user_thread = self.search_user_thread,
                 )
-
         # Вычисляю месяц следующей зарплаты
         current_date = self.screen_constructor.calendar_screen.current_date
 
@@ -213,8 +212,10 @@ class AutorizationLogic(VerificationData):
         self.screen_constructor.main_screen.ids.backdrop.title = f'{self.screen_constructor.main_screen.user_name} {self.screen_constructor.main_screen.user_surname}'
         self.screen_manager.current = 'main_screen' 
 
+    @mainthread 
     def _start_logic_logowania(self, remember_me: bool):
         "Логика того, что происходит после нажатия кнопки Logowanie"
+        action.logger.info('logic.py: class AutorizationLogic(VerificationData) _start_logic_logowania()')
         ### Отдельным потоком отправляемся искать данные о пользователе
         self.search_user_thread = threading.Thread(
             target = self._seach_user_in_base, 
@@ -233,22 +234,26 @@ class AutorizationLogic(VerificationData):
         self.display_main_screen_thread.start()
         ###
         ### Отдельным потоком проверяю связь с сервером
-        self.handshake_thread = threading.Thread(
-            target = start_client_server_dialog,
-            daemon = True,
-            name = 'handshake_thread',
-            kwargs = {
-                'user_name': self.login,
-                'user_surname': self.password,
-                'remember_me': remember_me,
-                'msg_purpose': 'handshake', # цель обращения - рукопожатие / проверка связи с сервером / получение сертификата для передачи данных
-                }
-            )
-        self.handshake_thread.start()
+        # self.handshake_thread = threading.Thread(
+        #     target = start_client_server_dialog,
+        #     daemon = True,
+        #     name = 'handshake_thread',
+        #     kwargs = {
+        #         'user_name': self.login,
+        #         'user_surname': self.password,
+        #         'remember_me': remember_me,
+        #         'msg_purpose': 'handshake', # цель обращения - рукопожатие / проверка связи с сервером / получение сертификата для передачи данных
+        #         }
+        #     )
+        # self.handshake_thread.start()
         ###
         
         if not self.screen_manager.has_screen(name = 'calendar_screen'):
             self.screen_constructor.add_calendar_screen_obj()
+
+        self.display_main_screen_thread.join() # убедиться что экран main создан
+        self.screen_constructor.authorization_screen.ids.spinner.active = False
+        self.screen_constructor.main_screen.ids.spinner.active = False
 
     @mainthread    
     def check_user(self, remember_me: bool, login: str = None, password: str = None) -> None:
@@ -258,14 +263,6 @@ class AutorizationLogic(VerificationData):
         """
 
         action.logger.info('logic.py: class AutorizationLogic(VerificationData) check_user()')
-
-        def _spinners_off():
-            action.logger.info('logic.py: class AutorizationLogic(VerificationData) _spinners_off()')
-            time.sleep(2)
-            self.display_main_screen_thread.join() # убедиться что экран main создан
-            # выключаю спинеры
-            self.screen_constructor.authorization_screen.ids.spinner.active = False
-            self.screen_constructor.main_screen.ids.spinner.active = False
 
         if login is None and password is None: # btn_logowanie()
             self.login = self.authorization_screen.user_name.text
@@ -281,12 +278,8 @@ class AutorizationLogic(VerificationData):
             return None
 
         action.logger.info(f"DEBUG: Have Login and Password: '{self.login}' '{self.password}'")
-        self._start_logic_logowania(remember_me)
-
-        ### Через секунду остановить спинеры
-        threading.Thread(target = _spinners_off, daemon = True).start()
-        ###
-    
+        
+        self._start_logic_logowania(remember_me, )
 
 class MainScreenLogic:
     """Логика главного экрана"""
@@ -343,6 +336,11 @@ class MainScreenLogic:
             action.logger.info(f'DEBUG: Have user_data = {user_data}')
             if user_data is not None:
                 for row in user_data:
+
+                    if self.screen_constructor.data_from_memory.freeze_file_data is not None:
+                        if row['building'] not in self.screen_constructor.data_from_memory.freeze_file_data['work_places']:
+                            self.screen_constructor.data_from_memory.freeze_file_data['work_places'].append(row['building'])
+
                     item = TabelItem(
                         text=row['building'],
                         on_release=self.on_click_table_row,
@@ -421,27 +419,28 @@ class MainScreenLogic:
                 main_screen_logic = self,
                 )
             
-            for work_place in self.screen_constructor.data_from_memory.freeze_file_data['work_places']:
-                item = OneLineAvatarIconListItem(
-                            MDRectangleFlatButton(
-                                text = work_place,
-                                halign = 'center',
-                                font_size = '16sp',
-                                pos_hint = {'center_x': .65, 'center_y': .5},
-                                size_hint_x = 0.9,
-                                on_release = self.choice_builder_objects.objects.select_worker_object,
+            if self.screen_constructor.data_from_memory.freeze_file_data is not None:
+                for work_place in self.screen_constructor.data_from_memory.freeze_file_data['work_places']:
+                    item = OneLineAvatarIconListItem(
+                                MDRectangleFlatButton(
+                                    text = work_place,
+                                    halign = 'center',
+                                    font_size = '16sp',
+                                    pos_hint = {'center_x': .65, 'center_y': .5},
+                                    size_hint_x = 0.9,
+                                    on_release = self.choice_builder_objects.objects.select_worker_object,
+                                    )
                                 )
+
+                    item.add_widget(
+                        IconLeftWidget(
+                            icon = "close",
+                            text = work_place,
+                            on_release = self.choice_builder_objects.objects.remove_obj_from_list
                             )
+                    )
 
-                item.add_widget(
-                    IconLeftWidget(
-                        icon = "close",
-                        text = work_place,
-                        on_release = self.choice_builder_objects.objects.remove_obj_from_list
-                        )
-                )
-
-                self.choice_builder_objects.ids.objects_list.add_widget(item)
+                    self.choice_builder_objects.ids.objects_list.add_widget(item)
 
             self.dialog_screen_to_set_object = MDDialog(
                 type = "custom",

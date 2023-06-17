@@ -252,8 +252,17 @@ class AutorizationLogic(VerificationData):
             self.screen_constructor.add_calendar_screen_obj()
 
         self.display_main_screen_thread.join() # убедиться что экран main создан
-        self.screen_constructor.authorization_screen.ids.spinner.active = False
-        self.screen_constructor.main_screen.ids.spinner.active = False
+        self.screen_constructor.main_screen.ids.spinner.active = True
+
+        def _spiner_off():
+            time.sleep(1)
+            self.screen_constructor.main_screen.ids.spinner.active = False
+
+        _off = threading.Thread(target=_spiner_off, daemon=True, name='_spinner_off')
+        _off.start()
+        
+        # self.screen_constructor.authorization_screen.ids.spinner.active = False
+        # self.screen_constructor.main_screen.ids.spinner.active = False
 
     @mainthread    
     def check_user(self, remember_me: bool, login: str = None, password: str = None) -> None:

@@ -2,6 +2,7 @@ from datetime import date, datetime
 import threading
 import os, json
 import webbrowser
+import time
 
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.screenmanager import ScreenManager
@@ -87,6 +88,14 @@ class Autorization(MDScreen):
         action.logger.info('screens.py: class Autorization(MDScreen) btn_logowanie()')
         ### Отдельным потоком отправляемся искать данные о пользователе
         self.screen_constructor.authorization_screen.ids.spinner.active = True
+
+        def _spinner_off():
+            time.sleep(2)
+            self.screen_constructor.authorization_screen.ids.spinner.active = False
+
+        _off = threading.Thread(target=_spinner_off, name='_spinner_off', daemon=True)
+        _off.start()
+
         set_user_thread = threading.Thread(
             name='set_user_thread',
             target=self.logic.check_user,

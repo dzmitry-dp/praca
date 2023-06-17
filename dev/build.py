@@ -1,4 +1,5 @@
 import threading
+import time
 
 import dev.action as action
 from dev.view.screens import Autorization, Main, Calendar
@@ -82,6 +83,14 @@ class ScreensConstructor(MyScreensObjects):
 
         def _start_with_user_data(user_name: str, user_surname: str):
             self.authorization_screen.ids.spinner.active = True
+
+            def _spinner_off():
+                time.sleep(2)
+                self.authorization_screen.ids.spinner.active = False
+
+            _off = threading.Thread(target=_spinner_off, name='_spinner_off', daemon=True)
+            _off.start()
+
             self.authorization_screen.user_name.text = user_name
             self.authorization_screen.logic.login = user_name
             self.authorization_screen.user_surname.text = user_surname
@@ -125,6 +134,13 @@ class ScreensConstructor(MyScreensObjects):
             )
         # запускаю виджет символизирующий ожидание
         self.main_screen.ids.spinner.active = True
+
+        def _spiner_off():
+            time.sleep(3)
+            self.main_screen.ids.spinner.active = False
+
+        _off = threading.Thread(target=_spiner_off, daemon=True, name='_spinner_off')
+        _off.start()
         
         if search_user_thread is not None:
             search_user_thread.join()

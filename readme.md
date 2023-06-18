@@ -48,7 +48,7 @@ ___
 python ./main.py
 ```
 
-# Сборка apk
+# Сборка .apk
 
 	https://github.com/kivy/buildozer
 
@@ -64,6 +64,37 @@ buildozer android debug
 android.permissions в файле buildozer.spec
 
 	android.permissions = INTERNET, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, SEND_SMS
+
+# Сборка .aab
+1. Запустите эту команду для клонирования версии Buildozer, поддерживающей создание файлов .aab: 
+```bash
+pip install git+https://github.com/misl6/buildozer.git@feat/aab-support
+```
+2. После установки Buildozer с помощью того же терминала, который вы использовали в предоставленной ссылке, перейдите в корневую папку вашего проекта.
+3. Если вы уже использовали Buildozer ранее и внутри папки вашего проекта есть файл `buildozer.spec`, удалите его.
+
+4. Теперь запустите команду `buildozer init` в терминале.
+
+5. Откройте сгенерированный файл `buildozer.spec` в любом текстовом редакторе и найдите строку:
+
+```
+# (list) The Android archs to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64 
+android.archs = arm64-v8a, armeabi-v7a
+
+# (str) The format used to package the app for release mode (aab or apk). 
+android.release_artifact = aab
+
+p4a.branch = develop
+```
+
+8. Если вы ранее использовали Buildozer, удалите папку `.buildozer` внутри папки вашего проекта. Если вы не видите эту папку, убедитесь, что в вашем файловом браузере включено отображение скрытых файлов.
+
+9. В терминале, где вы вводили информацию о вашем ключе (как указано в начале этого документа), выполните следующую команду: 
+```
+buildozer -v android release
+```
+
+При каждой финальной компиляции удалите файл `.buildozer` и запустите компиляцию заново. Это может занять больше времени, но гарантирует, что Buildozer не пропустит какие-либо зависимости.
 
 # Git
 

@@ -15,6 +15,7 @@ Example*.py
 *examples/
 */old/*
 *.ssh/
+*doc/
 git_token.txt
 
 *.code-workspace

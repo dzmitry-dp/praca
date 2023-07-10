@@ -1,6 +1,7 @@
 import os
 import json
 import sqlite3
+from datetime import datetime
 
 import dev.action as action
 import dev.config as config
@@ -20,9 +21,21 @@ class MemoryDataContainer:
     """
     def __init__(self) -> None:
         action.logger.info(f"memory.py: class MemoryDataContainer def __init__()")
-        self.path_to_freeze_file: str = None # путь к файлу, который хранит данные о текущем пользователе приложения
+        self._path_to_freeze_file: str = None # путь к файлу, который хранит данные о текущем пользователе приложения
         self._freeze_file_data: dict = None
         self.user_data_from_db: list[tuple,] = None ### это поле заполняется с потока где считываются данные пользователя из базы данные
+        self.work_day_from_table: list = None # список дней которые в таблице
+
+    @property
+    def path_to_freeze_file(self):
+        action.logger.info('memory.py: class MemoryDataContainer path_to_freeze_file')
+        if self._path_to_freeze_file is None:
+            self.freeze_file_data
+        return self._path_to_freeze_file
+    
+    @path_to_freeze_file.setter
+    def path_to_freeze_file(self, value):
+        self._path_to_freeze_file = value
 
     @property
     def freeze_file_data(self) -> dict:
@@ -31,22 +44,19 @@ class MemoryDataContainer:
         return self._freeze_file_data
   
     def get_freeze_member(self) -> dict:
-        action.logger.info('memory.py: get_freeze_member()')
+        action.logger.info('memory.py: class MemoryDataContainer get_freeze_member()')
         # список всех файлов в папке
         files = os.listdir(config.PATH_TO_REMEMBER_ME)
         # фильтрация файлов по расширению
         jf = [file for file in files if file.endswith('.json')]
-        
-        if len(jf) == 1: # если в папке всего один json файл
-            action.logger.info(f'DEBUG: Have json file {jf}')
-            self.path_to_freeze_file = os.path.join(config.PATH_TO_REMEMBER_ME, f'{jf[0]}')
-            with open(self.path_to_freeze_file, 'r') as file:
-                freeze_file_data = json.load(file)
-        else: # если нет файлов или нужно выбирать из нескольких
-            action.logger.info(f'DEBUG: Have NOT json files')
-            freeze_file_data = None
 
-        return freeze_file_data
+        if jf != []:
+            latest_file = max(jf, key=lambda f: os.path.getctime(os.path.join(config.PATH_TO_REMEMBER_ME, f)))
+            
+            with open(os.path.join(config.PATH_TO_REMEMBER_ME, latest_file), 'r') as file:
+                return json.load(file)
+
+        return None
 
 def connection_to_database(create_query_func):
     action.logger.info(f"memory.py: @connection_to_database")
@@ -74,6 +84,13 @@ def connection_to_database(create_query_func):
                     values = list(kwargs['data']['column_data'].values())
                     cursor.execute(query, values)
                     return None
+                if 'payment_day' in kwargs.keys():
+                    current_date = datetime.now().date()
+                    start_date = datetime(current_date.year, current_date.month, kwargs['payment_day'])
+                    end_date = start_date.replace(month=current_date.month + 1)
+                    cursor.execute(query, (start_date, end_date))
+                    record = cursor.fetchall()
+                    return record
                 cursor.execute(query)
                 record = cursor.fetchall()
                 return record
@@ -84,7 +101,7 @@ def connection_to_database(create_query_func):
                 values = list(kwargs['data']['column_data'].values())
                 cursor.execute(query, values)
         except sqlite3.Error as error:
-            raise DBConnectionErr(f"Error while connecting to database\n\n{error}")
+            DBConnectionErr(f"Error while connecting to database\n\n{error}")
         finally:
             connection.commit()
             connection.close()
@@ -126,8 +143,8 @@ class QueryToSQLite3:
         return """SELECT name FROM sqlite_master WHERE type='table';"""
     
     @connection_to_database
-    def show_data_from_table(self, table_name: str):
-        return f"SELECT * FROM {table_name} ORDER BY date;"
+    def show_data_from_table(self, table_name: str, payment_day: int):
+        return f"SELECT * FROM {table_name} WHERE date >= ? AND date <= ? ORDER BY date DESC;"
     
     @connection_to_database
     def remove_table(self, table_name: str):

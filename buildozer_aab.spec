@@ -4,10 +4,10 @@
 title = PracaApp
 
 # (str) Package name
-package.name = TEST
+package.name = CountHours
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.test
+package.domain = com.wordpress.dzmitrypaulenka
 
 # (str) Source code where the main.py live
 source.dir = ./dev
@@ -29,7 +29,7 @@ source.include_exts = py,png,jpg,kv
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 0.5
+version = 0.7
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
@@ -37,16 +37,20 @@ version = 0.5
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3, kivy==master, https://github.com/kivymd/KivyMD/archive/master.zip, android, pyjnius, requests, cryptography, urllib3, chardet, idna
+requirements = python3, kivy, https://github.com/kivymd/kivymd/archive/master.zip, android, pyjnius, requests, cryptography, urllib3, chardet, idna
 
+# python3, kivy==master, https://github.com/kivymd/KivyMD/archive/master.zip, android, pyjnius, requests, cryptography, urllib3, chardet, idna
+# hostpython3, libffi, openssl, sdl2_image, sdl2_mixer, sdl2_ttf, sqlite3, python3, sdl2, setuptools, pycparser, six, cffi, pyjnius, android, cryptography, kivy, kivy_garden.graph, chardet, certifi, idna, urllib3, https://github.com/kivymd/kivymd/archive/master.zip, requests
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
 # requirements.source.kivy = ../../kivy
 
 # (str) Presplash of the application
+#presplash.filename = %(source.dir)s/data/presplash.png
 presplash.filename = %(source.dir)s/dev/static/presplash.jpg
 
 # (str) Icon of the application
+#icon.filename = %(source.dir)s/data/icon.png
 icon.filename = %(source.dir)s/dev/static/icon.png
 
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait or all)
@@ -63,10 +67,10 @@ orientation = portrait
 author = © dzmitry_dp
 
 # change the major version of python used by the app
-# osx.python_version = 3.11
+# osx.python_version = 3
 
 # Kivy version to use
-# osx.kivy_version = 2.2.0
+# osx.kivy_version = 1.9.1
 
 #
 # Android specific
@@ -101,7 +105,7 @@ android.permissions = INTERNET, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, S
 # (int) Target Android API, should be as high as possible.
 #android.api = 27
 
-# (int) Minimum API your APK will support.
+# (int) Minimum API your APK / AAB will support.
 #android.minapi = 21
 
 # (int) Android SDK version to use
@@ -114,7 +118,7 @@ android.permissions = INTERNET, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, S
 #android.ndk_api = 21
 
 # (bool) Use --private data storage (True) or --dir public storage (False)
-# android.private_storage = False
+#android.private_storage = True
 
 # (str) Android NDK directory (if empty, it will be automatically downloaded.)
 #android.ndk_path =
@@ -260,8 +264,9 @@ android.permissions = INTERNET, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, S
 # (bool) Copy library instead of making a libpymodules.so
 #android.copy_libs = 1
 
-# (str) The Android arch to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
-# android.arch = armeabi-v7a
+# (list) The Android archs to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
+# In past, was `android.arch` as we weren't supporting builds for multiple archs at the same time.
+android.archs = arm64-v8a, armeabi-v7a
 
 # (int) overrides automatic versionCode computation (used in build.gradle)
 # this is not the same as app version and should only be edited if you know what you're doing
@@ -282,6 +287,9 @@ android.allow_backup = True
 # (bool) disables the compilation of py to pyc/pyo files when packaging
 # android.no-compile-pyo = True
 
+# (str) The format used to package the app for release mode (aab or apk).
+android.release_artifact = aab
+
 #
 # Python for android (p4a) specific
 #
@@ -293,7 +301,7 @@ android.allow_backup = True
 #p4a.fork = kivy
 
 # (str) python-for-android branch to use, defaults to master
-#p4a.branch = master
+p4a.branch = develop
 
 # (str) python-for-android specific commit to use, defaults to HEAD, must be within p4a.branch
 #p4a.commit = HEAD
@@ -331,18 +339,18 @@ android.allow_backup = True
 # (str) Path to a custom kivy-ios folder
 #ios.kivy_ios_dir = ../kivy-ios
 # Alternately, specify the URL and branch of a git checkout:
-# ios.kivy_ios_url = https://github.com/kivy/kivy-ios
-# ios.kivy_ios_branch = master
+ios.kivy_ios_url = https://github.com/kivy/kivy-ios
+ios.kivy_ios_branch = master
 
 # Another platform dependency: ios-deploy
 # Uncomment to use a custom checkout
 #ios.ios_deploy_dir = ../ios_deploy
 # Or specify URL and branch
-# ios.ios_deploy_url = https://github.com/phonegap/ios-deploy
-# ios.ios_deploy_branch = 1.10.0
+ios.ios_deploy_url = https://github.com/phonegap/ios-deploy
+ios.ios_deploy_branch = 1.10.0
 
 # (bool) Whether or not to sign the code
-# ios.codesign.allowed = false
+ios.codesign.allowed = false
 
 # (str) Name of the certificate to use for signing the debug version
 # Get a list of available identities: buildozer ios list_identities
@@ -381,7 +389,7 @@ warn_on_root = 1
 # (str) Path to build artifact storage, absolute or relative to spec file
 # build_dir = ./.buildozer
 
-# (str) Path to build output (i.e. .apk, .ipa) storage
+# (str) Path to build output (i.e. .apk, .aab, .ipa) storage
 # bin_dir = ./bin
 
 #    -----------------------------------------------------------------------------

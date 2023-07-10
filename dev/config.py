@@ -1,5 +1,8 @@
-from kivy.core.window import Window
+import os
+from os.path import abspath
 
+from kivy.core.window import Window
+from kivy.config import Config
 from kivy.utils import platform
 
 if platform != 'android':
@@ -7,13 +10,10 @@ if platform != 'android':
     Window.left = 75
     Window.size = (405, 810)
 
-from kivy.config import Config
-import os
-
 Config.set('graphics', 'maxfps', '120')
 Config.set('kivy', 'log_dir', os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.abspath('./dev/static/logs')))
 
-from os.path import abspath
+payment_day = 15 # день зарплаты
 
 PATH_TO_KV_FILE = abspath('./dev/view/praca.kv')
 
@@ -43,8 +43,8 @@ PROJECT_TABLE = 'project' # список объектов для работни�
 SERVER = "64.226.119.172"
 PORT = 1489 # порт к серверу, который принимает шифрованные сообщения
 
-if not os.path.exists(abspath('./static/.ssl')):
-    os.makedirs(abspath('./static/.ssl'))
+if not os.path.exists(abspath('./dev/static/.ssl')):
+    os.makedirs(abspath('./dev/static/.ssl'))
 
 CERTFILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                        abspath("./static/.ssl/public.crt")))
+                                        abspath("./dev/static/.ssl/public.crt")))

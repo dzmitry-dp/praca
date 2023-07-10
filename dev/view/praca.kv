@@ -70,7 +70,6 @@
                 pos_hint: {"center_x": 0.5, "center_y": 0.5}
                 size_hint_x: 1
                 on_release:
-                    spinner.active = True
                     root.manager.transition.direction = 'left'
                     root.manager.transition.duration = 0.2
                     root.btn_logowanie()
@@ -78,9 +77,11 @@
             MDLabel:
 
             MDLabel:
-                text: 'Instalacje elektryczne\nROKBIT sp. Zo.o.'
+                text: '[ref=https://dzmitry-dp.slack.com/][u]Slack Workspace[/u][/ref]'
                 halign: 'center'
                 font_size: '12sp'
+                markup: True
+                on_ref_press: root.go_to_slack('https://dzmitry-dp.slack.com/')
 
 ### После авторизации
 <Text@MDLabel>:
@@ -119,48 +120,81 @@
                     padding: 50
                     adaptive_size: True
                     size_hint_x: 1
-                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                    pos_hint: {"center_x": 0.5, "center_y": 0.55}
 
-                    MDRectangleFlatIconButton:
-                        icon: 'timer-plus-outline'
-                        text: "Dodać"
-                        font_size: '28sp'
-                        size_hint_x: 1
-                        on_release:
-                            root.btn_menu_dodac()
+                    MDBoxLayout:
+                        Text:
+                            text: 'Dzień wypłaty:  '
+                            halign: 'right'
+                            font_size: '20sp'
+                            size_hint_x: 0.5
 
-                    MDRectangleFlatIconButton:
-                        icon: 'message-processing'
-                        text: "Wyślij"
-                        font_size: '28sp'
-                        size_hint_x: 1
-                        on_release:
-                            root.btn_menu_wyslij()
+                        MDTextFieldRect:
+                            id: payment_day
+                            text: root.payment_day
+                            multiline: False
+                            halign: 'center'
+                            font_size: '20sp'
+                            max_text_length: 2
+                            size_hint: None, None
+                            size: dp(32), dp(32)
+                            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                            on_focus:
+                                root.select_payment_day()
 
-                    MDRectangleFlatIconButton:
-                        icon: 'table-arrow-up'
-                        text: "Tabela"
-                        font_size: '28sp'
-                        size_hint_x: 1
-                        on_release:
-                            root.btn_memu_tabela()
+                        Text:
+                            id: payment_month
+                            halign: 'left'
+                            font_size: '20sp'
+                            size_hint_x: 0.25
 
-                    MDRectangleFlatIconButton:
-                        icon: 'frequently-asked-questions'
-                        text: "Pytać"
-                        font_size: '28sp'
-                        size_hint_x: 1
-                        on_release:
-                            root.btn_menu_pytac()
+                    MDBoxLayout:
+                        MDLabel
 
-                    MDRectangleFlatIconButton:
-                        icon: 'format-list-checks'
-                        text: "Zadania"
-                        font_size: '28sp'
-                        size_hint_x: 1
-                        on_release:
-                            root.btn_menu_zadania()
+                    MDBoxLayout:
+                        MDLabel
 
+                    # MDRectangleFlatIconButton:
+                    #     icon: 'timer-plus-outline'
+                    #     text: "Dodać godziny"
+                    #     font_size: '24sp'
+                    #     size_hint_x: 1
+                    #     on_release:
+                    #         root.btn_menu_dodac()
+
+                    # MDRectangleFlatIconButton:
+                    #     icon: 'message-processing'
+                    #     text: "Wyślij SMS"
+                    #     font_size: '24sp'
+                    #     size_hint_x: 1
+                    #     on_release:
+                    #         root.btn_menu_wyslij()
+
+                    # MDRectangleFlatIconButton:
+                    #     icon: 'table-arrow-up'
+                    #     text: "Tabela Excel"
+                    #     font_size: '24sp'
+                    #     size_hint_x: 1
+                    #     on_release:
+                    #         root.btn_memu_tabela()
+
+                    # MDRectangleFlatIconButton:
+                    #     icon: 'frequently-asked-questions'
+                    #     text: "Zapytaj dokumenty"
+                    #     font_size: '24sp'
+                    #     size_hint_x: 1
+                    #     on_release:
+                    #         root.btn_menu_pytac()
+
+                    # MDRectangleFlatIconButton:
+                    #     icon: 'format-list-checks'
+                    #     text: "Zadania"
+                    #     font_size: '24sp'
+                    #     size_hint_x: 1
+                    #     on_release:
+                    #         root.btn_menu_zadania()
+
+        
         MDBackdropFrontLayer:
             id: front
 
@@ -187,7 +221,6 @@
                         MDRectangleFlatIconButton:
                             id: godziny
                             icon: 'hours-24'
-                            pos_hint: {'center_x': .5, 'center_y': .5}
                             text: 'Godziny'
                             size_hint_x: 1
                             font_size: '16sp'
@@ -197,7 +230,6 @@
                         MDRectangleFlatIconButton:
                             id: obiekt
                             icon: 'home-lightning-bolt'
-                            pos_hint: {'center_x': .5, 'center_y': .5}
                             text: 'Obiekt'
                             size_hint_x: 1
                             font_size: '16sp'
@@ -209,7 +241,6 @@
                             icon: 'calendar-range'
                             text: root.today[:-5]
                             font_size: '16sp'
-                            pos_hint: {"center_x": 0.5, "center_y": 0.5}
                             size_hint_x: 1
                             on_release: 
                                 root.btn_show_calendar()
@@ -222,17 +253,16 @@
                         MDList: 
                             id: scroll
                     
-                    MDGridLayout: 
-                        cols: 2
+                    MDBoxLayout:
+                        padding: 0, 0, 0, 30
                         size_hint_x: 1
                         size_hint_y: 0.15
 
                         Text:
                             id: summa
                             halign: 'center'
-                            font_size: '24sp'
-                            font_style: 'H6'
-                            
+                            font_size: '20sp'
+                          
                     MDRectangleFlatIconButton:
                         text: "Dodać"
                         font_size: '28sp'
@@ -243,6 +273,7 @@
 
 ### Экран календаря
 <Calendar>:
+
     BoxLayout:
         padding: 30
         orientation: "vertical"
@@ -261,10 +292,12 @@
             size_hint_y: 0.1
 
         DatePicker:
+            id: date_picker
             size_hint_y: 0.7
             on_select:
                 root.screen_constructor.main_screen.logic.on_save_calendar(self.date)
                 root.manager.transition.direction = 'right'
+                root.manager.transition.duration = 0.2
                 root.manager.current = "main_screen"
 
         MDLabel:
@@ -277,6 +310,7 @@
     radius: dp(10)
     ripple_behavior: True
     Label:
+        id: date_style
         text: date_btn.text
         color: date_btn.text_color
 
@@ -288,23 +322,39 @@
     size_hint:(None, None)
     height: int(self.widget_height)
     width: int(self.widget_width)
-    pos_hint: {'center_x': .5, 'center_y': .5}
+    pos_hint: {'center_x': .5, 'center_y': .6}
     size_hint_x: 1
     padding: 30
 
     MDLabel:
-        id: current_hours_value
-        halign: 'center'
-        pos_hint: {'center_x': .5, 'center_y': .5}
-        font_size: '52sp'
-        text: '0'
+
+    MDGridLayout:
+        cols: 3
+
+        MDIconButton:
+            icon: "arrow-left-bold"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            on_release:
+                root.hour_reaction.press_left()
+
+        MDLabel:
+            id: current_hours_value
+            halign: 'center'
+            pos_hint: {'center_x': .5, 'center_y': .5}
+            font_size: '52sp'
+            text: '0'
+
+        MDIconButton:
+            icon: "arrow-right-bold"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            on_release:
+                root.hour_reaction.press_right()
 
     MDLabel:
     
     MDLabel:
         halign: 'center'
         font_size: '24sp'
-        font_style: 'H6'
         text: 'Ustaw godzinę'
 
     MDLabel:
@@ -315,7 +365,6 @@
         max: 24
         on_active:
             root.hour_reaction.set_current_value(hours_line_data.value)
-            print(hours_line_data.value)
     
     MDLabel:
 
@@ -363,6 +412,8 @@
     
     MDLabel:
 
+    MDLabel:
+
     MDRectangleFlatIconButton:
         pos_hint: {'center_x': .5, 'center_y': .5}
         text: "Ok"
@@ -371,71 +422,36 @@
         on_release:
             root.hour_reaction.press_ok(hours_line_data.value)
     
-    MDLabel:
-
 ### Всплывающее окно выбора объекта на котором работаешь
 <WorkObjects>:
     orientation: "vertical"
     size_hint:(None, None)
     height: int(self.widget_height)
     width: int(self.widget_width)
-    pos_hint: {'center_x': .5, 'center_y': .5}
+    pos_hint: {'center_x': .5, 'center_y': .6}
     size_hint_x: 1
     padding: 30
-
-    MDTextFieldRect:
-        id: current_object_value
-
-        size_hint_y: 0.8
-        hint_text: 'Renoma'
-        mode: "fill"
-        max_text_length: 10 
-        halign: 'center'
-        pos_hint: {'center_x': .5, 'center_y': .5}
-        font_size: '52sp'
 
     MDLabel:
         halign: 'center'
         font_size: '24sp'
-        font_style: 'H6'
         text: 'Zaznaczanie obiektu'
 
+    MDTextField:
+        id: current_object_value
+        hint_text: 'Miejsce pracy'
+        mode: "rectangle"
+        multiline: False
+        max_text_length: 10 
+        halign: 'center'
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        font_size: '30sp'
 
     MDScrollView:
         size_hint_y: 1.5
+
         MDList:
-            OneLineAvatarIconListItem:
-                MDRectangleFlatButton:
-                    text: "Renoma"
-                    halign: "center" 
-                    font_size: '28sp'
-                    pos_hint: {'center_x': .5, 'center_y': .5}
-                    size_hint_x: 0.9
-                    on_release:
-                        root.objects.reaction_on_renoma()
-
-            OneLineAvatarIconListItem:    
-                MDRectangleFlatButton:
-                    text: "Żarów"
-                    halign: "center" 
-                    font_size: '28sp'
-                    pos_hint: {'center_x': .5, 'center_y': .5}
-                    size_hint_x: 0.9
-                    on_release:
-                        root.objects.reaction_on_zarow()
-
-            OneLineAvatarIconListItem:
-                MDRectangleFlatButton:
-                    text: "Rędzin"
-                    halign: "center" 
-                    font_size: '28sp'
-                    pos_hint: {'center_x': .5, 'center_y': .5}
-                    size_hint_x: 0.9
-                    on_release:
-                        root.objects.reaction_on_redzin()
-
-    MDLabel:
-        size_hint_y: 0.2
+            id: objects_list
 
     MDRectangleFlatIconButton:
         pos_hint: {'center_x': .5, 'center_y': .5}

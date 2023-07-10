@@ -1,6 +1,8 @@
 from datetime import date, datetime
 import threading
-import os
+import os, json
+import webbrowser
+import time
 
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.screenmanager import ScreenManager
@@ -13,7 +15,7 @@ import dev.action as action
 from dev.action.logic import AutorizationLogic, MainScreenLogic
 from dev.view.calendar import CalendarLogic
 from dev.view.my_widgets import TabelItem
-
+from dev.action.purpose import options
 
 class Autorization(MDScreen):
     """
@@ -67,7 +69,7 @@ class Autorization(MDScreen):
             self._logic = AutorizationLogic(
                 screen_constructor = self.screen_constructor,
                 screen_manager=self.screen_manager,
-                authorization_obj = self,
+                authorization_screen = self,
                 )
         return self._logic
     
@@ -85,6 +87,15 @@ class Autorization(MDScreen):
         "Кнопка 'Logowanie'"
         action.logger.info('screens.py: class Autorization(MDScreen) btn_logowanie()')
         ### Отдельным потоком отправляемся искать данные о пользователе
+        self.screen_constructor.authorization_screen.ids.spinner.active = True
+
+        def _spinner_off():
+            time.sleep(2)
+            self.screen_constructor.authorization_screen.ids.spinner.active = False
+
+        _off = threading.Thread(target=_spinner_off, name='_spinner_off', daemon=True)
+        _off.start()
+
         set_user_thread = threading.Thread(
             name='set_user_thread',
             target=self.logic.check_user,
@@ -93,6 +104,10 @@ class Autorization(MDScreen):
             )
         set_user_thread.start()
         ### Отдельный поток позволяет сменить экран до окончания всех расчетов
+
+    def go_to_slack(self, url) -> None:
+        action.logger.info('screens.py: class Autorization(MDScreen) go_to_slack()')
+        webbrowser.open(url)
 
 
 class Main(MDScreen):
@@ -108,6 +123,7 @@ class Main(MDScreen):
 
     user = StringProperty()
     today = StringProperty()
+    payment_day = StringProperty()
 
     def __init__(self, screen_constructor, screen_manager: ScreenManager, **kw):
         action.logger.info("screens.py: class Main(MDScreen) __init__() name = 'main_screen'")
@@ -120,15 +136,21 @@ class Main(MDScreen):
         self.user_name = self._screen_constructor.authorization_screen.logic.login
         self.user_surname = self._screen_constructor.authorization_screen.logic.password
         self.user_hash = self._screen_constructor.authorization_screen.logic.user_hash
-
+        
         self.user = f'{self.user_name} {self.user_surname}'
         self.today = date.today().strftime("%d.%m.%Y")
 
         self.sum_godziny = 0 # Начальная сумма наработанных часов
+        if self.screen_constructor.data_from_memory.freeze_file_data:
+            self.payment_day = str(self.screen_constructor.data_from_memory.freeze_file_data['payment_day'])
+        else:
+            self.payment_day = str(config.payment_day)
 
         self.year = date.today().year # int
         self.month = date.today().month # int
         self.day = date.today().day # int
+
+        self._focus_on_payment_day: bool = False # фокус на поле ввода даты, когда будет отсчитываться зарплата
 
 
     @property
@@ -168,14 +190,18 @@ class Main(MDScreen):
         def _remove_remember_me_file():
             "Если есть файл, то удаляю"
             action.logger.info('build.py: remove_main_screen() remove_remember_me_file()')
-            if self.screen_constructor.data_from_memory.path_to_freeze_file is not None:
-                if os.path.isfile(self.screen_constructor.data_from_memory.path_to_freeze_file):
-                    os.remove(self.screen_constructor.data_from_memory.path_to_freeze_file)
-
+            if os.path.isfile(self.screen_constructor.data_from_memory.freeze_file_data['path_to_file']):
+                os.remove(self.screen_constructor.data_from_memory.freeze_file_data['path_to_file'])
+        
         self.screen_manager.transition.direction = 'right'
-        self.screen_constructor.remove_main_screen()
-        self.screen_constructor.remove_calendar_screen()
+        
+        self.screen_constructor.authorization_screen.ids.login.text = ''
+        self.screen_constructor.authorization_screen.ids.password.text = ''
+
+        self.screen_constructor.data_from_memory = None
         self.screen_constructor.authorization_screen.logic = None # обновляю объект логики для экрана авторизации
+        self.screen_constructor.remove_calendar_screen()
+        self.screen_constructor.remove_main_screen()
         action.logger.info("DEBUG: Update 'logic' object in 'authorization_screen'")
 
         _remove_remember_me_file()
@@ -202,15 +228,15 @@ class Main(MDScreen):
 
     def btn_godziny(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_godziny()')
-        self.logic.select_godziny()
+        self.logic.select_godziny_widget()
 
     def btn_obiekt(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_obiekt()')
-        self.logic.open_objects_menu_list()
+        self.logic.open_objects_widget()
 
     def btn_show_calendar(self):
         action.logger.info('screens.py: class Main(MDScreen) btn_show_calendar()')
-        # self.screen_constructor.add_calendar_screen_obj()
+        self.screen_constructor.calendar_screen.ids.date_picker.set_work_days(self.screen_constructor.data_from_memory.work_day_from_table)
         self.screen_manager.transition.direction = 'left'
         self.screen_manager.current = 'calendar_screen'
 
@@ -220,20 +246,22 @@ class Main(MDScreen):
         if self.ids.godziny.text != 'Godziny' and \
             self.ids.obiekt.text != 'Obiekt':
 
-
             if self.screen_constructor.authorization_screen.remember_me:
                 self.sum_godziny = 0
                 self.logic.write_to_user_db()
-                self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.logic.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE)
+                payment_day = self.screen_constructor.data_from_memory.freeze_file_data['payment_day']
+                self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.logic.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE, payment_day = payment_day)
                 self.ids.scroll.clear_widgets() # удаляем таблицу данных о часах
-                ### Отдельным потоком пересоздаем таблицу
-                make_table_thread = threading.Thread(
-                    target = self.logic.make_data_table,
-                    daemon = True,
-                    name = 'make_table_thread',
-                    args = [True, self.screen_constructor.data_from_memory.user_data_from_db]
-                )
-                make_table_thread.start()
+                
+                if self.screen_constructor.data_from_memory.user_data_from_db:
+                    ### Отдельным потоком пересоздаем таблицу
+                    make_table_thread = threading.Thread(
+                        target = self.logic.make_data_table,
+                        daemon = True,
+                        name = 'make_table_thread',
+                        args = [self.screen_constructor.data_from_memory.user_data_from_db]
+                    )
+                    make_table_thread.start()
             else:
                 item = TabelItem(
                     text = self.ids.obiekt.text,
@@ -247,20 +275,78 @@ class Main(MDScreen):
                 self.ids.scroll.add_widget(item)
                 self.ids.summa.text = f'Masz {self.sum_godziny} godzin'
 
+    def select_payment_day(self):
+        action.logger.info('screens.py: class Main(MDScreen) select_payment_day()')
+
+        if not self._focus_on_payment_day:
+            self._focus_on_payment_day = True
+            action.logger.info(f'DEBUG: self._focus_on_payment_day = {self._focus_on_payment_day}')
+            return None
+        
+        if self._focus_on_payment_day:
+            self._focus_on_payment_day = False
+            if self.ids.payment_day.text.isdigit():
+                if int(self.ids.payment_day.text) < 31 and int(self.ids.payment_day.text) > 0:
+                    self.screen_constructor.data_from_memory.freeze_file_data['payment_day'] = int(self.ids.payment_day.text)
+                    with open(self.screen_constructor.data_from_memory.path_to_freeze_file, 'w') as file:
+                        json.dump(self.screen_constructor.data_from_memory.freeze_file_data, file)
+
+                    # пересобираю таблицу
+                    self.sum_godziny = 0
+                    self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.logic.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE, payment_day = self.screen_constructor.data_from_memory.freeze_file_data['payment_day'])
+                    self.ids.scroll.clear_widgets() # удаляем таблицу данных о часах
+                    ### Отдельным потоком пересоздаем таблицу
+                    make_table_thread = threading.Thread(
+                        target = self.logic.make_data_table,
+                        daemon = True,
+                        name = 'make_table_thread',
+                        args = [self.screen_constructor.data_from_memory.user_data_from_db]
+                    )
+                    make_table_thread.start()
+                    return None
+            
+            self.ids.payment_day.text = str(self.screen_constructor.data_from_memory.freeze_file_data['payment_day'])
+
 
 class Calendar(MDScreen):
-    def __init__(self, name, screen_manager, screen_constructor, *args, **kwargs):
+    def __init__(self, screen_manager, screen_constructor, *args, **kwargs):
         super().__init__(*args, **kwargs)
         action.logger.info("screens.py: class Calendar(MDScreen) __init__() name = 'calendar_screen'")
-        self.name = name
-        self.screen_manager = screen_manager
-        self.screen_constructor = screen_constructor
 
-        self.logic = CalendarLogic(
-            screen_manager = screen_manager,
-            screen_constructor = screen_constructor
-        )
+        self._screen_manager = screen_manager
+        self._screen_constructor = screen_constructor
+        self._logic = None
 
+        self.current_date: datetime = datetime.now()
+
+    @property
+    def screen_constructor(self):
+        return self._screen_constructor
+    
+    @screen_constructor.setter
+    def screen_constructor(self, value):
+        self._screen_constructor = value
+
+    @property
+    def screen_manager(self) -> ScreenManager:
+        return self._screen_manager
+    
+    @screen_manager.setter
+    def screen_manager(self, value: ScreenManager):
+        self._screen_manager = value
+
+    @property
+    def logic(self) -> MainScreenLogic:
+        if self._logic is None:
+            self._logic = CalendarLogic(
+                screen_manager = self.screen_manager,
+                screen_constructor = self.screen_constructor
+                )
+        return self._logic
+    
+    @logic.setter
+    def logic(self, value: MainScreenLogic):
+        self._logic = value
 
 
 # def send_sms(phone_number, message):

@@ -7,7 +7,7 @@ title = PracaApp
 package.name = CountHours
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.dp
+package.domain = com.wordpress.dzmitrypaulenka
 
 # (str) Source code where the main.py live
 source.dir = ./dev
@@ -37,8 +37,10 @@ version = 0.7
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3, kivy==master, https://github.com/kivymd/KivyMD/archive/master.zip, android, pyjnius, requests, cryptography, urllib3, chardet, idna
+requirements = python3, kivy, https://github.com/kivymd/kivymd/archive/master.zip, android, pyjnius, requests, cryptography, urllib3, chardet, idna
 
+# python3, kivy==master, https://github.com/kivymd/KivyMD/archive/master.zip, android, pyjnius, requests, cryptography, urllib3, chardet, idna
+# hostpython3, libffi, openssl, sdl2_image, sdl2_mixer, sdl2_ttf, sqlite3, python3, sdl2, setuptools, pycparser, six, cffi, pyjnius, android, cryptography, kivy, kivy_garden.graph, chardet, certifi, idna, urllib3, https://github.com/kivymd/kivymd/archive/master.zip, requests
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
 # requirements.source.kivy = ../../kivy

@@ -150,7 +150,8 @@ class AutorizationLogic(VerificationData):
             else:
                 payment_day = config.payment_day
 
-            self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = self.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE, payment_day = payment_day)
+            self.screen_constructor.data_from_memory.user_data_from_db: list[tuple,] = \
+                self.query_to_user_base.show_data_from_table(table_name = config.FIRST_TABLE, payment_day = payment_day)
             
         if self.user_authorized: # если есть файл с базой данных
             if remember_me: # и если стоит галочка "запомнить меня"
@@ -208,7 +209,7 @@ class AutorizationLogic(VerificationData):
             else:
                 text = f' .{current_date.month + 1}'
         
-        self.screen_constructor.main_screen.ids.payment_month.text = text
+        # self.screen_constructor.main_screen.ids.payment_month.text = text
         self.screen_constructor.main_screen.ids.backdrop.title = f'{self.screen_constructor.main_screen.user_name} {self.screen_constructor.main_screen.user_surname}'
         self.screen_manager.current = 'main_screen' 
 

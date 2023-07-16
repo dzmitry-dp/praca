@@ -86,8 +86,12 @@ def connection_to_database(create_query_func):
                     return None
                 if 'payment_day' in kwargs.keys():
                     current_date = datetime.now().date()
-                    start_date = datetime(current_date.year, current_date.month, kwargs['payment_day'])
-                    end_date = start_date.replace(month=current_date.month + 1)
+                    if current_date.day < kwargs['payment_day']:
+                        start_date = datetime(current_date.year, current_date.month - 1, kwargs['payment_day'])
+                        end_date = start_date.replace(month=current_date.month)
+                    else:
+                        start_date = datetime(current_date.year, current_date.month, kwargs['payment_day'])
+                        end_date = start_date.replace(month=current_date.month + 1)
                     cursor.execute(query, (start_date, end_date))
                     record = cursor.fetchall()
                     return record

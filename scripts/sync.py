@@ -4,7 +4,7 @@ from dirsync import sync
 
 # жестко прописанные пути
 source_path = 'C:\\Users\\dp\\OneDrive\\Personal\\Projects\\008_Praca'
-target_path = '\\\\wsl.localhost\\Ubuntu\\home\\dp\\Personal\\Projects\\Praca\\dev'
+target_path = '\\\\wsl.localhost\\Ubuntu-20.04\\home\\dp\\Personal\\Projects\\Praca\\dev'
 
 if os.path.exists(target_path):
     # удаляем __pycache__
@@ -37,4 +37,4 @@ else:
     sys.exit()
 
 ###
-os.system(f'move {target_path}\\buildozer.spec {target_path[:-4]}\\buildozer.spec')
+os.system(f'move {target_path}\\buildozer_apk.spec {target_path[:-4]}\\buildozer.spec')

@@ -51,17 +51,22 @@ python ./main.py
 	https://github.com/kivy/buildozer
 
 ```bash
-pip install https://github.com/kivy/buildozer/archive/master.zip
+pip install Cython==0.29.33 https://github.com/kivy/buildozer/archive/master.zip Kivy https://github.com/kivymd/KivyMD/archive/master.zip cryptography setuptools
+
+sudo apt install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev xclip xsel libmtdev-dev
+
 buildozer android debug
 ```
 
-Требования в файле buildozer.spec
+Требования в файле **buildozer.spec**
 
 	requirements = python3, kivy==master, https://github.com/kivymd/KivyMD/archive/master.zip, android, pyjnius, requests, cryptography, urllib3, chardet, idna
 
 android.permissions в файле buildozer.spec
 
 	android.permissions = INTERNET, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, SEND_SMS
+
+	p4a.branch = develop
 
 # Сборка .aab
 1. Запустите эту команду для клонирования версии Buildozer, поддерживающей создание файлов .aab: 

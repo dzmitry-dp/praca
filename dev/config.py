@@ -11,7 +11,7 @@ if platform != 'android':
     Window.size = (405, 810)
 
 Config.set('graphics', 'maxfps', '120')
-Config.set('kivy', 'log_dir', os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.abspath('./dev/static/logs')))
+# Config.set('kivy', 'log_dir', os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.abspath('./dev/static/logs')))
 
 payment_day = 15 # день зарплаты
 
